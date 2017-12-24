@@ -92,10 +92,10 @@ function sumOfNeighbors(location) {
 }
 
 let space = new Grid();
+// we initialize the grid with a 1
 space.set(0,0, 1);
+// if we havent set the value in the grid, return 0
 space.default = function(x,y){return 0;}
-
-console.log(sumOfNeighbors({x:1, y:0}))
 
 let value = 1;
 let i = 2;

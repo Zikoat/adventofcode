@@ -30,3 +30,20 @@ console.log(output.reduce((sum, row)=>{
 },0));
 
 //-------------------
+function getDivision(row) {
+	for (var i = 0; i < row.length; i++) {
+		for (var j = 0; j < row.length; j++) {
+			if (i==j) continue;// makes the program skip where the division is 1
+			let rest = row[i] % row[j];
+			if (rest == 0) {
+				console.log("division is:",row[i] / row[j]);
+				return row[i] / row[j];
+			}
+		}
+	}
+	console.log("no divisors!");
+	return 0;
+}
+console.log(output.reduce((sum, row)=>{
+	return sum + getDivision(row);
+},0));
