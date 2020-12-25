@@ -5,10 +5,9 @@ namespace adventofcode2020
 {
     public class Day1
     {
-        public static int Part1(string? input)
+        public static void Part1(string? input)
         {
-            input = input.GetValueOrDefault(File.ReadAllText("./day1.txt"))
-            
+            input ??= File.ReadAllText("./day1.txt");
             Console.WriteLine(input);
         }
     }
