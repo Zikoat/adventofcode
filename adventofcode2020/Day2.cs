@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -12,7 +11,7 @@ namespace adventofcode2020
         public Day2(string? input) : base(input)
         {
         }
-        
+
         public override int Part1()
         {
             var passwords = GetPasswordTuples();
@@ -36,9 +35,9 @@ namespace adventofcode2020
 
         private static (int min, int max, char character, string password) MatchToPasswordTuple(Match m)
         {
-            int min = Int32.Parse(m.Groups[1].Value);
-            int max = Int32.Parse(m.Groups[2].Value);
-            char character = char.Parse(m.Groups[3].Value);
+            var min = int.Parse(m.Groups[1].Value);
+            var max = int.Parse(m.Groups[2].Value);
+            var character = char.Parse(m.Groups[3].Value);
             string password = m.Groups[4].Value;
 
             return (min, max, character, password);
@@ -46,7 +45,7 @@ namespace adventofcode2020
 
         public static bool IsValidBetween((int min, int max, char character, string password) passwordTuple)
         {
-            int characterCount = passwordTuple.password.Count(character => character == passwordTuple.character);
+            var characterCount = passwordTuple.password.Count(character => character == passwordTuple.character);
             return characterCount >= passwordTuple.min && characterCount <= passwordTuple.max;
         }
 
@@ -54,8 +53,7 @@ namespace adventofcode2020
         {
             var (min, max, character, password) = passwordTuple;
 
-            return password[min - 1] == character ^ password[max - 1] == character;
+            return (password[min - 1] == character) ^ (password[max - 1] == character);
         }
-
     }
 }

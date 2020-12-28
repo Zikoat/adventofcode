@@ -10,13 +10,11 @@ namespace adventofcode2020
 
         protected Day(string? input)
         {
-            Input = input;
-            var dayNumber = GetDayNumber();
-            _dayNumber = dayNumber;
-            Input ??= GetFullInput();
+            _dayNumber = GetDayNumber();
+            Input = input ?? GetFullInput();
         }
-
-        private protected int GetDayNumber()
+        
+        private int GetDayNumber()
         {
             var className = GetType().Name;
             Regex dayExpression = new Regex(@"Day(?<dayNumber>\d{1,2})");
