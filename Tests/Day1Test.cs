@@ -37,11 +37,15 @@ namespace Tests
                 1-3 b: cdefg
                 2-9 c: ccccccccc";
 
+        private readonly Day2 testDay2 = new Day2(TestInput);
+        private readonly Day2 fullDay2 = new Day2(null);
+
         [Test]
         public void TestPart1()
         {
-            Assert.AreEqual(2, Day2.Part1(TestInput));
-            var answer = Day2.Part1(null);
+            Console.WriteLine(testDay2.input);
+            Assert.AreEqual(2, testDay2.Part1());
+            var answer = fullDay2.Part1();
             Assert.Greater(answer, 231);
             Console.WriteLine(answer);
         }
@@ -93,7 +97,7 @@ namespace Tests
             var passwordTuples = Day2.StringToPasswordTuples(TestInput);
             Assert.AreEqual(new[] {true, false, false}, passwordTuples.Select(Day2.IsValidAtPosition));
 
-            Console.WriteLine(Day2.Part2(null));
+            Console.WriteLine(fullDay2.Part2());
         }
 
         [Test]

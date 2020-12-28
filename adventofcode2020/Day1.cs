@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace adventofcode2020
 {
-    public static class Day1
+    public static class Day1 // todo extend day
     {
         public static int Part1(string? input)
         {

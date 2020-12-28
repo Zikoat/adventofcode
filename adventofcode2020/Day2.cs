@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace adventofcode2020
 {
-    public static class Day2
+    public class Day2 : Day
     {
         private const string RegexPattern = @"(\d+)-(\d+) ([a-z]): ([a-z]*)";
 
-        public static int Part1(string? input)
+        public Day2(string? input) : base(input)
         {
-            input ??= File.ReadAllText("../../../..//adventofcode2020/day2.txt");
-            
+            Console.WriteLine("hello from day 2");
+        }
+
+        public override int Part1()
+        {
             var passwords = StringToPasswordTuples(input);
 
             var output = passwords.Count(IsValidBetween);
@@ -21,15 +25,12 @@ namespace adventofcode2020
             return output;
         }
 
-        public static int Part2(string? input)
+        public override int Part2()
         {
-            input ??= File.ReadAllText("../../../..//adventofcode2020/day2.txt");
-            
             var passwords = StringToPasswordTuples(input);
             var output = passwords.Count(IsValidAtPosition);
-
+            
             return output;
-
         }
 
         public static IEnumerable<(int, int, char, string)> StringToPasswordTuples(string input)
@@ -70,5 +71,6 @@ namespace adventofcode2020
             return password[min-1] == character ^ password[max-1] == character;
             
         }
+
     }
 }
