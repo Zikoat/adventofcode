@@ -7,20 +7,25 @@ namespace Tests
     [TestFixture]
     public class Day1Test
     {
-        [Test]
-        public void Test()
-        {
-            var testinput = @"1721
+        private const string Testinput = @"1721
             979
             366
             299
             675
             1456";
-            Assert.AreEqual(514579, Day1.Part1(testinput));
-            Console.WriteLine(Day1.Part1(null));
 
-            Assert.AreEqual(241861950, Day1.Part2(testinput));
-            Console.WriteLine(Day1.Part2(null));
+        [Test]
+        public void TestPart1()
+        {
+            Assert.AreEqual(514579, new Day1(Testinput).Part1());
+            Console.WriteLine(new Day1(null).Part1());
+        }
+
+        [Test]
+        public void TestPart2()
+        {
+            Assert.AreEqual(241861950, new Day1(Testinput).Part2());
+            Console.WriteLine(new Day1(null).Part2());
         }
     }
 }

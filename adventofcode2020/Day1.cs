@@ -5,12 +5,15 @@ using System.Linq;
 
 namespace adventofcode2020
 {
-    public static class Day1 // todo extend day
+    public class Day1 : Day
     {
-        public static int Part1(string? input)
+        public Day1(string? input) : base(input)
         {
-            input ??= File.ReadAllText("../../../..//adventofcode2020/day1.txt");
-            IEnumerable<int> lines = input.Split("\n").Select(val=>Int32.Parse(val.Trim()));
+        }
+        
+        public override int Part1()
+        {
+            IEnumerable<int> lines = Input.Split("\n").Select(val=>Int32.Parse(val.Trim()));
 
             var output = 0;
             foreach (var line1 in lines)
@@ -28,10 +31,9 @@ namespace adventofcode2020
             return output;
         }
 
-        public static int Part2(string? input)
+        public override int Part2()
         {
-            input ??= File.ReadAllText("../../../..//adventofcode2020/day1.txt");
-            IEnumerable<int> lines = input.Split("\n").Select(val=>Int32.Parse(val.Trim()));
+            IEnumerable<int> lines = Input.Split("\n").Select(val=>Int32.Parse(val.Trim()));
 
             var output = 0;
             foreach (var line1 in lines)
@@ -49,7 +51,6 @@ namespace adventofcode2020
             }
             
             return output;
-
         }
     }
 }
