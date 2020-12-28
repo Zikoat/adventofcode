@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -13,13 +11,11 @@ namespace adventofcode2020
 
         public Day2(string? input) : base(input)
         {
-            Console.WriteLine("hello from day 2");
         }
-
+        
         public override int Part1()
         {
-            var passwords = StringToPasswordTuples(input);
-
+            var passwords = GetPasswordTuples();
             var output = passwords.Count(IsValidBetween);
 
             return output;
@@ -27,25 +23,15 @@ namespace adventofcode2020
 
         public override int Part2()
         {
-            var passwords = StringToPasswordTuples(input);
+            var passwords = GetPasswordTuples();
             var output = passwords.Count(IsValidAtPosition);
-            
+
             return output;
         }
 
-        public static IEnumerable<(int, int, char, string)> StringToPasswordTuples(string input)
+        public IEnumerable<(int, int, char, string)> GetPasswordTuples()
         {
-            List<(int, int, char, string)> passwordTuples = new List<(int, int, char, string)>();
-            
-            var matches = Regex.Matches(input, RegexPattern);
-            
-            foreach (Match m in matches)
-            {
-                var passwordTuple = MatchToPasswordTuple(m);
-                passwordTuples.Add(passwordTuple);
-            }
-
-            return passwordTuples;
+            return Regex.Matches(Input, RegexPattern).Select(MatchToPasswordTuple);
         }
 
         private static (int min, int max, char character, string password) MatchToPasswordTuple(Match m)
@@ -57,19 +43,18 @@ namespace adventofcode2020
 
             return (min, max, character, password);
         }
-        
+
         public static bool IsValidBetween((int min, int max, char character, string password) passwordTuple)
         {
             int characterCount = passwordTuple.password.Count(character => character == passwordTuple.character);
             return characterCount >= passwordTuple.min && characterCount <= passwordTuple.max;
         }
-        
+
         public static bool IsValidAtPosition((int min, int max, char character, string password) passwordTuple)
         {
             var (min, max, character, password) = passwordTuple;
-            
-            return password[min-1] == character ^ password[max-1] == character;
-            
+
+            return password[min - 1] == character ^ password[max - 1] == character;
         }
 
     }
