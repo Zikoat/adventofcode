@@ -27,7 +27,7 @@ namespace adventofcode2020
             return File.ReadAllText($"../../../..//adventofcode2020/day{_dayNumber}.txt");
         }
 
-        public abstract int Part1();
-        public abstract int Part2();
+        public abstract long Part1();
+        public abstract long Part2();
     }
 }

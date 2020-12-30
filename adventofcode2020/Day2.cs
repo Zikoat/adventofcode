@@ -12,7 +12,7 @@ namespace adventofcode2020
         {
         }
 
-        public override int Part1()
+        public override long Part1()
         {
             var passwords = GetPasswordTuples();
             var output = passwords.Count(IsValidBetween);
@@ -20,7 +20,7 @@ namespace adventofcode2020
             return output;
         }
 
-        public override int Part2()
+        public override long Part2()
         {
             var passwords = GetPasswordTuples();
             var output = passwords.Count(IsValidAtPosition);

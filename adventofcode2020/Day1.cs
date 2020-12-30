@@ -11,7 +11,7 @@ namespace adventofcode2020
         {
         }
         
-        public override int Part1()
+        public override long Part1()
         {
             IEnumerable<int> lines = Input.Split("\n").Select(val=>Int32.Parse(val.Trim()));
 
@@ -31,7 +31,7 @@ namespace adventofcode2020
             return output;
         }
 
-        public override int Part2()
+        public override long Part2()
         {
             IEnumerable<int> lines = Input.Split("\n").Select(val=>Int32.Parse(val.Trim()));
 
