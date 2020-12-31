@@ -34,35 +34,51 @@ ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
 hgt:59cm ecl:zzz
 eyr:2038 hcl:74454a iyr:2023
 pid:3556412378 byr:2007";
-        private const string TestInput2Valid = @"eyr:1972 cid:100
-hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
+        private const string TestInput2Valid = @"pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
+hcl:#623a2f
 
-iyr:2019
-hcl:#602927 eyr:1967 hgt:170cm
-ecl:grn pid:012533040 byr:1946
+eyr:2029 ecl:blu cid:129 byr:1989
+iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm
 
-hcl:dab227 iyr:2012
-ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
+hcl:#888785
+hgt:164cm byr:2001 iyr:2015 cid:88
+pid:545766238 ecl:hzl
+eyr:2022
 
-hgt:59cm ecl:zzz
-eyr:2038 hcl:74454a iyr:2023
-pid:3556412378 byr:2007";
+iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719";
 
         [Test]
         public void Part1()
         {
             Assert.AreEqual(2, new Day4(TestInput).Part1());
-            // Console.WriteLine(new Day4(null).Part1());
             Assert.AreEqual(264, new Day4(null).Part1());
         }
-
+        
         [Test]
         public void Part2()
         {
+            Assert.True(Day4.ValidBirthYear("2002"));
+            Assert.False(Day4.ValidBirthYear("2003"));
+            
+            Assert.True(Day4.ValidHeight("60in"));
+            Assert.True(Day4.ValidHeight("190cm"));
+            Assert.False(Day4.ValidHeight("190in"));
+            Assert.False(Day4.ValidHeight("190"));
+            
+            Assert.True(Day4.ValidHairColor("#123abc"));
+            Assert.False(Day4.ValidHairColor("#123abz"));
+            Assert.False(Day4.ValidHairColor("123abc"));
+            
+            Assert.True(Day4.ValidEyeColor("brn"));
+            Assert.False(Day4.ValidEyeColor("wat"));
+            
+            Assert.True(Day4.ValidPassportId("000000001"));
+            Assert.False(Day4.ValidPassportId("0123456789"));
+            
             Assert.AreEqual(4, new Day4(TestInput2Valid).Part2());
-            Assert.AreEqual(4, new Day4(TestInput2Invalid).Part2());
-            Console.WriteLine(new Day4(null).Part1());
-            Assert.AreEqual(2983070376, new Day4(null).Part2());
+            Assert.AreEqual(0, new Day4(TestInput2Invalid).Part2());
+
+            Assert.AreEqual(new Day4(null).Part2(), 224);
         }
     }
 }
