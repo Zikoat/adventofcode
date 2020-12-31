@@ -23,21 +23,21 @@ namespace adventofcode2020
 
         public override long Part2()
         {
-            var groups = Input
+            return Input
                 .Split(Environment.NewLine + Environment.NewLine)
                 .Select(group => group.Split(Environment.NewLine)
-                    .Select(person => person.ToCharArray()));
+                    .Select(person => person.ToList()))
+                .Select(IntersectMultipleLists)
+                .Select(questions=>questions.Count)
+                .Sum();
+        }
 
-            var total = 0;
-            foreach (var group in groups)
-            {
-                var questionsEveryone = new HashSet<char>(group.First());
-                foreach (var person in group) questionsEveryone.IntersectWith(person);
-
-                total += questionsEveryone.Count;
-            }
-
-            return total;
+        private static HashSet<T> IntersectMultipleLists<T>(IEnumerable<IEnumerable<T>> lists)
+        {
+            lists = lists.ToList();
+            var intersection = new HashSet<T>(lists.First());
+            foreach (var person in lists) intersection.IntersectWith(person);
+            return intersection;
         }
     }
 }
