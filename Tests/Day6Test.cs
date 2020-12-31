@@ -1,5 +1,4 @@
-﻿using System;
-using adventofcode2020;
+﻿using adventofcode2020;
 using NUnit.Framework;
 
 namespace Tests
