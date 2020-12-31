@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace adventofcode2020
 {
-    public class Day5 :Day
+    public class Day5 : Day
     {
         private const string SeatPattern = @"(F|B){7}(R|L){3}";
 
@@ -25,22 +25,18 @@ namespace adventofcode2020
 
         public override long Part2()
         {
-            return FindGaps(ParseSeats()).Single()+1;
+            return FindGaps(ParseSeats()).Single() + 1;
         }
 
-        private IEnumerable<long> FindGaps(IEnumerable<long> seats)
+        private static IEnumerable<long> FindGaps(IEnumerable<long> seats)
         {
             var seatsList = seats.ToList();
             seatsList.Sort();
             var validSeats = new List<long>();
-            
-            for (int i = 0; i < seatsList.Count - 1; i++)
-            {
-                if (seatsList[i + 1]-seatsList[i] > 1)
-                {
+
+            for (var i = 0; i < seatsList.Count - 1; i++)
+                if (seatsList[i + 1] - seatsList[i] > 1)
                     validSeats.Add(seatsList[i]);
-                }
-            }
 
             return validSeats;
         }
@@ -50,9 +46,9 @@ namespace adventofcode2020
             if (!Regex.IsMatch(seatLabel, SeatPattern))
                 throw new ArgumentException($"The seat {seatLabel} does not match regex: {SeatPattern}");
 
-            seatLabel=Regex.Replace(seatLabel, @"B|R", "1");
-            seatLabel=Regex.Replace(seatLabel, @"F|L", "0");
-
+            seatLabel = Regex.Replace(seatLabel, @"B|R", "1");
+            seatLabel = Regex.Replace(seatLabel, @"F|L", "0");
+            
             return Convert.ToInt64(seatLabel, 2);
         }
     }
