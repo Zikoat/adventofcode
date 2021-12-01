@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using static System.Environment;
 
 namespace adventofcode2021;
 
-public class Day1
+public class Day1 : DayBase
 {
 
     [SetUp]
@@ -61,15 +60,6 @@ public class Day1
         var answer = GetCountOfIncreasingDepths(realInput, out _, out _);
         answer.Print();
     }
-
-    private static string GetInputForDay(int dayNumber)
-    {
-        string workingDirectory = Environment.CurrentDirectory;
-        string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
-        var realInput = File.ReadAllText(Path.Join(projectDirectory, $"Day{dayNumber}Input.txt"));
-        return realInput;
-    }
-
 
     [TestCase(0, 1, 1)]
     [TestCase(1, 0, -1)]
