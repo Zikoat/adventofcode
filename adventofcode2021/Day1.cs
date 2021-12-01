@@ -9,15 +9,7 @@ namespace adventofcode2021;
 public class Day1 : DayBase
 {
 
-    [SetUp]
-    public void Setup()
-    {
-    }
-
-    [Test]
-    public void Test1()
-    {
-        var testInput = @"199
+    public override string TestInput => @"199
 200
 208
 210
@@ -28,7 +20,10 @@ public class Day1 : DayBase
 260
 263";
 
-        var countOfIncreasingDepths = GetCountOfIncreasingDepths(testInput, out var derivatives, out var depths);
+    [Test]
+    public override void TestPart1()
+    {
+        var countOfIncreasingDepths = GetCountOfIncreasingDepths(TestInput, out var derivatives, out var depths);
 
         ObjectExtensions.Print(depths);
         Assert.That(countOfIncreasingDepths, Is.EqualTo(7));
@@ -44,22 +39,74 @@ public class Day1 : DayBase
 3"));
     }
 
+    [Test]
+    public override void RunPart1OnRealInput()
+    {
+        var realInput = GetInputForDay(1);
+
+        var answer = GetCountOfIncreasingDepths(realInput, out _, out _);
+        
+        answer.Print();
+        Assert.That(answer, Is.EqualTo(1154));
+    }
+
+    [Test]
+    public override void TestPart2()
+    {
+        var answer = ThreeUnitSlidingWindow(TestInput, out var threeUnitSlidingWindow, out var derivatives);
+        
+        Assert.That(threeUnitSlidingWindow.ToString(", "), Is.EqualTo("607, 618, 618, 617, 647, 716, 769, 792"));
+        Assert.That(answer, Is.EqualTo(5));
+    }
+
+    [Test]
+    public override void RunPart2OnRealInput()
+    {
+        var answer = ThreeUnitSlidingWindow(GetInputForDay(1), out _, out _);
+        
+        answer.Print();
+        Assert.That(answer, Is.EqualTo(1127));
+    }
+
     private static int GetCountOfIncreasingDepths(string testInput, out List<long> derivatives, out List<long> depths)
     {
-        depths = testInput.Split(NewLine).Select(number => Convert.ToInt64(number)).ToList();
+        depths = ParseDepths(testInput);
         derivatives = depths.Derivative();
         var countOfIncreasingDepths = derivatives.Count(d => d > 0);
         return countOfIncreasingDepths;
     }
 
-    [Test]
-    public void TestRunPart1OnRealInput()
+    private static List<long> ParseDepths(string testInput)
     {
-        var realInput = GetInputForDay(1);
-
-        var answer = GetCountOfIncreasingDepths(realInput, out _, out _);
-        answer.Print();
+        return testInput.Split(NewLine).Select(number => Convert.ToInt64(number)).ToList();
     }
+
+    private static int ThreeUnitSlidingWindow(string testInput, out List<long> threeUnitSlidingWindow, out List<long> derivatives)
+    {
+        var depths = ParseDepths(testInput);
+        
+        threeUnitSlidingWindow = CreateThreeUnitSlidingWindow(depths);
+
+        derivatives = threeUnitSlidingWindow.Derivative();
+        var countOfIncreasingDepths = derivatives.Count(d => d > 0);
+        return countOfIncreasingDepths;
+    }
+
+    private static List<long> CreateThreeUnitSlidingWindow(List<long> depths)
+    {
+        long windowFirst = 0;
+        long windowSecond = 0;
+        var threeUnitSlidingWindow = depths.Select(current =>
+        {
+            var sum = windowFirst + windowSecond + current;
+            windowFirst = windowSecond;
+            windowSecond = current;
+            return sum;
+        }).ToList();
+        threeUnitSlidingWindow.RemoveRange(0, 2);
+        return threeUnitSlidingWindow;
+    }
+
 
     [TestCase(0, 1, 1)]
     [TestCase(1, 0, -1)]

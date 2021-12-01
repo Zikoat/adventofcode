@@ -1,4 +1,3 @@
-﻿using System;
+﻿using adventofcode2021;
 
-Console.WriteLine("Hello World!");
-
+DayBase day1 = new Day1();
