@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using NUnit.Framework;
 using static System.Environment;
 
 namespace adventofcode2021;
 
-public class Day1 : DayBase
+public class Day01 : DayBase
 {
 
     public override string TestInput => @"199
@@ -42,7 +39,7 @@ public class Day1 : DayBase
     [Test]
     public override void RunPart1OnRealInput()
     {
-        var realInput = GetInputForDay(1);
+        var realInput = GetInputForDay(this);
 
         var answer = GetCountOfIncreasingDepths(realInput, out _, out _);
         
@@ -62,7 +59,7 @@ public class Day1 : DayBase
     [Test]
     public override void RunPart2OnRealInput()
     {
-        var answer = ThreeUnitSlidingWindow(GetInputForDay(1), out _, out _);
+        var answer = ThreeUnitSlidingWindow(GetInputForDay(this), out _, out _);
         
         answer.Print();
         Assert.That(answer, Is.EqualTo(1127));
