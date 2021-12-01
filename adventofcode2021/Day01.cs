@@ -50,7 +50,7 @@ public class Day01 : DayBase
     [Test]
     public override void TestPart2()
     {
-        var answer = ThreeUnitSlidingWindow(TestInput, out var threeUnitSlidingWindow, out var derivatives);
+        var answer = ThreeUnitSlidingWindow(TestInput, out var threeUnitSlidingWindow);
         
         Assert.That(threeUnitSlidingWindow.ToString(", "), Is.EqualTo("607, 618, 618, 617, 647, 716, 769, 792"));
         Assert.That(answer, Is.EqualTo(5));
@@ -59,9 +59,8 @@ public class Day01 : DayBase
     [Test]
     public override void RunPart2OnRealInput()
     {
-        var answer = ThreeUnitSlidingWindow(GetInputForDay(this), out _, out _);
+        var answer = ThreeUnitSlidingWindow(GetInputForDay(this), out _);
         
-        answer.Print();
         Assert.That(answer, Is.EqualTo(1127));
     }
 
@@ -78,13 +77,13 @@ public class Day01 : DayBase
         return testInput.Split(NewLine).Select(number => Convert.ToInt64(number)).ToList();
     }
 
-    private static int ThreeUnitSlidingWindow(string testInput, out List<long> threeUnitSlidingWindow, out List<long> derivatives)
+    private static int ThreeUnitSlidingWindow(string testInput, out List<long> threeUnitSlidingWindow)
     {
         var depths = ParseDepths(testInput);
         
         threeUnitSlidingWindow = CreateThreeUnitSlidingWindow(depths);
 
-        derivatives = threeUnitSlidingWindow.Derivative();
+        var derivatives = threeUnitSlidingWindow.Derivative();
         var countOfIncreasingDepths = derivatives.Count(d => d > 0);
         return countOfIncreasingDepths;
     }
@@ -103,8 +102,7 @@ public class Day01 : DayBase
         threeUnitSlidingWindow.RemoveRange(0, 2);
         return threeUnitSlidingWindow;
     }
-
-
+    
     [TestCase(0, 1, 1)]
     [TestCase(1, 0, -1)]
     [TestCase(-1, 0, 1)]
