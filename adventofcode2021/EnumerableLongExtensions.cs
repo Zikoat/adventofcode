@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace adventofcode2021;
 
-static internal class EnumerableLongExtensions
+internal static class EnumerableLongExtensions
 {
-    public static List<long> Derivative(IEnumerable<long> numbers)
+    public static List<long> Derivative(this IEnumerable<long> numbers)
     {
         long previous = 0;
         var derivativeList = numbers.Select(current =>

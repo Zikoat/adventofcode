@@ -2,9 +2,9 @@
 
 namespace adventofcode2021;
 
-static internal class ObjectExtensions
+internal static class ObjectExtensions
 {
-    public static void PrintObject(object depths)
+    public static void Print(this object depths)
     {
         Console.WriteLine(depths);
     }
