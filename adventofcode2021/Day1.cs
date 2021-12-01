@@ -29,7 +29,7 @@ public class Day1
 260
 263";
 
-        var depths = GetCountOfIncreasingDepths(testInput, out var derivatives, out var countOfIncreasingDepths);
+        var countOfIncreasingDepths = GetCountOfIncreasingDepths(testInput, out var derivatives, out var depths);
 
         ObjectExtensions.Print(depths);
         Assert.That(countOfIncreasingDepths, Is.EqualTo(7));
@@ -56,16 +56,18 @@ public class Day1
     [Test]
     public void TestRunPart1OnRealInput()
     {
-        // This will get the current WORKING directory (i.e. \bin\Debug)
-        string workingDirectory = Environment.CurrentDirectory;
-// or: Directory.GetCurrentDirectory() gives the same result
+        var realInput = GetInputForDay(1);
 
-// This will get the current PROJECT directory
-        string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
-
-        var realInput = File.ReadAllText(Directory.GetParent(CurrentDirectory).Parent.Parent.FullName);
         var answer = GetCountOfIncreasingDepths(realInput, out _, out _);
         answer.Print();
+    }
+
+    private static string GetInputForDay(int dayNumber)
+    {
+        string workingDirectory = Environment.CurrentDirectory;
+        string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
+        var realInput = File.ReadAllText(Path.Join(projectDirectory, $"Day{dayNumber}Input.txt"));
+        return realInput;
     }
 
 
