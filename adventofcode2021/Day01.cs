@@ -5,7 +5,6 @@ namespace adventofcode2021;
 
 public class Day01 : DayBase
 {
-
     public override string TestInput => @"199
 200
 208
@@ -42,7 +41,7 @@ public class Day01 : DayBase
         var realInput = GetInputForDay(this);
 
         var answer = GetCountOfIncreasingDepths(realInput, out _, out _);
-        
+
         answer.Print();
         Assert.That(answer, Is.EqualTo(1154));
     }
@@ -51,7 +50,7 @@ public class Day01 : DayBase
     public override void TestPart2()
     {
         var answer = ThreeUnitSlidingWindow(TestInput, out var threeUnitSlidingWindow);
-        
+
         Assert.That(threeUnitSlidingWindow.ToString(", "), Is.EqualTo("607, 618, 618, 617, 647, 716, 769, 792"));
         Assert.That(answer, Is.EqualTo(5));
     }
@@ -60,7 +59,7 @@ public class Day01 : DayBase
     public override void RunPart2OnRealInput()
     {
         var answer = ThreeUnitSlidingWindow(GetInputForDay(this), out _);
-        
+
         Assert.That(answer, Is.EqualTo(1127));
     }
 
@@ -80,7 +79,7 @@ public class Day01 : DayBase
     private static int ThreeUnitSlidingWindow(string testInput, out List<long> threeUnitSlidingWindow)
     {
         var depths = ParseDepths(testInput);
-        
+
         threeUnitSlidingWindow = CreateThreeUnitSlidingWindow(depths);
 
         var derivatives = threeUnitSlidingWindow.Derivative();
@@ -102,7 +101,7 @@ public class Day01 : DayBase
         threeUnitSlidingWindow.RemoveRange(0, 2);
         return threeUnitSlidingWindow;
     }
-    
+
     [TestCase(0, 1, 1)]
     [TestCase(1, 0, -1)]
     [TestCase(-1, 0, 1)]
@@ -132,9 +131,7 @@ public class Day01 : DayBase
     [Test]
     public void TestDerivativeNull()
     {
-        var exception = Assert.Throws<ArgumentNullException>(()=> EnumerableLongExtensions.Derivative(null!));
+        var exception = Assert.Throws<ArgumentNullException>(() => EnumerableLongExtensions.Derivative(null!));
         Assert.That(exception?.Message, Is.EqualTo("Value cannot be null. (Parameter 'source')"));
     }
 }
-
-
