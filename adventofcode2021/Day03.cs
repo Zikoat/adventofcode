@@ -96,28 +96,25 @@ Assert.Multiple(()=>
     [Test]
     public override void TestPart2()
     {
-        var lifeSupport = 0;
-        var oxygenGenerator = 0;
-        var co2Scrubber = 0;
-
-        var matrix = ParseDay3(TestInput);
-
-        Assert.That(matrix, Is.InstanceOf<IEnumerable<IEnumerable<bool>>>());
-
-        var arrayMatrix = To2D(matrix.Select(column => column.ToArray()).ToArray());
-
-        var oxygengeneratorRating = getrating(arrayMatrix, out var height, (validrowcount, halfvalidrow)=>validrowcount>=halfvalidrow);
-        var co2generatorRating = getrating(arrayMatrix, out var _, (validrowcount, halfvalidrow)=>validrowcount<=halfvalidrow);
-
+        var lifeSupport = GetLifeSupportRating(out var oxygengeneratorRating, out var co2GeneratorRating, TestInput);
 
         Assert.That(oxygengeneratorRating, Is.EqualTo(23));
-        
-        
-        Assert.That(height, Is.EqualTo(12));
-        Assert.That(lifeSupport, Is.EqualTo(1));
+        Assert.That(co2GeneratorRating, Is.EqualTo(10));
+        Assert.That(lifeSupport, Is.EqualTo(230));
     }
 
-    private int getrating(bool[,] arrayMatrix, out int height, Func<int, float, bool> func )
+    private int GetLifeSupportRating(out int oxygengeneratorRating, out int co2GeneratorRating, string nput)
+    {
+        var matrix = ParseDay3(nput);
+        var arrayMatrix = To2D(matrix.Select(column => column.ToArray()).ToArray());
+        oxygengeneratorRating = GetRating(arrayMatrix, out var height,
+            (validrowcount, halfvalidrow) => validrowcount >= halfvalidrow);
+        co2GeneratorRating = GetRating(arrayMatrix, out _, (validrowcount, halfvalidrow) => validrowcount < halfvalidrow);
+        var lifeSupport = co2GeneratorRating * oxygengeneratorRating;
+        return lifeSupport;
+    }
+
+    private int GetRating(bool[,] arrayMatrix, out int height, Func<int, float, bool> func )
     {
         var width = arrayMatrix.GetLength(1);
         height = arrayMatrix.GetLength(0);
@@ -131,8 +128,7 @@ Assert.Multiple(()=>
             var validRowCount = validRows.Count(row => row.bit);
             var totalRowCount = validOxygenNumbers.Count(b => b);
             var dominantBit =func(validRowCount,(float)totalRowCount / 2) ;
-
-
+            
             for (var j = 0; j < height; j++)
             {
                 if (!validOxygenNumbers[j]) continue;
@@ -159,14 +155,14 @@ Assert.Multiple(()=>
             return oxygengeneratorRating;
     }
 
-    public T[] GetColumn<T>(T[,] matrix, int columnNumber)
+    public static T[] GetColumn<T>(T[,] matrix, int columnNumber)
     {
         return Enumerable.Range(0, matrix.GetLength(0))
             .Select(x => matrix[x, columnNumber])
             .ToArray();
     }
 
-    public T[] GetRow<T>(T[,] matrix, int rowNumber)
+    public static T[] GetRow<T>(T[,] matrix, int rowNumber)
     {
         return Enumerable.Range(0, matrix.GetLength(1))
             .Select(x => matrix[rowNumber, x])
@@ -174,7 +170,7 @@ Assert.Multiple(()=>
     }
 
     // https://stackoverflow.com/a/26291720/5936629
-    static T[,] To2D<T>(T[][] source)
+    public static T[,] To2D<T>(T[][] source)
     {
         try
         {
@@ -216,7 +212,7 @@ Assert.Multiple(()=>
     [Test]
     public override void RunPart2OnRealInput()
     {
-        GetInputForDay(this).Split(NewLine);
-        throw new NotImplementedException();
+        var lifeSupport = GetLifeSupportRating(out var _, out var _, GetInputForDay(this));
+        Assert.That(lifeSupport, Is.EqualTo(4790390));
     }
 }
