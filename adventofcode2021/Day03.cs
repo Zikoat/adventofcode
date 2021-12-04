@@ -1,6 +1,7 @@
 ﻿
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
+using NUnit.Framework.Internal;
 using static System.Environment;
 
 namespace adventofcode2021;
@@ -101,14 +102,98 @@ Assert.Multiple(()=>
 
         var matrix = ParseDay3(TestInput);
 
+        Assert.That(matrix, Is.InstanceOf<IEnumerable<IEnumerable<bool>>>());
+
+        var arrayMatrix = To2D(matrix.Select(column => column.ToArray()).ToArray());
+
+        var oxygengeneratorRating = getrating(arrayMatrix, out var height, (validrowcount, halfvalidrow)=>validrowcount>=halfvalidrow);
+        var co2generatorRating = getrating(arrayMatrix, out var _, (validrowcount, halfvalidrow)=>validrowcount<=halfvalidrow);
+
+
+        Assert.That(oxygengeneratorRating, Is.EqualTo(23));
         
         
-        var enumerable = TestInput.Split(NewLine).Select(s => s.Split().Select(c => c == "1")).ToList();
-        Assert.That(enumerable, Is.InstanceOf<IEnumerable<IEnumerable<bool>>>());
-        // var transposedBoolMatrix = Transpose(enumerable);
-        // Assert.That(transposedBoolMatrix);
-        throw new NotImplementedException();
+        Assert.That(height, Is.EqualTo(12));
+        Assert.That(lifeSupport, Is.EqualTo(1));
     }
+
+    private int getrating(bool[,] arrayMatrix, out int height, Func<int, float, bool> func )
+    {
+        var width = arrayMatrix.GetLength(1);
+        height = arrayMatrix.GetLength(0);
+
+        var validOxygenNumbers = Enumerable.Repeat(true, height).ToArray();
+
+        for (var i = 0; i < width; i++)
+        {
+            var validRows = GetColumn(arrayMatrix, i).Select((bit, i1) => (bit, isvalid: validOxygenNumbers[i1]))
+                .Where(row => row.isvalid);
+            var validRowCount = validRows.Count(row => row.bit);
+            var totalRowCount = validOxygenNumbers.Count(b => b);
+            var dominantBit =func(validRowCount,(float)totalRowCount / 2) ;
+
+
+            for (var j = 0; j < height; j++)
+            {
+                if (!validOxygenNumbers[j]) continue;
+                if (arrayMatrix[j, i] != dominantBit) validOxygenNumbers[j] = false;
+            }
+
+            // print the remaining numbers
+            validOxygenNumbers.Select((isvalid, i) => (isvalid, GetRow(arrayMatrix, i))).Where(valid => valid.isvalid)
+                .Select(number => number.Item2).Select(bools => bools.Select(b => b ? "1" : "0").ToString("")).Print();
+
+            if (validOxygenNumbers.Count(b => b) == 1) break;
+
+            if (i == width - 1)
+            {
+                throw new Exception("reached end of loop through width");
+            }
+        }
+
+        var indexofoxygengenerator = Array.FindIndex(validOxygenNumbers, b=>b);
+        Assert.That(validOxygenNumbers.Count(b => b), Is.EqualTo(1));
+        var oxygengenerator = GetRow(arrayMatrix, indexofoxygengenerator);
+        var oxygengeneratorString = oxygengenerator.Select(b => b ? "1" : "0").ToString("");
+        var oxygengeneratorRating = Convert.ToInt32(oxygengeneratorString, 2); 
+            return oxygengeneratorRating;
+    }
+
+    public T[] GetColumn<T>(T[,] matrix, int columnNumber)
+    {
+        return Enumerable.Range(0, matrix.GetLength(0))
+            .Select(x => matrix[x, columnNumber])
+            .ToArray();
+    }
+
+    public T[] GetRow<T>(T[,] matrix, int rowNumber)
+    {
+        return Enumerable.Range(0, matrix.GetLength(1))
+            .Select(x => matrix[rowNumber, x])
+            .ToArray();
+    }
+
+    // https://stackoverflow.com/a/26291720/5936629
+    static T[,] To2D<T>(T[][] source)
+    {
+        try
+        {
+            int FirstDim = source.Length;
+            int SecondDim = source.GroupBy(row => row.Length).Single().Key; // throws InvalidOperationException if source is not rectangular
+
+            var result = new T[FirstDim, SecondDim];
+            for (int i = 0; i < FirstDim; ++i)
+            for (int j = 0; j < SecondDim; ++j)
+                result[i, j] = source[i][j];
+
+            return result;
+        }
+        catch (InvalidOperationException)
+        {
+            throw new InvalidOperationException("The given jagged array is not rectangular.");
+        } 
+    }
+
 
     [Test]
     public void TestTranspose()
