@@ -44,7 +44,7 @@ public class Day04 : DayBase
     {
         var input = TestInput;
         
-        var score = CalculateScore(input, out var winningBoard, out var winningNumber);
+        var score = CalculateScore(input, out var winningBoard, out var winningNumber, true);
         
         Assert.That(winningNumber, Is.EqualTo(24));
         Assert.That(score, Is.EqualTo(4512));
@@ -183,16 +183,19 @@ public class Day04 : DayBase
         
         Assert.That(score, Is.EqualTo(32844));
     }
-
+[Test]
     public override void TestPart2()
     {
-        TestInput.Split(NewLine);
-        throw new NotImplementedException();
+        var score = CalculateScore(TestInput, out _, out _, false);
+        
+        Assert.That(score, Is.EqualTo(1924));
     }
 
+    [Test]
     public override void RunPart2OnRealInput()
     {
-        GetInputForDay(this).Split(NewLine);
-        throw new NotImplementedException();
+        var score = CalculateScore(GetInputForDay(this), out _, out _, false);
+        
+        Assert.That(score, Is.LessThan(18850));
     }
 }
