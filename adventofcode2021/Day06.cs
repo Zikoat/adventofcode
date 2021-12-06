@@ -12,19 +12,18 @@ public class Day06 : DayBase
     public override void TestPart1()
     {
         var fishes = ParseInput(TestInput);
-        SimulateFishes(fishes, 18);
-
-        Assert.That(fishes.ToString(","), Is.EqualTo("6,0,6,4,5,6,0,1,1,2,6,0,1,1,1,2,2,3,3,4,6,7,8,8,8,8"));
-        Assert.That(fishes.Count, Is.EqualTo(26));
+        var fishesCount = SimulateFishes(fishes, 18);
+        
+        Assert.That(fishesCount, Is.EqualTo(26));
     }
     
     [Test]
     public void TestPart180Steps()
     {
         var fishes = ParseInput(TestInput);
-        SimulateFishes(fishes, 80);
+        var fishesCount = SimulateFishes(fishes, 80);
 
-        Assert.That(fishes.Count, Is.EqualTo(5934));
+        Assert.That(fishesCount, Is.EqualTo(5934));
     }
 
     private List<int> ParseInput(string input)
@@ -32,7 +31,7 @@ public class Day06 : DayBase
         return input.Split(",").Select(n=>Convert.ToInt32(n)).ToList();
     }
 
-    private static List<int> SimulateFishes(List<int> fishes, int steps)
+    private static int SimulateFishes(List<int> fishes, int steps)
     {
         for (int i = 0; i < steps; i++)
         {
@@ -53,7 +52,7 @@ public class Day06 : DayBase
             fishes.Print();
         }
 
-        return fishes;
+        return fishes.Count;
     }
 
     [Test]
@@ -61,19 +60,20 @@ public class Day06 : DayBase
     {
         var endingFishes = SimulateFishes(ParseInput(GetInputForDay(this)), 80);
 
-        Assert.That(endingFishes.Count, Is.EqualTo(350605));
+        Assert.That(endingFishes, Is.EqualTo(350605));
     }
 
     [Test]
     public override void TestPart2()
     {
         var fishes = ParseInput(TestInput);
-        SimulateFishes(fishes, 256);
+        
+        var fishesCount = SimulateFishes(fishes, 80);
 
-        Assert.That(fishes.Count, Is.EqualTo(1));
+        Assert.That(fishesCount, Is.EqualTo(1));
     }
 
-    [Test]
+    // [Test]
     public override void RunPart2OnRealInput()
     {
         GetInputForDay(this).Split(NewLine);
