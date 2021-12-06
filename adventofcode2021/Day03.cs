@@ -213,6 +213,7 @@ Assert.Multiple(()=>
     public override void RunPart2OnRealInput()
     {
         var lifeSupport = GetLifeSupportRating(out var _, out var _, GetInputForDay(this));
+        
         Assert.That(lifeSupport, Is.EqualTo(4790390));
     }
 }

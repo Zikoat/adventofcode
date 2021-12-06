@@ -31,6 +31,7 @@ public class Day04 : DayBase
     {
         public int[,] board { get; }
         public bool[,] marks { get; }
+        public int? winningNumber { get; set; }
 
         public ParsedBoard(int[,] board, bool[,] marks)
         {
@@ -50,7 +51,7 @@ public class Day04 : DayBase
         Assert.That(score, Is.EqualTo(4512));
     }
 
-    private int CalculateScore(string input, out ParsedBoard winningBoard, out int winningNumber, bool shouldWin)
+    private int CalculateScore(string input, out ParsedBoard winningBoard, out int winningNumber, bool getWinning)
     {
         var parts = input.Split(NewLine + NewLine);
         var numbers = parts.First().Split(",").Select(n => Convert.ToInt32(n)).ToList();
@@ -80,9 +81,11 @@ public class Day04 : DayBase
         Assert.That(parsedBoards.First().marks.Rank, Is.EqualTo(2));
         // Assert.That(parsedBoards.First().board[3, 3], Is.EqualTo(18));
 
-        winningBoard = MarkNumbersAndReturnWinningBoard(numbers, parsedBoards, out winningNumber, shouldWin);
+        var boardScores = MarkNumbersAndReturnWinningBoard(numbers, parsedBoards);
 
-        "winning board:".Print();
+        winningBoard = getWinning ? boardScores.First() : boardScores.Last();
+        winningNumber = winningBoard.winningNumber ?? throw new Exception("Shit hits the fan yo.");        
+            "winning board:".Print();
         PrintMatrix(winningBoard.board);
         PrintMatrix(winningBoard.marks);
 
@@ -101,25 +104,30 @@ public class Day04 : DayBase
         return unmarkedPositions.Sum() * number;
     }
 
-    private static ParsedBoard MarkNumbersAndReturnWinningBoard(List<int> numbers, List<ParsedBoard> parsedBoards,
-        out int winningNumber, bool shouldWin)
+    private static List<ParsedBoard> MarkNumbersAndReturnWinningBoard(List<int> numbers, List<ParsedBoard> parsedBoards)
     {
-        ParsedBoard winningBoard = null;
+        var winningBoards = new List<ParsedBoard>();
         foreach (var currentNumber in numbers)
         {
             foreach (var board in parsedBoards)
             {
+                if (winningBoards.Contains(board))
+                {
+                  continue;  
+                }
+
                 (int, int)? numberPosition = FindNumberInBoard(board.board, currentNumber);
                 if (numberPosition.HasValue)
                     board.marks[numberPosition.Value.Item1, numberPosition.Value.Item2] = true;
-                if (HasWon(board) == shouldWin)
+                if (HasWon(board))
                 {
-                    winningNumber = currentNumber;
-                    return board;
+                    board.winningNumber = currentNumber;
+winningBoards.Add(board);
                 }
             }
         }
-        
+
+        return winningBoards;
         throw new Exception("there is no winning board");
     }
 
@@ -197,5 +205,6 @@ public class Day04 : DayBase
         var score = CalculateScore(GetInputForDay(this), out _, out _, false);
         
         Assert.That(score, Is.LessThan(18850));
+        Assert.That(score, Is.EqualTo(4920));
     }
 }
