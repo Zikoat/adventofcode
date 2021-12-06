@@ -34,26 +34,28 @@ public class Day06 : DayBase
 
     private static List<int> SimulateFishes(List<int> fishes, int steps)
     {
-        for (int i = 0; i < steps; i++)
-        {
-            var fishesCount = fishes.Count;
-            for (int j = 0; j < fishesCount; j++)
-            {
-                if (fishes[j] == 0)
-                {
-                    fishes[j] = 6;
-                    fishes.Add(8);
-                }
-                else
-                {
-                    fishes[j]--;
-                }
-            }
+        var fishesGroups = new int[9];
 
-            fishes.Print();
+        for (int i = 0; i < 8; i++)
+        {
+            fishesGroups[i] += fishes.Count(fishAge => fishAge == i);
         }
 
-        return fishes;
+        for (int i = 0; i < steps; i++)
+        {
+            var nextGroup = new int[9];
+            for (int j = 1; j < 8; j++)
+            {
+                nextGroup[j] = fishesGroups[j+1];
+            }
+
+            nextGroup[9] = fishesGroups[0];
+            nextGroup[6] = fishesGroups[0];
+            fishesGroups = nextGroup;
+        }
+        
+
+        return fishes.Sum();
     }
 
     [Test]
@@ -68,7 +70,7 @@ public class Day06 : DayBase
     public override void TestPart2()
     {
         var fishes = ParseInput(TestInput);
-        SimulateFishes(fishes, 256);
+        SimulateFishes(fishes, 18);
 
         Assert.That(fishes.Count, Is.EqualTo(1));
     }
