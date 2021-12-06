@@ -8,7 +8,6 @@ namespace adventofcode2021;
 
 public class Day05 : DayBase
 {
-    private  bool _allowDiagonal;
 
     public override string TestInput => @"0,9 -> 5,9
 8,0 -> 0,8
@@ -21,6 +20,9 @@ public class Day05 : DayBase
 0,0 -> 8,8
 5,5 -> 8,2";
 
+    public static bool AllowDiagonal { get; set; }
+
+    
     [Test]
     public override void TestPart1()
     {
@@ -31,8 +33,8 @@ public class Day05 : DayBase
 
     private  int GetOverlappingCount(string input, bool allowDiagonal)
     {
-
-         _allowDiagonal = allowDiagonal; var lines = input.Split(NewLine).Select(lineString =>
+        AllowDiagonal = allowDiagonal;
+         var lines = input.Split(NewLine).Select(lineString =>
         {
             var points = lineString.Split(" -> ");
             var startpoint = points.First().Split(",").Select(n => Convert.ToInt32(n)).ToArray();
@@ -136,6 +138,38 @@ public class Day05 : DayBase
         
         Assert.That(positions, Is.EqualTo(new []{(1,0),(0,0)}));
     }
+
+    [Test]
+    public void TestDiagonalLine()
+    {
+        var line = new Line(1, 0, 0, 1);
+        var positions = new List<(int x, int y)>();
+        AllowDiagonal = true;
+        
+        foreach (var position in line)
+        {
+            positions.Add(position);
+        }
+        
+        Assert.That(positions, Is.EqualTo(new []{(1,0),(0,1)}));
+
+    }
+    
+    [Test]
+    public void TestDiagonalLineNowAllowed()
+    {
+        var line = new Line(1, 0, 0, 1);
+        var positions = new List<(int x, int y)>();
+        AllowDiagonal = false;
+        
+        foreach (var position in line)
+        {
+            positions.Add(position);
+        }
+        
+        Assert.That(positions, Is.EqualTo(Array.Empty<(int x, int y)>()));
+
+    }
     
     [Test]
     public override void RunPart1OnRealInput()
@@ -145,17 +179,18 @@ public class Day05 : DayBase
         Assert.That(overlappingCount, Is.EqualTo(6397));
     }
 
-    // [Test]
+    [Test]
     public override void TestPart2()
     {
-GetOverlappingCount(GetInputForDay()    throw new NotImplementedException();
+        var overlappingCount = GetOverlappingCount(TestInput,true);
+        Assert.That(overlappingCount, Is.EqualTo(12));
     }
 
-    // [Test]
+    [Test]
     public override void RunPart2OnRealInput()
     {
-        GetInputForDay(this).Split(NewLine);
-        throw new NotImplementedException();
+        var overlappingCount = GetOverlappingCount(GetInputForDay(this),true);
+        Assert.That(overlappingCount, Is.EqualTo(22335));
     }
 }
 
@@ -224,7 +259,7 @@ public class LineEnum : IEnumerator
     {
         Console.Out.WriteLine($"now is ({_position.x},{_position.y}), moving to next");
 
-        if (_line.IsDiagonal()) return false;
+        if (_line.IsDiagonal() && !Day05.AllowDiagonal) return false;
 
         if (!_firstHasBeenGotten)
         {
@@ -245,7 +280,7 @@ public class LineEnum : IEnumerator
 
         }
         
-        if ((!_lastPointHasBeenReached && _position == (_line.x2, _line.y2)))
+        if (!_lastPointHasBeenReached && _position == (_line.x2, _line.y2))
         {
             _lastPointHasBeenReached = true;
             return true;
