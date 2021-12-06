@@ -11,8 +11,7 @@ public class Day06 : DayBase
     [Test]
     public override void TestPart1()
     {
-        var fishes = ParseInput(TestInput);
-        var fishesCount = SimulateFishes(fishes, 18);
+        var fishesCount = SimulateFishes(TestInput, 18);
         
         Assert.That(fishesCount, Is.EqualTo(26));
     }
@@ -20,45 +19,52 @@ public class Day06 : DayBase
     [Test]
     public void TestPart180Steps()
     {
-        var fishes = ParseInput(TestInput);
-        var fishesCount = SimulateFishes(fishes, 80);
+        var fishesCount = SimulateFishes(TestInput, 80);
 
         Assert.That(fishesCount, Is.EqualTo(5934));
     }
 
-    private List<int> ParseInput(string input)
+    private static List<long> ParseInput(string input)
     {
-        return input.Split(",").Select(n=>Convert.ToInt32(n)).ToList();
+        return input.Split(",").Select(n=>Convert.ToInt64(n)).ToList();
     }
 
-    private static int SimulateFishes(List<int> fishes, int steps)
+    private static long SimulateFishes(string fishesString, long steps)
     {
-        for (int i = 0; i < steps; i++)
-        {
-            var fishesCount = fishes.Count;
-            for (int j = 0; j < fishesCount; j++)
-            {
-                if (fishes[j] == 0)
-                {
-                    fishes[j] = 6;
-                    fishes.Add(8);
-                }
-                else
-                {
-                    fishes[j]--;
-                }
-            }
+        return SimulateFishes(ParseInput(fishesString), steps);
+    }
 
-            fishes.Print();
+    private static long SimulateFishes(List<long> fishes, long steps)
+    {
+        var fishesGroups = new long[9];
+        
+        for (long i = 0; i < 8; i++)
+        {
+            fishesGroups[i] = fishes.Count(fishAge => fishAge == i);
         }
 
-        return fishes.Count;
-    }
+        for (long i = 0; i < steps; i++)
+        {
+            var nextGroup = new long[9];
+            
+            for (long j = 0; j <= 7; j++)
+            {
+                nextGroup[j] = fishesGroups[j+1];
+            }
 
+            nextGroup[6] += fishesGroups[0];
+            nextGroup[8] += fishesGroups[0];
+            
+            fishesGroups = nextGroup;
+        }
+
+        return fishesGroups.Sum();
+    }
+    
     [Test]
     public override void RunPart1OnRealInput()
     {
-        var endingFishes = SimulateFishes(ParseInput(GetInputForDay(this)), 80);
+        var endingFishes = SimulateFishes(GetInputForDay(this), 80);
 
         Assert.That(endingFishes, Is.EqualTo(350605));
     }
@@ -66,17 +72,15 @@ public class Day06 : DayBase
     [Test]
     public override void TestPart2()
     {
-        var fishes = ParseInput(TestInput);
-        
-        var fishesCount = SimulateFishes(fishes, 80);
+        var fishesCount = SimulateFishes(TestInput, 256);
 
-        Assert.That(fishesCount, Is.EqualTo(1));
+        Assert.That(fishesCount, Is.EqualTo(26984457539));
     }
 
-    // [Test]
+    [Test]
     public override void RunPart2OnRealInput()
     {
-        GetInputForDay(this).Split(NewLine);
-        throw new NotImplementedException();
+        var fishesCount = SimulateFishes(GetInputForDay(this), 256);
+        Assert.That(fishesCount, Is.EqualTo(1592778185024));
     }
 }
