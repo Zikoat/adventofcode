@@ -131,7 +131,7 @@ winningBoards.Add(board);
         throw new Exception("there is no winning board");
     }
 
-    private void PrintMatrix<T>(T[,] matrix)
+    public static void PrintMatrix<T>(T[,] matrix)
     {
         // https://stackoverflow.com/a/12827010/5936629
         var rowLength = matrix.GetLength(0);
