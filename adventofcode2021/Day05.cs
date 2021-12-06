@@ -1,6 +1,4 @@
-﻿
-   
-using System.Collections;
+﻿using System.Collections;
 using NUnit.Framework;
 using static System.Environment;
 
@@ -8,7 +6,6 @@ namespace adventofcode2021;
 
 public class Day05 : DayBase
 {
-
     public override string TestInput => @"0,9 -> 5,9
 8,0 -> 0,8
 9,4 -> 3,4
@@ -22,7 +19,7 @@ public class Day05 : DayBase
 
     public static bool AllowDiagonal { get; set; }
 
-    
+
     [Test]
     public override void TestPart1()
     {
@@ -31,10 +28,10 @@ public class Day05 : DayBase
         Assert.That(overlappingCount, Is.EqualTo(5));
     }
 
-    private  int GetOverlappingCount(string input, bool allowDiagonal)
+    private int GetOverlappingCount(string input, bool allowDiagonal)
     {
         AllowDiagonal = allowDiagonal;
-         var lines = input.Split(NewLine).Select(lineString =>
+        var lines = input.Split(NewLine).Select(lineString =>
         {
             var points = lineString.Split(" -> ");
             var startpoint = points.First().Split(",").Select(n => Convert.ToInt32(n)).ToArray();
@@ -72,7 +69,7 @@ public class Day05 : DayBase
     {
         var line = new Line(0, 0, 0, 0);
         var amountCalled = 0;
-        
+
         foreach (var pixel in line)
         {
             Assert.That(pixel.x, Is.EqualTo(0));
@@ -88,55 +85,55 @@ public class Day05 : DayBase
     {
         var line = new Line(0, 0, 1, 0);
         var positions = new List<(int x, int y)>();
-        
+
         foreach (var position in line)
         {
-            positions.Add(position);    
+            positions.Add(position);
         }
-        
+
         Assert.That(positions, Is.EqualTo((new[] { (0, 0), (1, 0) }).ToList()));
     }
-    
+
     [Test]
     public void Test3PixelLine()
     {
         var line = new Line(0, 0, 2, 0);
         var positions = new List<(int x, int y)>();
-        
+
         foreach (var position in line)
         {
-            positions.Add(position);    
+            positions.Add(position);
         }
-        
-        Assert.That(positions, Is.EqualTo(new []{(0,0),(1,0),(2,0)}));
+
+        Assert.That(positions, Is.EqualTo(new[] { (0, 0), (1, 0), (2, 0) }));
     }
-    
+
     [Test]
     public void TestVerticalLine()
     {
         var line = new Line(0, 0, 0, 1);
         var positions = new List<(int x, int y)>();
-        
+
         foreach (var position in line)
         {
-            positions.Add(position);    
+            positions.Add(position);
         }
-        
-        Assert.That(positions, Is.EqualTo(new []{(0,0),(0,1)}));
+
+        Assert.That(positions, Is.EqualTo(new[] { (0, 0), (0, 1) }));
     }
-    
+
     [Test]
     public void TestBackwardsLine()
     {
         var line = new Line(1, 0, 0, 0);
         var positions = new List<(int x, int y)>();
-        
+
         foreach (var position in line)
         {
-            positions.Add(position);    
+            positions.Add(position);
         }
-        
-        Assert.That(positions, Is.EqualTo(new []{(1,0),(0,0)}));
+
+        Assert.That(positions, Is.EqualTo(new[] { (1, 0), (0, 0) }));
     }
 
     [Test]
@@ -145,51 +142,49 @@ public class Day05 : DayBase
         var line = new Line(1, 0, 0, 1);
         var positions = new List<(int x, int y)>();
         AllowDiagonal = true;
-        
+
         foreach (var position in line)
         {
             positions.Add(position);
         }
-        
-        Assert.That(positions, Is.EqualTo(new []{(1,0),(0,1)}));
 
+        Assert.That(positions, Is.EqualTo(new[] { (1, 0), (0, 1) }));
     }
-    
+
     [Test]
     public void TestDiagonalLineNowAllowed()
     {
         var line = new Line(1, 0, 0, 1);
         var positions = new List<(int x, int y)>();
         AllowDiagonal = false;
-        
+
         foreach (var position in line)
         {
             positions.Add(position);
         }
-        
-        Assert.That(positions, Is.EqualTo(Array.Empty<(int x, int y)>()));
 
+        Assert.That(positions, Is.EqualTo(Array.Empty<(int x, int y)>()));
     }
-    
+
     [Test]
     public override void RunPart1OnRealInput()
     {
         var overlappingCount = GetOverlappingCount(GetInputForDay(this), false);
-        
+
         Assert.That(overlappingCount, Is.EqualTo(6397));
     }
 
     [Test]
     public override void TestPart2()
     {
-        var overlappingCount = GetOverlappingCount(TestInput,true);
+        var overlappingCount = GetOverlappingCount(TestInput, true);
         Assert.That(overlappingCount, Is.EqualTo(12));
     }
 
     [Test]
     public override void RunPart2OnRealInput()
     {
-        var overlappingCount = GetOverlappingCount(GetInputForDay(this),true);
+        var overlappingCount = GetOverlappingCount(GetInputForDay(this), true);
         Assert.That(overlappingCount, Is.EqualTo(22335));
     }
 }
@@ -209,7 +204,6 @@ public class Line : IEnumerable
         this.y2 = y2;
     }
 
-// Implementation for the GetEnumerator method.
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
@@ -222,34 +216,30 @@ public class Line : IEnumerable
 
     public bool IsDiagonal()
     {
-        return Math.Abs(x2 - x1) != 0 && Math.Abs(y2-y1) != 0;
+        return Math.Abs(x2 - x1) != 0 && Math.Abs(y2 - y1) != 0;
     }
 }
 
-// When you implement IEnumerable, you must also implement IEnumerator.
 public class LineEnum : IEnumerator
 {
     private readonly Line _line;
     private readonly (int x, int y) _direction;
-    // Enumerators are positioned before the first element
-    // until the first MoveNext() call.
     private (int x, int y) _position;
     private bool _firstHasBeenGotten;
     private int _safeSwitch;
     private bool _lastPointHasBeenReached;
-
 
     public LineEnum(Line line)
     {
         _line = line;
         _lastPointHasBeenReached = false;
         _position = (line.x1, line.y1);
-        _direction = (Math.Sign(line.x2-line.x1), Math.Sign( line.y2-line.y1));
+        _direction = (Math.Sign(line.x2 - line.x1), Math.Sign(line.y2 - line.y1));
         _firstHasBeenGotten = false;
         if (
-            _direction.x != 0 
-            && _direction.y != 0 
-            &&  Math.Abs(line.x2 - line.x1)-Math.Abs(line.y2-line.y1)  != 0)
+            _direction.x != 0
+            && _direction.y != 0
+            && Math.Abs(line.x2 - line.x1) - Math.Abs(line.y2 - line.y1) != 0)
             throw new Exception($"line is not straight or diagonal: {line}");
 
         _safeSwitch = 0;
@@ -266,10 +256,10 @@ public class LineEnum : IEnumerator
             _firstHasBeenGotten = true;
             return true;
         }
-        
+
         _position.x += _direction.x;
         _position.y += _direction.y;
-        
+
         if (_safeSwitch > 1000) throw new Exception("Safeswitch activated. Line is longer than 1000 pixels");
         _safeSwitch++;
 
@@ -277,15 +267,14 @@ public class LineEnum : IEnumerator
         {
             _lastPointHasBeenReached = true;
             return false;
-
         }
-        
+
         if (!_lastPointHasBeenReached && _position == (_line.x2, _line.y2))
         {
             _lastPointHasBeenReached = true;
             return true;
         }
-        
+
         return !_lastPointHasBeenReached;
     }
 
@@ -293,7 +282,7 @@ public class LineEnum : IEnumerator
     {
         _position = (_line.x1, _line.x2);
     }
-    
+
     object IEnumerator.Current => Current;
     public (int x, int y) Current => _position;
 }
