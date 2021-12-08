@@ -7,17 +7,9 @@ public abstract class DayBase
 {
     public abstract string TestInput { get; }
 
-    private static string GetInputForDay(int dayNumber)
-    {
-        var directory = Directory.GetParent(Environment.CurrentDirectory)?.Parent?.Parent?.FullName ??
-                        throw new InvalidOperationException();
-        return File.ReadAllText(Path.Join(directory, $"Day{dayNumber:00}Input.txt"));
-    }
-
     protected static string GetInputForDay(DayBase day)
     {
         var dayNumber = Convert.ToInt32(day.GetType().Name.Replace("Day", ""));
-        if (false) return GetInputForDay(dayNumber);
         var fileName = $"Day{dayNumber:00}Input.txt";
         var assembly = Assembly.GetExecutingAssembly();
         var moduleName = Regex.Replace(assembly.ManifestModule.Name, @"\.(exe|dll)$", string.Empty, RegexOptions.IgnoreCase);
