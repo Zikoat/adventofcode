@@ -1,5 +1,4 @@
-﻿
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using NUnit.Framework;
 using static System.Environment;
 
@@ -122,7 +121,7 @@ public class Day04 : DayBase
                 if (HasWon(board))
                 {
                     board.winningNumber = currentNumber;
-winningBoards.Add(board);
+                    winningBoards.Add(board);
                 }
             }
         }

@@ -147,7 +147,7 @@ public class Day05 : DayBase
     }
 
     [Test]
-    public void TestDiagonalLineNowAllowed()
+    public void TestDiagonalLineNotAllowed()
     {
         var line = new Line(1, 0, 0, 1, false);
 

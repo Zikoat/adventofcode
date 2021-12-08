@@ -1,9 +1,6 @@
-﻿
-using System.ComponentModel.Design.Serialization;
-using System.Numerics;
+﻿using System.Numerics;
 using Combinatorics.Collections;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 using static System.Environment;
 
 namespace adventofcode2021;

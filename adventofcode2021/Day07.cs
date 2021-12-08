@@ -1,6 +1,4 @@
-﻿
-using NUnit.Framework;
-using static System.Environment;
+﻿using NUnit.Framework;
 
 namespace adventofcode2021;
 

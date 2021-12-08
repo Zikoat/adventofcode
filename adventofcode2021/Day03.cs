@@ -1,7 +1,4 @@
-﻿
-using NUnit.Framework;
-using NUnit.Framework.Constraints;
-using NUnit.Framework.Internal;
+﻿using NUnit.Framework;
 using static System.Environment;
 
 namespace adventofcode2021;
