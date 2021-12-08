@@ -56,40 +56,12 @@ public class Day03 : DayBase
         return testInput.Split(NewLine).Select(s => s.Select(c => c=='1').ToList()).ToList();
     }
 
-    private static int Strings(string testInput, out string[] shit, out string gammarateString, out int stringLength,
-        out int gammarate, out string epsilonratestring, out int epsilonrate)
-    {
-        shit = testInput.Split(NewLine);
-        gammarateString = "";
-        stringLength = shit.First().Length;
-        for (var i = 0; i < stringLength; i++)
-        {
-            var currentBitsString = shit.Select(shitstring => shitstring[i]);
-            var currentBitsStringOnesCount = currentBitsString.Count(bitstring => bitstring == '1');
-            var currentBit = currentBitsStringOnesCount > shit.Length / 2 ? "1" : "0";
-            gammarateString += currentBit;
-        }
-
-        gammarate = Convert.ToInt32(gammarateString, 2);
-        epsilonratestring = gammarateString.Select(c => c == '1' ? "0" : "1").ToString("");
-        epsilonratestring.Print(",");
-        epsilonrate = Convert.ToInt32(epsilonratestring, 2);
-        var powerconsumption = epsilonrate * gammarate;
-        return powerconsumption;
-    }
     [Test, Explicit("Slow")]
     public override void RunPart1OnRealInput()
     {
-        var powerconsumption = CalculatePowerConsumption(GetInputForDay(this), out var shit, out var gammarateString, out var gammarate, out var epsilonratestring, out var epsilonrate);
-Assert.Multiple(()=>
-{
-    Assert.That(powerconsumption, Is.EqualTo(841526));
-    Assert.That(gammarateString, Is.EqualTo("000011011001"));
-    Assert.That(gammarate, Is.EqualTo(217));
-    Assert.That(epsilonratestring, Is.EqualTo(   "111100100110"));
-    Assert.That(epsilonrate, Is.EqualTo(3878));
-
-});
+        var powerconsumption = CalculatePowerConsumption(GetInputForDay(this), out var shit, out var gammarateString,
+            out var gammarate, out var epsilonratestring, out var epsilonrate);
+        Assert.That(powerconsumption, Is.EqualTo(841526));
     }
 
     [Test]
@@ -111,6 +83,14 @@ Assert.Multiple(()=>
         co2GeneratorRating = GetRating(arrayMatrix, out _, (validrowcount, halfvalidrow) => validrowcount < halfvalidrow);
         var lifeSupport = co2GeneratorRating * oxygengeneratorRating;
         return lifeSupport;
+    }
+
+    [Test]
+    public void TestTo2D()
+    {
+        var nonRectangularArray = new[] { new[] { 1, 1 }, new[] { 1 } };
+        
+        Assert.Throws(Is.TypeOf<InvalidOperationException>(), () => To2D(nonRectangularArray));
     }
 
     private int GetRating(bool[,] arrayMatrix, out int height, Func<int, float, bool> func )
