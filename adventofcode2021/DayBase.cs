@@ -1,4 +1,7 @@
-﻿namespace adventofcode2021;
+﻿using System.Reflection;
+using System.Text.RegularExpressions;
+
+namespace adventofcode2021;
 
 public abstract class DayBase
 {
@@ -14,7 +17,14 @@ public abstract class DayBase
     protected static string GetInputForDay(DayBase day)
     {
         var dayNumber = Convert.ToInt32(day.GetType().Name.Replace("Day", ""));
-        return GetInputForDay(dayNumber);
+        if (false) return GetInputForDay(dayNumber);
+        var fileName = $"Day{dayNumber:00}Input.txt";
+        var assembly = Assembly.GetExecutingAssembly();
+        var moduleName = Regex.Replace(assembly.ManifestModule.Name, @"\.(exe|dll)$", string.Empty, RegexOptions.IgnoreCase);
+        var resourceName = $"{moduleName}.{fileName}";
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+        using var reader = new StreamReader(stream ?? throw new InvalidOperationException());
+        return reader.ReadToEnd();
     }
 
     public abstract void TestPart1();

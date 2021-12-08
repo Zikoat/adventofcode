@@ -16,4 +16,25 @@
         <PackageReference Include="coverlet.collector" Version="3.1.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Inputs\Day01Input.txt" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Day07Input.txt" />
+      <EmbeddedResource Include="Day07Input.txt" />
+      <None Remove="Day06Input.txt" />
+      <EmbeddedResource Include="Day06Input.txt" />
+      <None Remove="Day05Input.txt" />
+      <EmbeddedResource Include="Day05Input.txt" />
+      <None Remove="Day04Input.txt" />
+      <EmbeddedResource Include="Day04Input.txt" />
+      <None Remove="Day03Input.txt" />
+      <EmbeddedResource Include="Day03Input.txt" />
+      <None Remove="Day02Input.txt" />
+      <EmbeddedResource Include="Day02Input.txt" />
+      <None Remove="Day01Input.txt" />
+      <EmbeddedResource Include="Day01Input.txt" />
+    </ItemGroup>
+
 </Project>
