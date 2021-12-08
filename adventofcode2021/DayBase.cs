@@ -15,7 +15,7 @@ public abstract class DayBase
         var moduleName = Regex.Replace(assembly.ManifestModule.Name, @"\.(exe|dll)$", string.Empty, RegexOptions.IgnoreCase);
         var resourceName = $"{moduleName}.{fileName}";
         using var stream = assembly.GetManifestResourceStream(resourceName);
-        using var reader = new StreamReader(stream ?? throw new InvalidOperationException());
+        using var reader = new StreamReader(stream ?? throw new InvalidOperationException($"Could not read file {fileName}"));
         return reader.ReadToEnd();
     }
 
