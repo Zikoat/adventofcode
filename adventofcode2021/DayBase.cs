@@ -1,8 +1,9 @@
 ﻿using System.Reflection;
 using System.Text.RegularExpressions;
+using NUnit.Framework;
 
 namespace adventofcode2021;
-
+[Parallelizable(ParallelScope.All)]
 public abstract class DayBase
 {
     public abstract string TestInput { get; }
