@@ -36,8 +36,8 @@ public class Day05 : DayBase
             return parsedLine;
         }).ToList();
 
-        var maxx = lines.Max(line => Math.Max(line.x1, line.x2));
-        var maxy = lines.Max(line => Math.Max(line.y1, line.y2));
+        var maxx = lines.Max(line => Math.Max(line.X1, line.X2));
+        var maxy = lines.Max(line => Math.Max(line.Y1, line.Y2));
 
         var oceanfloor = new int[maxx + 1, maxy + 1];
 
@@ -179,18 +179,18 @@ public class Day05 : DayBase
 
 public class Line : IEnumerable
 {
-    public int x1 { get; }
-    public int x2 { get; }
-    public int y1 { get; }
-    public int y2 { get; }
-    public bool AllowDiagonal { get; }
+    public int X1 { get; }
+    public int X2 { get; }
+    public int Y1 { get; }
+    public int Y2 { get; }
+    private bool AllowDiagonal { get; }
 
     public Line(int x1, int y1, int x2, int y2, bool allowDiagonal)
     {
-        this.x1 = x1;
-        this.y1 = y1;
-        this.x2 = x2;
-        this.y2 = y2;
+        X1 = x1;
+        Y1 = y1;
+        X2 = x2;
+        Y2 = y2;
         AllowDiagonal = allowDiagonal;
     }
 
@@ -206,7 +206,7 @@ public class Line : IEnumerable
 
     public bool IsDiagonal()
     {
-        return Math.Abs(x2 - x1) != 0 && Math.Abs(y2 - y1) != 0;
+        return Math.Abs(X2 - X1) != 0 && Math.Abs(Y2 - Y1) != 0;
     }
 }
 
@@ -225,13 +225,13 @@ public class LineEnum : IEnumerator
         _line = line;
         _allowDiagonal = allowDiagonal;
         _lastPointHasBeenReached = false;
-        _position = (line.x1, line.y1);
-        _direction = (Math.Sign(line.x2 - line.x1), Math.Sign(line.y2 - line.y1));
+        _position = (line.X1, line.Y1);
+        _direction = (Math.Sign(line.X2 - line.X1), Math.Sign(line.Y2 - line.Y1));
         _firstHasBeenGotten = false;
         if (
             _direction.x != 0
             && _direction.y != 0
-            && Math.Abs(line.x2 - line.x1) - Math.Abs(line.y2 - line.y1) != 0)
+            && Math.Abs(line.X2 - line.X1) - Math.Abs(line.Y2 - line.Y1) != 0)
             throw new Exception($"line is not straight or diagonal: {line}");
 
         _safeSwitch = 0;
@@ -255,13 +255,13 @@ public class LineEnum : IEnumerator
         if (_safeSwitch > 1000) throw new Exception("Safeswitch activated. Line is longer than 1000 pixels");
         _safeSwitch++;
 
-        if (!_lastPointHasBeenReached && (_line.x1 == _line.x2 && _line.y1 == _line.y2))
+        if (!_lastPointHasBeenReached && (_line.X1 == _line.X2 && _line.Y1 == _line.Y2))
         {
             _lastPointHasBeenReached = true;
             return false;
         }
 
-        if (!_lastPointHasBeenReached && _position == (_line.x2, _line.y2))
+        if (!_lastPointHasBeenReached && _position == (_line.X2, _line.Y2))
         {
             _lastPointHasBeenReached = true;
             return true;
@@ -272,7 +272,7 @@ public class LineEnum : IEnumerator
 
     public void Reset()
     {
-        _position = (_line.x1, _line.x2);
+        _position = (_line.X1, _line.X2);
     }
 
     object IEnumerator.Current => Current;

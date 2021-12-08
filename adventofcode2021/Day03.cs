@@ -56,8 +56,8 @@ public class Day03 : DayBase
     [Test, Explicit("Slow")]
     public override void RunPart1OnRealInput()
     {
-        var powerconsumption = CalculatePowerConsumption(GetInputForDay(this), out var shit, out var gammarateString,
-            out var gammarate, out var epsilonratestring, out var epsilonrate);
+        var powerconsumption = CalculatePowerConsumption(GetInputForDay(this), out _, out _,
+            out _, out _, out _);
         Assert.That(powerconsumption, Is.EqualTo(841526));
     }
 
@@ -75,9 +75,9 @@ public class Day03 : DayBase
     {
         var matrix = ParseDay3(nput);
         var arrayMatrix = To2D(matrix.Select(column => column.ToArray()).ToArray());
-        oxygengeneratorRating = GetRating(arrayMatrix, out var height,
+        oxygengeneratorRating = GetRating(arrayMatrix,
             (validrowcount, halfvalidrow) => validrowcount >= halfvalidrow);
-        co2GeneratorRating = GetRating(arrayMatrix, out _, (validrowcount, halfvalidrow) => validrowcount < halfvalidrow);
+        co2GeneratorRating = GetRating(arrayMatrix, (validrowcount, halfvalidrow) => validrowcount < halfvalidrow);
         var lifeSupport = co2GeneratorRating * oxygengeneratorRating;
         return lifeSupport;
     }
@@ -90,10 +90,10 @@ public class Day03 : DayBase
         Assert.Throws(Is.TypeOf<InvalidOperationException>(), () => To2D(nonRectangularArray));
     }
 
-    private int GetRating(bool[,] arrayMatrix, out int height, Func<int, float, bool> func )
+    private static int GetRating(bool[,] arrayMatrix, Func<int, float, bool> func)
     {
         var width = arrayMatrix.GetLength(1);
-        height = arrayMatrix.GetLength(0);
+        var height = arrayMatrix.GetLength(0);
 
         var validOxygenNumbers = Enumerable.Repeat(true, height).ToArray();
 
@@ -112,7 +112,7 @@ public class Day03 : DayBase
             }
 
             // print the remaining numbers
-            validOxygenNumbers.Select((isvalid, i) => (isvalid, GetRow(arrayMatrix, i))).Where(valid => valid.isvalid)
+            validOxygenNumbers.Select((isvalid, j) => (isvalid, GetRow(arrayMatrix, j))).Where(valid => valid.isvalid)
                 .Select(number => number.Item2).Select(bools => bools.Select(b => b ? "1" : "0").ToString("")).Print();
 
             if (validOxygenNumbers.Count(b => b) == 1) break;
@@ -150,12 +150,12 @@ public class Day03 : DayBase
     {
         try
         {
-            int FirstDim = source.Length;
-            int SecondDim = source.GroupBy(row => row.Length).Single().Key; // throws InvalidOperationException if source is not rectangular
+            var firstDim = source.Length;
+            var secondDim = source.GroupBy(row => row.Length).Single().Key; // throws InvalidOperationException if source is not rectangular
 
-            var result = new T[FirstDim, SecondDim];
-            for (int i = 0; i < FirstDim; ++i)
-            for (int j = 0; j < SecondDim; ++j)
+            var result = new T[firstDim, secondDim];
+            for (var i = 0; i < firstDim; ++i)
+            for (var j = 0; j < secondDim; ++j)
                 result[i, j] = source[i][j];
 
             return result;
@@ -177,9 +177,9 @@ public class Day03 : DayBase
     private static List<List<T>> Transpose<T>(List<List<T>> matrix)
     {
         var transposedMatrix = matrix.First().Select(_ => new List<T>()).ToList();
-        for (int i = 0; i < matrix.First().Count; i++)
+        for (var i = 0; i < matrix.First().Count; i++)
         {
-            var column = matrix.Select(row=>row[i]);
+            var column = matrix.Select(row=>row[i]).ToArray();
             transposedMatrix[i].AddRange(column);
         }
         return transposedMatrix;
@@ -188,7 +188,7 @@ public class Day03 : DayBase
     [Test, Explicit("Slow")]
     public override void RunPart2OnRealInput()
     {
-        var lifeSupport = GetLifeSupportRating(out var _, out var _, GetInputForDay(this));
+        var lifeSupport = GetLifeSupportRating(out _, out _, GetInputForDay(this));
         
         Assert.That(lifeSupport, Is.EqualTo(4790390));
     }

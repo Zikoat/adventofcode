@@ -31,12 +31,11 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
     {
         var shit = ParseInput(input);
         simpleOutputsOnly =
-            shit.SelectMany(tuple => tuple.signalOutput.Where(signal => new[] { 2, 4, 3, 7 }.Contains(signal.OnSegments)))
+            shit.SelectMany(tuple => tuple.SignalOutput.Where(signal => new[] { 2, 4, 3, 7 }.Contains(signal.OnSegments)))
                 .ToArray();
         var digitCount = simpleOutputsOnly.Length;
         return digitCount;
     }
-
     
     private static readonly Dictionary<int, string> Digits = new()
     {
@@ -51,19 +50,18 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
         { 8, "abcdefg" },
         { 9, "abcdfg" },
     };
-    
+
     private static readonly string OriginalMapping = Digits[8];
 
     private class Displays
-    
     {
-        public IEnumerable<Signal> signalInput { get; }
-        public IEnumerable<Signal> signalOutput { get; }
+        private IEnumerable<Signal> SignalInput { get; }
+        public IEnumerable<Signal> SignalOutput { get; }
 
         public Displays(IEnumerable<Signal> signalInput, IEnumerable<Signal> signalOutput)
         {
-            this.signalInput = signalInput;
-            this.signalOutput = signalOutput;
+            SignalInput = signalInput;
+            SignalOutput = signalOutput;
         }
 
         public string FindWireMapping()
@@ -90,7 +88,7 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
 
         public bool IsValidMapping(IReadOnlyList<char> mapping)
         {
-            var signals = signalInput.Concat(signalOutput);
+            var signals = SignalInput.Concat(SignalOutput);
             var isValidMapping = signals.All(signal => signal.UnScrambleUsingMapping(mapping) != null);
             return isValidMapping;
         }
@@ -103,7 +101,7 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
 
     private class Signal
     {
-        public readonly char[] _chars;
+        private readonly char[] _chars;
 
         public Signal(char[] chars)
         {
@@ -111,7 +109,6 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
         }
 
         public int OnSegments => _chars.Length;
-        public int OffSegments => OriginalMapping.Length - _chars.Length;
 
         public int? UnScrambleUsingMapping(IReadOnlyList<char> mapping)
         {
@@ -152,7 +149,7 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
     [Test]
     public override void RunPart1OnRealInput()
     {
-        var digitCount = SimpleOutputsOnly(GetInputForDay(this), out var simpleOutputsOnly);
+        var digitCount = SimpleOutputsOnly(GetInputForDay(this), out _);
         Assert.That(digitCount, Is.EqualTo(449));
     }
 
@@ -177,7 +174,7 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
         // display.signalInput.Select(signal => signal + ":" + signal.UnScrambleUsingMapping(wireMapping.ToCharArray()))
             // .Print(NewLine);
         // Assert.That(wireMapping, Is.EqualTo("cfgabde"));
-        var sum = Convert.ToInt32(display.signalOutput
+        var sum = Convert.ToInt32(display.SignalOutput
             .Select(signal => signal.UnScrambleUsingMapping(wireMapping.ToCharArray()).ToString()).ToString(""));
         return sum;
     }

@@ -26,16 +26,16 @@ public class Day04 : DayBase
 22 11 13  6  5
  2  0 12  3  7";
 
-    public class ParsedBoard
+    private class ParsedBoard
     {
-        public int[,] board { get; }
-        public bool[,] marks { get; }
-        public int? winningNumber { get; set; }
+        public int[,] Board { get; }
+        public bool[,] Marks { get; }
+        public int? WinningNumber { get; set; }
 
         public ParsedBoard(int[,] board, bool[,] marks)
         {
-            this.board = board;
-            this.marks = marks;
+            Board = board;
+            Marks = marks;
         }
     }
 
@@ -44,14 +44,15 @@ public class Day04 : DayBase
     {
         var input = TestInput;
         
-        var score = CalculateScore(input, out var winningBoard, out var winningNumber, true);
+        var score = CalculateScore(input, out var winningNumber, true);
         
         Assert.That(winningNumber, Is.EqualTo(24));
         Assert.That(score, Is.EqualTo(4512));
     }
 
-    private int CalculateScore(string input, out ParsedBoard winningBoard, out int winningNumber, bool getWinning)
+    private int CalculateScore(string input, out int winningNumber, bool getWinning)
     {
+        ParsedBoard winningBoard;
         var parts = input.Split(NewLine + NewLine);
         var numbers = parts.First().Split(",").Select(n => Convert.ToInt32(n)).ToList();
         // Assert.That(numbers, Is.EqualTo(new[] { 7, 4, 9, 5, 11, 17, 23, 2, 0, 14, 21, 24, 10, 16, 13, 6, 15, 25, 12, 22, 18, 20, 8, 19, 3, 26, 1 }));
@@ -76,17 +77,17 @@ public class Day04 : DayBase
             return new ParsedBoard(boardArr, boardMarks);
         }).ToList();
 
-        Assert.That(parsedBoards.First().board.Rank, Is.EqualTo(2));
-        Assert.That(parsedBoards.First().marks.Rank, Is.EqualTo(2));
+        Assert.That(parsedBoards.First().Board.Rank, Is.EqualTo(2));
+        Assert.That(parsedBoards.First().Marks.Rank, Is.EqualTo(2));
         // Assert.That(parsedBoards.First().board[3, 3], Is.EqualTo(18));
 
         var boardScores = MarkNumbersAndReturnWinningBoard(numbers, parsedBoards);
 
         winningBoard = getWinning ? boardScores.First() : boardScores.Last();
-        winningNumber = winningBoard.winningNumber ?? throw new Exception("Shit hits the fan yo.");        
+        winningNumber = winningBoard.WinningNumber ?? throw new Exception("Shit hits the fan yo.");        
             "winning board:".Print();
-        PrintMatrix(winningBoard.board);
-        PrintMatrix(winningBoard.marks);
+        PrintMatrix(winningBoard.Board);
+        PrintMatrix(winningBoard.Marks);
 
         var score = CalculateScore(winningBoard, winningNumber);
         return score;
@@ -96,9 +97,9 @@ public class Day04 : DayBase
     {
         var unmarkedPositions = new List<int>();
         
-        for (var i = 0; i < board.board.GetLength(0); i++)
-        for (var j = 0; j < board.board.GetLength(1); j++)
-            if(!board.marks[i,j]) unmarkedPositions.Add(board.board[i,j]);
+        for (var i = 0; i < board.Board.GetLength(0); i++)
+        for (var j = 0; j < board.Board.GetLength(1); j++)
+            if(!board.Marks[i,j]) unmarkedPositions.Add(board.Board[i,j]);
 
         return unmarkedPositions.Sum() * number;
     }
@@ -115,19 +116,18 @@ public class Day04 : DayBase
                   continue;  
                 }
 
-                (int, int)? numberPosition = FindNumberInBoard(board.board, currentNumber);
+                (int, int)? numberPosition = FindNumberInBoard(board.Board, currentNumber);
                 if (numberPosition.HasValue)
-                    board.marks[numberPosition.Value.Item1, numberPosition.Value.Item2] = true;
+                    board.Marks[numberPosition.Value.Item1, numberPosition.Value.Item2] = true;
                 if (HasWon(board))
                 {
-                    board.winningNumber = currentNumber;
+                    board.WinningNumber = currentNumber;
                     winningBoards.Add(board);
                 }
             }
         }
 
         return winningBoards;
-        throw new Exception("there is no winning board");
     }
 
     public static void PrintMatrix<T>(T[,] matrix)
@@ -150,13 +150,13 @@ public class Day04 : DayBase
     {
         for (var i = 0; i < 5; i++)
         {
-            var column = Day03.GetColumn(parsedBoard.marks, i);
+            var column = Day03.GetColumn(parsedBoard.Marks, i);
             if (column.All(b => b)) return true;
         }
         
         for (var i = 0; i < 5; i++)
         {
-            var row = Day03.GetRow(parsedBoard.marks, i);
+            var row = Day03.GetRow(parsedBoard.Marks, i);
             if (row.All(b => b)) return true;
         }
 
@@ -186,7 +186,7 @@ public class Day04 : DayBase
     [Test, Explicit("Slow")]
     public override void RunPart1OnRealInput()
     {
-        var score = CalculateScore(GetInputForDay(this), out _, out _, true);
+        var score = CalculateScore(GetInputForDay(this), out _, true);
 
         Assert.That(score, Is.EqualTo(32844));
     }
@@ -194,7 +194,7 @@ public class Day04 : DayBase
     [Test]
     public override void TestPart2()
     {
-        var score = CalculateScore(TestInput, out _, out _, false);
+        var score = CalculateScore(TestInput, out _, false);
 
         Assert.That(score, Is.EqualTo(1924));
     }
@@ -202,7 +202,7 @@ public class Day04 : DayBase
     [Test, Explicit("Slow")]
     public override void RunPart2OnRealInput()
     {
-        var score = CalculateScore(GetInputForDay(this), out _, out _, false);
+        var score = CalculateScore(GetInputForDay(this), out _, false);
         
         Assert.That(score, Is.LessThan(18850));
         Assert.That(score, Is.EqualTo(4920));
