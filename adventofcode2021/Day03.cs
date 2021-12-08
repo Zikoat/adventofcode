@@ -77,8 +77,7 @@ public class Day03 : DayBase
         var powerconsumption = epsilonrate * gammarate;
         return powerconsumption;
     }
-
-    [Test]
+    [Test, Explicit("Slow")]
     public override void RunPart1OnRealInput()
     {
         var powerconsumption = CalculatePowerConsumption(GetInputForDay(this), out var shit, out var gammarateString, out var gammarate, out var epsilonratestring, out var epsilonrate);
@@ -209,7 +208,7 @@ Assert.Multiple(()=>
         return transposedMatrix;
     }
 
-    [Test]
+    [Test, Explicit("Slow")]
     public override void RunPart2OnRealInput()
     {
         var lifeSupport = GetLifeSupportRating(out var _, out var _, GetInputForDay(this));

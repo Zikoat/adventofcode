@@ -78,7 +78,7 @@ public class Day07 : DayBase
         return totalFuel;
     }
 
-    [Test]
+    [Test, Explicit("Slow")]
     public override void RunPart1OnRealInput()
     {
         var minFuel = GetMinFuel(GetInputForDay(this), false);

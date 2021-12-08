@@ -197,7 +197,7 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
         
     }
 
-    [Test]
+    [Test, Explicit("Slow, brute forces")]
     public override void TestPart2()
     {
         Assert.That(GetSum(TestInput),Is.EqualTo(61229));

@@ -154,7 +154,7 @@ public class Day05 : DayBase
         foreach (var _ in line) Assert.Fail();
     }
 
-    [Test]
+    [Test, Explicit("Slow")]
     public override void RunPart1OnRealInput()
     {
         var overlappingCount = GetOverlappingCount(GetInputForDay(this), false);
@@ -169,7 +169,7 @@ public class Day05 : DayBase
         Assert.That(overlappingCount, Is.EqualTo(12));
     }
 
-    [Test]
+    [Test, Explicit("Slow")]
     public override void RunPart2OnRealInput()
     {
         var overlappingCount = GetOverlappingCount(GetInputForDay(this), true);

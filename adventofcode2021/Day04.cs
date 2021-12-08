@@ -184,22 +184,23 @@ winningBoards.Add(board);
         return matrix;
     }
 
-    [Test]
+    [Test, Explicit("Slow")]
     public override void RunPart1OnRealInput()
     {
         var score = CalculateScore(GetInputForDay(this), out _, out _, true);
-        
+
         Assert.That(score, Is.EqualTo(32844));
-    }
-[Test]
-    public override void TestPart2()
-    {
-        var score = CalculateScore(TestInput, out _, out _, false);
-        
-        Assert.That(score, Is.EqualTo(1924));
     }
 
     [Test]
+    public override void TestPart2()
+    {
+        var score = CalculateScore(TestInput, out _, out _, false);
+
+        Assert.That(score, Is.EqualTo(1924));
+    }
+
+    [Test, Explicit("Slow")]
     public override void RunPart2OnRealInput()
     {
         var score = CalculateScore(GetInputForDay(this), out _, out _, false);
