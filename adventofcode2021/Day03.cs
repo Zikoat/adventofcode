@@ -146,26 +146,26 @@ public class Day03 : DayBase
     }
 
     // https://stackoverflow.com/a/26291720/5936629
-    public static T[,] To2D<T>(T[][] source)
+    public static T[,] To2D<T>(IEnumerable<IEnumerable<T>> source)
     {
         try
         {
-            var firstDim = source.Length;
-            var secondDim = source.GroupBy(row => row.Length).Single().Key; // throws InvalidOperationException if source is not rectangular
+            var jaggedArray = source as IEnumerable<T>[] ?? source.ToArray();
+            var firstDim = jaggedArray.Length;
+            var secondDim = jaggedArray.GroupBy(row => row.Count()).Single().Key; // throws InvalidOperationException if source is not rectangular
 
             var result = new T[firstDim, secondDim];
             for (var i = 0; i < firstDim; ++i)
             for (var j = 0; j < secondDim; ++j)
-                result[i, j] = source[i][j];
+                result[i, j] = jaggedArray.ElementAt(i).ElementAt(j);
 
             return result;
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException e)
         {
-            throw new InvalidOperationException("The given jagged array is not rectangular.");
+            throw new InvalidOperationException("The given jagged array is not rectangular.", e);
         } 
     }
-
 
     [Test]
     public void TestTranspose()
