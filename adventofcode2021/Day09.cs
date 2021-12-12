@@ -111,11 +111,49 @@ public class Day09 : DayBase
         Assert.That(GetRiskSum(GetInputForDay(this)), Is.EqualTo(516));
     }
 
-    // [Test]
+    [Test]
     public override void TestPart2()
     {
-        TestInput.Split(NewLine);
-        throw new NotImplementedException();
+        var matrix = ParseInput(TestInput);
+        var basinCount = new int[matrix.GetLength(0), matrix.GetLength(1)];
+        Assert.That(matrix.GetUpperBound(0), Is.EqualTo(basinCount.GetUpperBound(0)));
+
+        Day04.PrintMatrix(Transpose(matrix));
+        
+        foreach (var point in EveryPointIn(matrix))
+        {
+            FlowToLowPoint(point, matrix, basinCount);
+        }
+        
+        Day04.PrintMatrix(basinCount);
+        
+        var basinsProduct = basinCount.Cast<int>().OrderBy(n => n).Take(3).Aggregate((total, next) => total * next);
+        Assert.That(basinsProduct, Is.EqualTo(1134));
+    }
+
+    private void FlowToLowPoint((int x, int y, int value) point, int[,] matrix, int[,] basinCount)
+    {
+        var currentValue = point.value;
+        var allNeighbors = GetAllNeighbors(point, matrix);
+        foreach (var neighbor in allNeighbors)
+        {
+            if (currentValue < neighbor.value)
+            {
+                FlowToLowPoint(neighbor, matrix, basinCount);
+                break;
+            }
+        }
+
+        basinCount[point.x, point.y]++;
+    }
+
+    private static IEnumerable<(int x, int y, int value)> GetAllNeighbors((int x, int y, int value) point, int[,] matrix)
+    {
+        var (x, y, _) = point;
+        if (IsInsideBounds(matrix, x + 1, y)) yield return (x+1, y, matrix[x + 1, y]);
+        if (IsInsideBounds(matrix, x, y +1 )) yield return (x+1, y, matrix[x, y + 1]);
+        if (IsInsideBounds(matrix,  x - 1, y)) yield return (x+1, y, matrix[x - 1, y]);
+        if (IsInsideBounds(matrix, x, y - 1)) yield return (x+1, y, matrix[x, y - 1]);
     }
 
     // [Test]
