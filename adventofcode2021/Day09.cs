@@ -83,7 +83,7 @@ public class Day09 : DayBase
 
     }
 
-    private static IEnumerable<(int x, int y, T value)> EveryPointIn<T>(T[,] matrix)
+    public static IEnumerable<(int x, int y, T value)> EveryPointIn<T>(T[,] matrix)
     {
         var width = matrix.GetLength(0);
         var height = matrix.GetLength(1);
