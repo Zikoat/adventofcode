@@ -11,6 +11,7 @@
     <ItemGroup>
         <PackageReference Include="Combinatorics" Version="2.0.0" />
         <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
+        <PackageReference Include="MathNet.Numerics" Version="4.15.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
         <PackageReference Include="NUnit" Version="3.13.2" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
@@ -24,6 +25,7 @@
     <ItemGroup>
       <EmbeddedResource Include="Day08Input.txt" />
       <EmbeddedResource Include="Day09Input.txt" />
+      <EmbeddedResource Include="Day10Input.txt" />
       <None Remove="Day07Input.txt" />
       <EmbeddedResource Include="Day07Input.txt" />
       <None Remove="Day06Input.txt" />
