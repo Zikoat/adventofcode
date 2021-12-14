@@ -1,8 +1,6 @@
 ﻿
 using System.Text;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
-using NUnit.Framework.Internal;
 using static System.Environment;
 
 namespace adventofcode2021;
@@ -51,20 +49,7 @@ CN -> C";
     [Test]
     public override void TestPart1()
     {
-        Assert.That(Diff(TestInput,10),Is.EqualTo(1588));
-        Assert.That(OptimizedDiff(TestInput,10),Is.EqualTo(1588));
-
-    }
-    
-    private static int Diff(string input, int stepCount)
-    {
-        var permutatedSentence = PermutateInput(input, stepCount);
-        // Assert.That(permutatedSentence.Count(),Is.EqualTo(3073));
-        var characterCount = permutatedSentence.GroupBy(c => c).OrderBy(chars => chars.Count()).ToList();
-        var minCharacterCount = characterCount.First().Count();
-        var maxCharacterCount = characterCount.Last().Count();
-        var diff = maxCharacterCount - minCharacterCount;
-        return diff;
+        Assert.That(OptimizedDiff(TestInput,10),Is.EqualTo(1588), "optimized should have been");
     }
 
     private static string PermutateInput(string input, int steps)
@@ -89,20 +74,21 @@ CN -> C";
         return (sentence, rules);
     }
 
-    private static Dictionary<string, int> PermutateSentence(string sentence, List<PolymerRule> rules,  int steps)
+    private static Dictionary<string, long> OptimizedPermutateSentence(string sentence, List<PolymerRule> rules,  long steps)
     {
 
-        var pairDict = new Dictionary<string, int>();
+        var pairDict = new Dictionary<string, long>();
         for (var i = 0; i < sentence.Length-1; i++)
         {
             var currentChar = sentence[i];;
             var nextChar = sentence[i+1];
-            addPair(pairDict, currentChar.ToString()+nextChar, 1);
+            IncrementOrCreate(pairDict, currentChar.ToString()+nextChar, 1);
         }
 
         for (var i = 0; i < steps; i++)
         {
-            foreach (KeyValuePair<string,int> pair in pairDict)
+            Dictionary<string,long> newPairDict =new Dictionary<string, long>(pairDict);
+            foreach (KeyValuePair<string,long> pair in pairDict)
             {
                 foreach (var rule in rules)
                 {
@@ -110,67 +96,112 @@ CN -> C";
                     {
                         var firstcharacter = rule.fromString.First();
                         var secondCharacter = rule.fromString.Last();
-                        pairDict["" + firstcharacter + rule.to] += pair.Value;
-                        pairDict["" + rule.to + secondCharacter] += pair.Value;
+                        IncrementOrCreate(newPairDict,"" + firstcharacter + rule.to, pair.Value);
+                        IncrementOrCreate(newPairDict,"" + rule.to + secondCharacter,pair.Value);
+                        IncrementOrCreate(newPairDict,rule.fromString, -pair.Value);
                         break;
                     }
                 }
             }
+
+            pairDict = new Dictionary<string, long>(newPairDict);
         }
 
         // permutatedSentence.Print();
         return pairDict;
     }
-
-    private static void addPair(Dictionary<string,int> pairDict, string pair, int amount)
+    private static string PermutateSentence(string sentence, List<PolymerRule> rules,  int steps)
     {
-        if (pairDict.TryGetValue(pair, out _))
+        var permutatedSentence = sentence;
+        for (var i = 0; i < steps; i++)
+        {
+            var newSentence = new StringBuilder();
+            for (var j = 0; j < permutatedSentence.Length - 1; j++)
+            {
+                var currentChar = permutatedSentence[j];
+                newSentence.Append(currentChar);
+                var nextChar = permutatedSentence[j + 1];
+                var singleRule = rules.SingleOrDefault(rule => "" + currentChar + nextChar == rule.fromString,
+                    new PolymerRule("", ""));
+                newSentence.Append(singleRule.to);
+            }
+
+            newSentence.Append(permutatedSentence.Last());
+
+            permutatedSentence = newSentence.ToString();
+        }
+
+        // permutatedSentence.Print();
+        return permutatedSentence;
+    }
+
+
+    private static void IncrementOrCreate<T>(Dictionary<T,int> pairDict, T pair, int amount)
+    {
+        if (pairDict.ContainsKey(pair))
         {
             pairDict[pair] += amount;
         }
         else
         {
-            pairDict.Add(pair, 1);
+            pairDict.Add(pair, amount);
+        }
+    }
+    private static void IncrementOrCreate<T>(Dictionary<T,long> pairDict, T pair, long amount)
+    {
+        if (pairDict.ContainsKey(pair))
+        {
+            pairDict[pair] += amount;
+        }
+        else
+        {
+            pairDict.Add(pair, amount);
         }
     }
 
     [Test]
     public override void RunPart1OnRealInput()
     {
-        Assert.That(Diff(GetInputForDay(this),10),Is.EqualTo(3411));
         Assert.That(OptimizedDiff(GetInputForDay(this),10),Is.EqualTo(3411));
     }
 
-    private static int OptimizedDiff(string input, int stepCount)
+    private static long OptimizedDiff(string input, long stepCount)
     {
-        var permutatedSentence = OptimizedPermutateInput(input, stepCount);
+        Dictionary<char, long> characterCount = OptimizedPermutateInput(input, stepCount);
         // Assert.That(permutatedSentence.Count(),Is.EqualTo(3073));
-        var characterCount = permutatedSentence.GroupBy(c => c).OrderBy(chars => chars.Count()).ToList();
-        var minCharacterCount = characterCount.First().Count();
-        var maxCharacterCount = characterCount.Last().Count();
+
+        var minCharacterCount = characterCount.Select(charCount => charCount.Value).Min();
+        var maxCharacterCount = characterCount.Select(charCount => charCount.Value).Max();
         var diff = maxCharacterCount - minCharacterCount;
         return diff;
     }
-    private static string OptimizedPermutateInput(string input, int steps)
+    private static Dictionary<char, long> OptimizedPermutateInput(string input, long steps)
     {
         var (sentence, rules) = ParseSystem(input);
         
-        var permutatedSentence = PermutateSentence(sentence, rules, steps);
-        return permutatedSentence;
+        var permutatedSentence = OptimizedPermutateSentence(sentence, rules, steps);
+
+        var charCount = new Dictionary<char, long>();
+        foreach (var (pairString, pairCount) in permutatedSentence)
+        {
+            IncrementOrCreate(charCount, pairString.First(), pairCount);
+        }
+
+        IncrementOrCreate(charCount,sentence.Last(),1);
+
+        return charCount;
     }
 
 
-    // [Test]
+    [Test]
     public override void TestPart2()
     {
-        OptimizedDiff(TestInput, 40);
-        Assert.That(Diff(TestInput,40),Is.EqualTo(2188189693529));
+        Assert.That(OptimizedDiff(TestInput,40),Is.EqualTo(2188189693529));
     }
 
     [Test]
     public override void RunPart2OnRealInput()
     {
-        GetInputForDay(this).Split(NewLine);
-        throw new NotImplementedException();
+        Assert.That(OptimizedDiff(GetInputForDay(this),40),Is.EqualTo(7477815755570));
     }
 }
