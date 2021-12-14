@@ -70,4 +70,22 @@ public static class MatrixExtensions
 
 
     // todo move things here from day3, 4 and 9
+    public static bool IsInsideBounds<T>(T[,] matrix, int x, int y)
+    {
+        return x <= matrix.GetUpperBound(0) && y <= matrix.GetUpperBound(1) && x >= 0 && y >= 0;
+    }
+
+    public static IEnumerable<(int x, int y, int value)> GetAllNeighbors((int x, int y, int value) point, int[,] matrix, bool allowDiagonal = false)
+    {
+        var (x, y, _) = point;
+        if (IsInsideBounds(matrix, x + 1, y)) yield return (x + 1, y, matrix[x + 1, y]);
+        if (IsInsideBounds(matrix, x, y + 1)) yield return (x + 1, y, matrix[x, y + 1]);
+        if (IsInsideBounds(matrix, x - 1, y)) yield return (x + 1, y, matrix[x - 1, y]);
+        if (IsInsideBounds(matrix, x, y - 1)) yield return (x + 1, y, matrix[x, y - 1]);
+        if (!allowDiagonal) yield break;
+        if (IsInsideBounds(matrix, x + 1, y + 1)) yield return (x + 1, y + 1, matrix[x + 1, y + 1]);
+        if (IsInsideBounds(matrix, x - 1, y + 1)) yield return (x - 1, y + 1, matrix[x - 1, y + 1]);
+        if (IsInsideBounds(matrix, x - 1, y - 1)) yield return (x - 1, y - 1, matrix[x - 1, y - 1]);
+        if (IsInsideBounds(matrix, x + 1, y - 1)) yield return (x + 1, y - 1, matrix[x + 1, y - 1]);
+    }
 }

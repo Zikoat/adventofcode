@@ -74,7 +74,7 @@ public class Day03 : DayBase
     private int GetLifeSupportRating(out int oxygengeneratorRating, out int co2GeneratorRating, string nput)
     {
         var matrix = ParseDay3(nput);
-        var arrayMatrix = To2D(matrix.Select(column => column.ToArray()).ToArray());
+        var arrayMatrix = matrix.Select(column => column.ToArray()).ToArray().To2D();
         oxygengeneratorRating = GetRating(arrayMatrix,
             (validrowcount, halfvalidrow) => validrowcount >= halfvalidrow);
         co2GeneratorRating = GetRating(arrayMatrix, (validrowcount, halfvalidrow) => validrowcount < halfvalidrow);
@@ -87,7 +87,7 @@ public class Day03 : DayBase
     {
         var nonRectangularArray = new[] { new[] { 1, 1 }, new[] { 1 } };
         
-        Assert.Throws(Is.TypeOf<InvalidOperationException>(), () => To2D(nonRectangularArray));
+        Assert.Throws(Is.TypeOf<InvalidOperationException>(), () => nonRectangularArray.To2D());
     }
 
     private static int GetRating(bool[,] arrayMatrix, Func<int, float, bool> func)
@@ -144,29 +144,7 @@ public class Day03 : DayBase
             .Select(x => matrix[rowNumber, x])
             .ToArray();
     }
-
-    // https://stackoverflow.com/a/26291720/5936629
-    public static T[,] To2D<T>(IEnumerable<IEnumerable<T>> source)
-    {
-        try
-        {
-            var jaggedArray = source as IEnumerable<T>[] ?? source.ToArray();
-            var firstDim = jaggedArray.Length;
-            var secondDim = jaggedArray.GroupBy(row => row.Count()).Single().Key; // throws InvalidOperationException if source is not rectangular
-
-            var result = new T[firstDim, secondDim];
-            for (var i = 0; i < firstDim; ++i)
-            for (var j = 0; j < secondDim; ++j)
-                result[i, j] = jaggedArray.ElementAt(i).ElementAt(j);
-
-            return result;
-        }
-        catch (InvalidOperationException e)
-        {
-            throw new InvalidOperationException("The given jagged array is not rectangular.", e);
-        } 
-    }
-
+    
     [Test]
     public void TestTranspose()
     {

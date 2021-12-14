@@ -61,7 +61,7 @@ public class Day04 : DayBase
         var parsedBoards = boards.Select(board =>
         {
             var linesStrings = board.Split(NewLine);
-            int[,] boardArr = Day03.To2D(linesStrings.Select(line =>
+            var boardArr = linesStrings.Select(line =>
             {
                 var splitNumbersStrings = Regex.Split(line, @"\s+");
                 return splitNumbersStrings.Where(s => !string.IsNullOrWhiteSpace(s)).Select(n =>
@@ -69,7 +69,7 @@ public class Day04 : DayBase
                     var numberAsInt = Convert.ToInt32(n);
                     return numberAsInt;
                 }).ToArray();
-            }).ToArray());
+            }).ToArray().To2D();
             Assert.That(boardArr.Length, Is.EqualTo(25));
 
             var boardMarks = InitMultiDimArray(false, 5, 5);

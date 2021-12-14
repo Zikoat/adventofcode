@@ -22,7 +22,7 @@ public class Day09 : DayBase
 
     private static int[,] ParseInput(string input)
     {
-        return Day03.To2D(input.Split(NewLine).Select(line=> line.Select(c=>Convert.ToInt32(c.ToString())))).Transpose();
+        return input.Split(NewLine).Select(line=> line.Select(c=>Convert.ToInt32(c.ToString()))).To2D().Transpose();
     }
 
     private static int GetRiskSum(string Input)
@@ -31,10 +31,10 @@ public class Day09 : DayBase
         var riskSum = 0;
         foreach (var (x, y, value) in matrix.EveryPointIn())
         {
-            var everyAdjacentIsLower = !(IsInsideBounds(matrix, x + 1, y) && matrix[x + 1, y] <= value) &&
-                                       !(IsInsideBounds(matrix, x, y + 1) && matrix[x, y + 1] <= value) &&
-                                       !(IsInsideBounds(matrix, x - 1, y) && matrix[x - 1, y] <= value) &&
-                                       !(IsInsideBounds(matrix, x, y - 1) && matrix[x, y - 1] <= value);
+            var everyAdjacentIsLower = !(MatrixExtensions.IsInsideBounds(matrix, x + 1, y) && matrix[x + 1, y] <= value) &&
+                                       !(MatrixExtensions.IsInsideBounds(matrix, x, y + 1) && matrix[x, y + 1] <= value) &&
+                                       !(MatrixExtensions.IsInsideBounds(matrix, x - 1, y) && matrix[x - 1, y] <= value) &&
+                                       !(MatrixExtensions.IsInsideBounds(matrix, x, y - 1) && matrix[x, y - 1] <= value);
 
             if (everyAdjacentIsLower) riskSum += value + 1;
         }
@@ -52,17 +52,12 @@ public class Day09 : DayBase
         var height = matrix.GetLength(1);
         Assert.That(height, Is.EqualTo(2));
 
-        Assert.That(IsInsideBounds(matrix, 0, 1), Is.True);
+        Assert.That(MatrixExtensions.IsInsideBounds(matrix, 0, 1), Is.True);
         
-        Assert.That(IsInsideBounds(matrix, -1, 0), Is.False);
-        Assert.That(IsInsideBounds(matrix, 0, -1), Is.False);
-        Assert.That(IsInsideBounds(matrix, 1, 0), Is.False);
-        Assert.That(IsInsideBounds(matrix, 0, 2), Is.False);
-    }
-
-    private static bool IsInsideBounds<T>(T[,] matrix, int x, int y)
-    {
-        return x <= matrix.GetUpperBound(0) && y <= matrix.GetUpperBound(1) && x >= 0 && y >= 0;
+        Assert.That(MatrixExtensions.IsInsideBounds(matrix, -1, 0), Is.False);
+        Assert.That(MatrixExtensions.IsInsideBounds(matrix, 0, -1), Is.False);
+        Assert.That(MatrixExtensions.IsInsideBounds(matrix, 1, 0), Is.False);
+        Assert.That(MatrixExtensions.IsInsideBounds(matrix, 0, 2), Is.False);
     }
 
     [Test]
@@ -112,7 +107,7 @@ public class Day09 : DayBase
     private void FlowToLowPoint((int x, int y, int value) point, int[,] matrix, int[,] basinCount)
     {
         var currentValue = point.value;
-        var allNeighbors = GetAllNeighbors(point, matrix);
+        var allNeighbors = MatrixExtensions.GetAllNeighbors(point, matrix);
         foreach (var neighbor in allNeighbors)
         {
             if (currentValue < neighbor.value)
@@ -123,15 +118,6 @@ public class Day09 : DayBase
         }
 
         basinCount[point.x, point.y]++;
-    }
-
-    private static IEnumerable<(int x, int y, int value)> GetAllNeighbors((int x, int y, int value) point, int[,] matrix)
-    {
-        var (x, y, _) = point;
-        if (IsInsideBounds(matrix, x + 1, y)) yield return (x+1, y, matrix[x + 1, y]);
-        if (IsInsideBounds(matrix, x, y +1 )) yield return (x+1, y, matrix[x, y + 1]);
-        if (IsInsideBounds(matrix,  x - 1, y)) yield return (x+1, y, matrix[x - 1, y]);
-        if (IsInsideBounds(matrix, x, y - 1)) yield return (x+1, y, matrix[x, y - 1]);
     }
 
     // [Test]

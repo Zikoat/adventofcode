@@ -33,5 +33,28 @@ public static class EnumerableExtensions
     {
         return sequence.Where(e => e != null).Select(e => e.Value);
     }
+    
+    // https://stackoverflow.com/a/26291720/5936629
+    public static T[,] To2D<T>(this IEnumerable<IEnumerable<T>> source)
+    {
+        try
+        {
+            var jaggedArray = source as IEnumerable<T>[] ?? source.ToArray();
+            var firstDim = jaggedArray.Length;
+            var secondDim = jaggedArray.GroupBy(row => row.Count()).Single().Key; // throws InvalidOperationException if source is not rectangular
+
+            var result = new T[firstDim, secondDim];
+            for (var i = 0; i < firstDim; ++i)
+            for (var j = 0; j < secondDim; ++j)
+                result[i, j] = jaggedArray.ElementAt(i).ElementAt(j);
+
+            return result;
+        }
+        catch (InvalidOperationException e)
+        {
+            throw new InvalidOperationException("The given jagged array is not rectangular.", e);
+        } 
+    }
+
 
 }
