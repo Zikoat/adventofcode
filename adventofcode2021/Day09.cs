@@ -22,14 +22,14 @@ public class Day09 : DayBase
 
     private static int[,] ParseInput(string input)
     {
-        return Transpose(Day03.To2D(input.Split(NewLine).Select(line=> line.Select(c=>Convert.ToInt32(c.ToString())))));
+        return Day03.To2D(input.Split(NewLine).Select(line=> line.Select(c=>Convert.ToInt32(c.ToString())))).Transpose();
     }
 
     private static int GetRiskSum(string Input)
     {
         var matrix = ParseInput(Input);
         var riskSum = 0;
-        foreach (var (x, y, value) in EveryPointIn(matrix))
+        foreach (var (x, y, value) in matrix.EveryPointIn())
         {
             var everyAdjacentIsLower = !(IsInsideBounds(matrix, x + 1, y) && matrix[x + 1, y] <= value) &&
                                        !(IsInsideBounds(matrix, x, y + 1) && matrix[x, y + 1] <= value) &&
@@ -68,9 +68,9 @@ public class Day09 : DayBase
     [Test]
     public void TestEveryPointIn()
     {
-        var matrix = Transpose(new[,] { { 0, 1 }, { 2, 3 } });
+        var matrix = new[,] { { 0, 1 }, { 2, 3 } }.Transpose();
 
-        var actualOutput = EveryPointIn(matrix).ToList();
+        var actualOutput = matrix.EveryPointIn().ToList();
 
         Assert.That(actualOutput, Is.EqualTo(new[] { (0, 0, 0), (1, 0, 1), (0, 1, 2), (1, 1, 3) }));
     }
@@ -79,32 +79,10 @@ public class Day09 : DayBase
     {
         var matrix = new int[,] { {} };
         
-        foreach (var _ in EveryPointIn(matrix)) Assert.Fail();
+        foreach (var _ in matrix.EveryPointIn()) Assert.Fail();
 
     }
-
-    public static IEnumerable<(int x, int y, T value)> EveryPointIn<T>(T[,] matrix)
-    {
-        var width = matrix.GetLength(0);
-        var height = matrix.GetLength(1);
-
-        for (var j = 0; j < height; j++)
-        for (var i = 0; i < width; i++)
-            yield return (i, j, matrix[i, j]);
-    }
-
-    public static T[,] Transpose<T>(T[,] matrix)
-    {
-        var width = matrix.GetLength(0);
-        var height = matrix.GetLength(1);
-
-        var newArray = new T[height, width];
-        for (var i = 0; i < height; i++)
-        for (var j = 0; j < width; j++)
-            newArray[i, j] = matrix[j, i];
-        return newArray;
-    }
-
+    
     [Test]
     public override void RunPart1OnRealInput()
     {
@@ -118,14 +96,14 @@ public class Day09 : DayBase
         var basinCount = new int[matrix.GetLength(0), matrix.GetLength(1)];
         Assert.That(matrix.GetUpperBound(0), Is.EqualTo(basinCount.GetUpperBound(0)));
 
-        Day04.PrintMatrix(Transpose(matrix));
+        matrix.Transpose().Print();
         
-        foreach (var point in EveryPointIn(matrix))
+        foreach (var point in matrix.EveryPointIn())
         {
             FlowToLowPoint(point, matrix, basinCount);
         }
         
-        Day04.PrintMatrix(basinCount);
+        basinCount.Print();
         
         var basinsProduct = basinCount.Cast<int>().OrderBy(n => n).Take(3).Aggregate((total, next) => total * next);
         Assert.That(basinsProduct, Is.EqualTo(1134));

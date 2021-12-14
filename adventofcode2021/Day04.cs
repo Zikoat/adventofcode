@@ -86,8 +86,8 @@ public class Day04 : DayBase
         winningBoard = getWinning ? boardScores.First() : boardScores.Last();
         winningNumber = winningBoard.WinningNumber ?? throw new Exception("Shit hits the fan yo.");        
             "winning board:".Print();
-        PrintMatrix(winningBoard.Board);
-        PrintMatrix(winningBoard.Marks);
+        winningBoard.Board.Print();
+        winningBoard.Marks.Print();
 
         var score = CalculateScore(winningBoard, winningNumber);
         return score;
@@ -129,23 +129,7 @@ public class Day04 : DayBase
 
         return winningBoards;
     }
-
-    public static void PrintMatrix<T>(T[,] matrix)
-    {
-        // https://stackoverflow.com/a/12827010/5936629
-        var rowLength = matrix.GetLength(0);
-        var colLength = matrix.GetLength(1);
-
-        for (var i = 0; i < rowLength; i++)
-        {
-            for (var j = 0; j < colLength; j++)
-            {
-                Console.Write($"{matrix[i, j]} ");
-            }
-            Console.Write(NewLine);
-        }
-    }
-
+    
     private static bool HasWon(ParsedBoard parsedBoard)
     {
         for (var i = 0; i < 5; i++)

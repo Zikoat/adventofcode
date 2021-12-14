@@ -49,7 +49,7 @@ public class Day05 : DayBase
             }
         }
 
-        Day04.PrintMatrix(oceanfloor);
+        oceanfloor.Print();
 
         var overlappingCount = 0;
 

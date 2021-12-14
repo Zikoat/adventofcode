@@ -28,6 +28,8 @@
       <EmbeddedResource Include="Day09Input.txt" />
       <EmbeddedResource Include="Day10Input.txt" />
       <EmbeddedResource Include="Day12Input.txt" />
+      <EmbeddedResource Include="Day13Input.txt" />
+      <EmbeddedResource Include="Day14Input.txt" />
       <None Remove="Day07Input.txt" />
       <EmbeddedResource Include="Day07Input.txt" />
       <None Remove="Day06Input.txt" />
