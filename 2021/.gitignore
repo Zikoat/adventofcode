@@ -1,0 +1,6 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+/adventofcode2021.sln.DotSettings.user

@@ -1,0 +1,280 @@
+﻿using System.Collections;
+using NUnit.Framework;
+using static System.Environment;
+
+namespace adventofcode2021;
+
+public class Day05 : DayBase
+{
+    public override string TestInput => @"0,9 -> 5,9
+8,0 -> 0,8
+9,4 -> 3,4
+2,2 -> 2,1
+7,0 -> 7,4
+6,4 -> 2,0
+0,9 -> 2,9
+3,4 -> 1,4
+0,0 -> 8,8
+5,5 -> 8,2";
+
+    [Test]
+    public override void TestPart1()
+    {
+        var overlappingCount = GetOverlappingCount(TestInput, false);
+
+        Assert.That(overlappingCount, Is.EqualTo(5));
+    }
+
+    private int GetOverlappingCount(string input, bool allowDiagonal)
+    {
+        var lines = input.Split(NewLine).Select(lineString =>
+        {
+            var points = lineString.Split(" -> ");
+            var startpoint = points.First().Split(",").Select(n => Convert.ToInt32(n)).ToArray();
+            var endpoint = points.Last().Split(",").Select(n => Convert.ToInt32(n)).ToArray();
+            var parsedLine = new Line(startpoint.First(), startpoint.Last(), endpoint.First(), endpoint.Last(), allowDiagonal);
+            return parsedLine;
+        }).ToList();
+
+        var maxx = lines.Max(line => Math.Max(line.X1, line.X2));
+        var maxy = lines.Max(line => Math.Max(line.Y1, line.Y2));
+
+        var oceanfloor = new int[maxx + 1, maxy + 1];
+
+        foreach (var line in lines)
+        {
+            foreach (var pixel in line)
+            {
+                oceanfloor[pixel.x, pixel.y]++;
+            }
+        }
+
+        oceanfloor.Print();
+
+        var overlappingCount = 0;
+
+        for (var i = 0; i < maxx + 1; i++)
+        for (var j = 0; j < maxy + 1; j++)
+            if (oceanfloor[i, j] >= 2)
+                overlappingCount++;
+        return overlappingCount;
+    }
+
+    [Test]
+    public void TestSinglePixel()
+    {
+        var line = new Line(0, 0, 0, 0, false);
+        var amountCalled = 0;
+
+        foreach (var pixel in line)
+        {
+            Assert.That(pixel.x, Is.EqualTo(0));
+            Assert.That(pixel.y, Is.EqualTo(0));
+            amountCalled++;
+        }
+
+        Assert.That(amountCalled, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Test2PixelLine()
+    {
+        var line = new Line(0, 0, 1, 0, false);
+        var positions = new List<(int x, int y)>();
+
+        foreach (var position in line)
+        {
+            positions.Add(position);
+        }
+
+        Assert.That(positions, Is.EqualTo((new[] { (0, 0), (1, 0) }).ToList()));
+    }
+
+    [Test]
+    public void Test3PixelLine()
+    {
+        var line = new Line(0, 0, 2, 0, false);
+        var positions = new List<(int x, int y)>();
+
+        foreach (var position in line)
+        {
+            positions.Add(position);
+        }
+
+        Assert.That(positions, Is.EqualTo(new[] { (0, 0), (1, 0), (2, 0) }));
+    }
+
+    [Test]
+    public void TestVerticalLine()
+    {
+        var line = new Line(0, 0, 0, 1, false);
+        var positions = new List<(int x, int y)>();
+
+        foreach (var position in line)
+        {
+            positions.Add(position);
+        }
+
+        Assert.That(positions, Is.EqualTo(new[] { (0, 0), (0, 1) }));
+    }
+
+    [Test]
+    public void TestBackwardsLine()
+    {
+        var line = new Line(1, 0, 0, 0, false);
+        var positions = new List<(int x, int y)>();
+
+        foreach (var position in line)
+        {
+            positions.Add(position);
+        }
+
+        Assert.That(positions, Is.EqualTo(new[] { (1, 0), (0, 0) }));
+    }
+
+    [Test]
+    public void TestDiagonalLine()
+    {
+        var line = new Line(1, 0, 0, 1, true);
+        var positions = new List<(int x, int y)>();
+
+        foreach (var position in line)
+        {
+            positions.Add(position);
+        }
+
+        Assert.That(positions, Is.EqualTo(new[] { (1, 0), (0, 1) }));
+    }
+
+    [Test]
+    public void TestDiagonalLineNotAllowed()
+    {
+        var line = new Line(1, 0, 0, 1, false);
+
+        foreach (var _ in line) Assert.Fail();
+    }
+
+    [Test, Explicit("Slow")]
+    public override void RunPart1OnRealInput()
+    {
+        var overlappingCount = GetOverlappingCount(GetInputForDay(this), false);
+
+        Assert.That(overlappingCount, Is.EqualTo(6397));
+    }
+
+    [Test]
+    public override void TestPart2()
+    {
+        var overlappingCount = GetOverlappingCount(TestInput, true);
+        Assert.That(overlappingCount, Is.EqualTo(12));
+    }
+
+    [Test, Explicit("Slow")]
+    public override void RunPart2OnRealInput()
+    {
+        var overlappingCount = GetOverlappingCount(GetInputForDay(this), true);
+        Assert.That(overlappingCount, Is.EqualTo(22335));
+    }
+}
+
+public class Line : IEnumerable
+{
+    public int X1 { get; }
+    public int X2 { get; }
+    public int Y1 { get; }
+    public int Y2 { get; }
+    private bool AllowDiagonal { get; }
+
+    public Line(int x1, int y1, int x2, int y2, bool allowDiagonal)
+    {
+        X1 = x1;
+        Y1 = y1;
+        X2 = x2;
+        Y2 = y2;
+        AllowDiagonal = allowDiagonal;
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
+    public LineEnum GetEnumerator()
+    {
+        return new LineEnum(this, AllowDiagonal);
+    }
+
+    public bool IsDiagonal()
+    {
+        return Math.Abs(X2 - X1) != 0 && Math.Abs(Y2 - Y1) != 0;
+    }
+}
+
+public class LineEnum : IEnumerator
+{
+    private readonly Line _line;
+    private readonly bool _allowDiagonal;
+    private readonly (int x, int y) _direction;
+    private (int x, int y) _position;
+    private bool _firstHasBeenGotten;
+    private int _safeSwitch;
+    private bool _lastPointHasBeenReached;
+
+    public LineEnum(Line line, bool allowDiagonal)
+    {
+        _line = line;
+        _allowDiagonal = allowDiagonal;
+        _lastPointHasBeenReached = false;
+        _position = (line.X1, line.Y1);
+        _direction = (Math.Sign(line.X2 - line.X1), Math.Sign(line.Y2 - line.Y1));
+        _firstHasBeenGotten = false;
+        if (
+            _direction.x != 0
+            && _direction.y != 0
+            && Math.Abs(line.X2 - line.X1) - Math.Abs(line.Y2 - line.Y1) != 0)
+            throw new Exception($"line is not straight or diagonal: {line}");
+
+        _safeSwitch = 0;
+    }
+
+    public bool MoveNext()
+    {
+        Console.Out.WriteLine($"now is ({_position.x},{_position.y}), moving to next");
+
+        if (_line.IsDiagonal() && !_allowDiagonal) return false;
+
+        if (!_firstHasBeenGotten)
+        {
+            _firstHasBeenGotten = true;
+            return true;
+        }
+
+        _position.x += _direction.x;
+        _position.y += _direction.y;
+
+        if (_safeSwitch > 1000) throw new Exception("Safeswitch activated. Line is longer than 1000 pixels");
+        _safeSwitch++;
+
+        if (!_lastPointHasBeenReached && (_line.X1 == _line.X2 && _line.Y1 == _line.Y2))
+        {
+            _lastPointHasBeenReached = true;
+            return false;
+        }
+
+        if (!_lastPointHasBeenReached && _position == (_line.X2, _line.Y2))
+        {
+            _lastPointHasBeenReached = true;
+            return true;
+        }
+
+        return !_lastPointHasBeenReached;
+    }
+
+    public void Reset()
+    {
+        _position = (_line.X1, _line.X2);
+    }
+
+    object IEnumerator.Current => Current;
+    public (int x, int y) Current => _position;
+}
