@@ -30,16 +30,31 @@ public class Day11 : DayBase
         parsedInput.Print();
 
         var flashesCount = SimulateSteps(parsedInput);
+        Assert.That(flashesCount, Is.EqualTo(9));
     }
 
     private int SimulateSteps(int[,] parsedInput)
     {
-        var newMatrix = (int[,])parsedInput.Clone();
-        foreach (var (x, y, _) in parsedInput.EveryPointIn()) newMatrix[x, y]++;
-        foreach (var (x, y, _) in parsedInput.EveryPointIn()) newMatrix[x, y]++;
+        var octopi = (int[,])parsedInput.Clone();
+        
+        // First, the energy level of each octopus increases by 1.
+        foreach (var (x, y, _) in parsedInput.EveryPointIn()) octopi[x, y]++;
+        var flashCount = 0;
+        foreach (var point in octopi.EveryPointIn()) flashCount += FlashAndIncreaseNeighbors(point, octopi);
 
+        return flashCount;
     }
 
+    private int FlashAndIncreaseNeighbors((int x, int y, int value) octopus, int[,] octopi)
+    {
+        var flashCount = 0;
+        if (octopus.value <= 9) return 0;
+        flashCount ++;
+        flashCount += MatrixExtensions.GetAllNeighbors(octopus, octopi, true).Sum(neighborOctopus => FlashAndIncreaseNeighbors(neighborOctopus, octopi));
+
+        return flashCount;
+    }
+    
     private static int[,] ParseInput(string simpleInput)
     {
         return simpleInput.Split(NewLine).Select(line => line.Select(c=>Convert.ToInt32(c.ToString()))).To2D();
