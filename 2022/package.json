@@ -10,6 +10,8 @@
     "test": "nodemon --ext 'ts,json' --exec 'bun wiptest'"
   },
   "dependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "fs-extra": "^11.1.0",
     "mathjs": "^11.5.0",
     "nodemon": "^2.0.20"
   }
