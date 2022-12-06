@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "bun run index.ts",
-    "test": "nodemon --ext 'ts,json' --exec 'bun wiptest'"
+    "test": "vitest"
   },
   "dependencies": {
     "@types/fs-extra": "^9.0.13",
