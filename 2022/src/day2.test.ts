@@ -1,5 +1,5 @@
 import { sum } from "mathjs";
-import { expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import _ from "lodash";
 import { getDayInput } from "./god";
 
@@ -8,6 +8,7 @@ B X
 C Z`;
 
 test("part1example", () => {
+  expect(getScore(["A", "Y"])).toBe(8);
   expect(getScoreSum(exampleinput)).toBe(15);
 });
 
@@ -16,30 +17,56 @@ test("part1", async () => {
 });
 
 function getScoreSum(input: string) {
-  return sum(
-    input
-      .split("\n")
-      .map((gameString) => gameString.split(" "))
-      .map((game) => getScore(game))
-  );
+  const scores = input
+    .split("\n")
+    .map(
+      (gameString) =>
+        gameString.split(" ") as ["A" | "B" | "C", "X" | "Y" | "Z"]
+    )
+    .map((game) => getScore(game));
+  return sum(scores);
 }
 
-const outcome = {
-  A: {
-    X: 3,
-    Y: 6,
-    Z: 0,
+test("getGameResult", () => {
+  let result = getScore(["A", "Y"]);
+  expect(result).toBe(8);
+  result = getScore(["B", "X"]);
+  expect(result).toBe(1);
+  result = getScore(["C", "Z"]);
+  expect(result).toBe(6);
+});
+
+enum Outcome {
+  "Win" = "Win",
+  "Loss" = "Loss",
+  "Draw" = "Draw",
+}
+
+type Hand = "Rock" | "Paper" | "Scissor";
+
+const outcome: Record<Hand, Record<Hand, Outcome>> = {
+  // first is opponent, then you
+  Rock: {
+    Rock: Outcome.Draw,
+    Paper: Outcome.Win,
+    Scissor: Outcome.Loss,
   },
-  B: {
-    X: 0,
-    Y: 3,
-    Z: 6,
+  Paper: {
+    Rock: Outcome.Loss,
+    Paper: Outcome.Draw,
+    Scissor: Outcome.Win,
   },
-  C: {
-    X: 6,
-    Y: 0,
-    Z: 3,
+  Scissor: {
+    Rock: Outcome.Win,
+    Paper: Outcome.Loss,
+    Scissor: Outcome.Draw,
   },
+};
+
+const outcomeScore: { [key in Outcome]: number } = {
+  Loss: 0,
+  Draw: 3,
+  Win: 6,
 };
 
 const shapeScore = {
@@ -48,6 +75,31 @@ const shapeScore = {
   Z: 3,
 };
 
-function getScore(firstGame: string[]) {
-  return outcome[firstGame[0]][firstGame[1]] + shapeScore[firstGame[1]];
+type ParsedGame = ["A" | "B" | "C", "X" | "Y" | "Z"];
+
+function getScore(firstGame: ParsedGame): number {
+  const opponent = firstGame[0];
+
+  const opponentHand: Hand = {
+    A: "Rock" as const,
+    B: "Paper" as const,
+    C: "Scissor" as const,
+  }[opponent];
+
+  const you = firstGame[1];
+
+  const yourHand: Hand = {
+    X: "Rock" as const,
+    Y: "Paper" as const,
+    Z: "Scissor" as const,
+  }[you];
+
+  const outCome = getHandOutcome(opponentHand, yourHand);
+  const resultScore = outcomeScore[outCome];
+
+  return resultScore + shapeScore[firstGame[1]];
+}
+
+function getHandOutcome(opponent: Hand, you: Hand) {
+  return outcome[opponent][you];
 }

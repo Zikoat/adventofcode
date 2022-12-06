@@ -10,6 +10,7 @@
 
     // "bun-types" is the important part
     "types": ["bun-types"],
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "strict": true
   }
 }

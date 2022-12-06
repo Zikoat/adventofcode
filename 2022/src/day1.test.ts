@@ -1,5 +1,5 @@
 import { max, sum, sort } from "mathjs";
-import { expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { getDayInput } from "./god";
 
 const exampleinput = `1000
