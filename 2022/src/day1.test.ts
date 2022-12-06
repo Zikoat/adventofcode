@@ -1,8 +1,7 @@
 import { max, sum, sort } from "mathjs";
 import { expect, test } from "bun:test";
-import { readFile, readFileSync } from "fs-extra";
+import { getDayInput } from "./god";
 
-const input = await (await readFile(__dirname + "/day1Input.txt")).toString();
 const exampleinput = `1000
 2000
 3000
@@ -23,7 +22,7 @@ test("part1example", () => {
 });
 
 test("part1", async () => {
-  expect(findMaxElf(input)).toBe(68775);
+  expect(findMaxElf(await getDayInput(1))).toBe(68775);
 });
 
 test("part2example", async () => {
@@ -31,10 +30,8 @@ test("part2example", async () => {
 });
 
 test("part2", async () => {
-  expect(sum(top3Elves(input))).toBe(202585);
+  expect(sum(top3Elves(await getDayInput(1)))).toBe(202585);
 });
-
-
 
 function findMaxElf(input: string) {
   const elvesSum = elvesSums(input);

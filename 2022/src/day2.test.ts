@@ -1,10 +1,8 @@
-import { max, sum, sort } from "mathjs";
+import { sum } from "mathjs";
 import { expect, test } from "bun:test";
-import { readFile, readFileSync } from "fs-extra";
 import _ from "lodash";
+import { getDayInput } from "./god";
 
-// shit refactor
-const input = await (await readFile(__dirname + "/day2Input.txt")).toString();
 const exampleinput = `A Y
 B X
 C Z`;
@@ -13,8 +11,8 @@ test("part1example", () => {
   expect(getScoreSum(exampleinput)).toBe(15);
 });
 
-test("part1", () => {
-  expect(getScoreSum(input)).toBe(12740);
+test("part1", async () => {
+  expect(getScoreSum(await getDayInput(2))).toBe(12740);
 });
 
 function getScoreSum(input: string) {
