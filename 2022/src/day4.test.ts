@@ -1,7 +1,6 @@
 import { expect, test } from 'vitest'
 import _ from 'lodash'
 import { getDayInput } from './god'
-import { sum } from 'mathjs'
 
 const exampleinput = `2-4,6-8
 2-3,4-5

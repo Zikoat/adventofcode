@@ -1,6 +1,5 @@
-import { expect, test } from 'vitest'
+import { test } from 'vitest'
 import _ from 'lodash'
-import { getDayInput } from './god'
 
 const exampleinput = `$ cd /
 $ ls
@@ -35,17 +34,17 @@ interface File { name: string, size: number }
 type Dir = TreeNode
 
 test('part1example', () => {
-  const tree: TreeNode = {}
+  // const tree: TreeNode = {}
   const currentPath: string[] = []
 
-  function setAt (path: string[], setObject: File | Dir) {
-    expect(path[0]).toBe('/')
-    const currentObject = tree
-    for (const pathSegment of path) {
-      // currentObject = currentObject.dirs?.[pathSegment];
-    }
-    // currentObject = setObject;
-  }
+  // function setAt (path: string[], setObject: File | Dir): void {
+  //   expect(path[0]).toBe('/')
+  //   const currentObject = tree
+  //   for (const pathSegment of path) {
+  //     // currentObject = currentObject.dirs?.[pathSegment];
+  //   }
+  //   // currentObject = setObject;
+  // }
 
   const parsed = _.drop(exampleinput.split('$'))
 
@@ -53,23 +52,23 @@ test('part1example', () => {
     const splitCommand = commandString.trim().split('\n')
     const command = splitCommand.shift()
     if (command === 'ls') {
-      const output = splitCommand
-      for (const fileOrDir of splitCommand) {
-        const shit = fileOrDir.split(' ')
-        const dirOrSize = shit[0]
-        const name = shit[1]
+      // const output = splitCommand
+      // for (const fileOrDir of splitCommand) {
+      // const shit = fileOrDir.split(' ')
+      // const dirOrSize = shit[0]
+      // const name = shit[1]
 
-        if (dirOrSize === 'dir') {
-        } else if (isFinite(Number(dirOrSize))) {
-        } else throw Error('shit hit the fan 1')
-      }
+      // if (dirOrSize === 'dir') {
+      // } else if (isFinite(Number(dirOrSize))) {
+      // } else throw Error('shit hit the fan 1')
+      // }
     } else if (command?.split(' ')[0] === 'cd') {
       const splitCdCommand = command?.split(' ')
       const path = splitCdCommand[1]
       if (path === '..') {
         currentPath.pop()
       }
-      currentPath
+      // currentPath
     } else throw Error('shit hit the fan 2')
 
     // expect(command).toBe("shit");
