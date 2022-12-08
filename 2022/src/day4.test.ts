@@ -27,16 +27,16 @@ test('part2Example', () => {
   expect(output).toBe(4)
 })
 test('part2', async () => {
-  const input = await getDayInput(4)
-  const output = shit(input, doOverlap2)
+  // const input = await getDayInput(4)
+  // const output = shit(input, doOverlap2)
   // expect(output).toBe(532);
 })
 
 function shit (
   input: string,
   doOverlap: (first: [number, number], second: [number, number]) => boolean
-) {
-  return sum(
+): number {
+  return _.sum(
     input.split('\n').map((pair) => {
       const { first, second } = parsePair(pair)
 
@@ -46,7 +46,7 @@ function shit (
     })
   )
 }
-function parsePair (pair: string) {
+function parsePair (pair: string): { first: [number, number], second: [number, number] } {
   const pairArray = pair.split(',')
 
   const first = pairArray[0].split('-').map(Number) as [number, number]
@@ -54,14 +54,14 @@ function parsePair (pair: string) {
   return { first, second }
 }
 
-function doOverlap1 (first: [number, number], second: [number, number]) {
+function doOverlap1 (first: [number, number], second: [number, number]): boolean {
   return (
     (first[0] >= second[0] && first[1] <= second[1]) ||
     (first[0] <= second[0] && first[1] >= second[1])
   )
 }
 
-function doOverlap2 (first: [number, number], second: [number, number]) {
+function doOverlap2 (first: [number, number], second: [number, number]): boolean {
   const overlapFirstAfter = first[1] >= second[0]
   const overlapFirstBefore = first[0] >= second[1]
   return overlapFirstAfter || overlapFirstBefore
