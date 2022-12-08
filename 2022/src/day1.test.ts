@@ -1,6 +1,7 @@
-import { max, sum, sort } from 'mathjs'
-import { describe, expect, test } from 'vitest'
+import { sum, sort } from 'mathjs'
+import { expect, test } from 'vitest'
 import { getDayInput } from './god'
+import { max } from 'lodash'
 
 const exampleinput = `1000
 2000
@@ -33,19 +34,19 @@ test('part2', async () => {
   expect(sum(top3Elves(await getDayInput(1)))).toBe(202585)
 })
 
-function findMaxElf (input: string) {
+function findMaxElf (input: string): number | undefined {
   const elvesSum = elvesSums(input)
 
   return max(elvesSum)
 }
 
-function top3Elves (input: string) {
+function top3Elves (input: string): number[] {
   const elvesSum = elvesSums(input)
   const sortedElves = sort(elvesSum, (a, b) => b - a)
   return sortedElves.slice(0, 3)
 }
 
-function elvesSums (input: string) {
+function elvesSums (input: string): number[] {
   const elves = input.split(/\n\s*\n/).map((elf) => {
     return elf.split(/\n/).map((fruit) => Number(fruit.trim()))
   })
