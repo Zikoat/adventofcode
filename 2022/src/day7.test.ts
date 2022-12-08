@@ -42,9 +42,9 @@ test("part1example", () => {
     expect(path[0]).toBe("/");
     let currentObject = tree;
     for (const pathSegment of path) {
-      currentObject = currentObject.dirs[pathSegment];
+      // currentObject = currentObject.dirs?.[pathSegment];
     }
-    currentObject = setObject;
+    // currentObject = setObject;
   }
 
   const parsed = _.drop(exampleinput.split("$"));
@@ -72,9 +72,9 @@ test("part1example", () => {
       currentPath;
     } else throw Error("shit hit the fan 2");
 
-    expect(command).toBe("shit");
+    // expect(command).toBe("shit");
   }
-  expect(parsed).toBe("wow");
+  // expect(parsed).toBe("wow");
 
   // expect(exampleinput).toBe(-1);
 });
