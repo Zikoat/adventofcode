@@ -1,7 +1,6 @@
 import { expect, test } from 'vitest'
 import _ from 'lodash'
 import { getDayInput } from './god'
-import { sum } from 'mathjs'
 
 const exampleinput = `vJrwpWtwJgWrhcsFMMfFFhFp
 jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
@@ -37,7 +36,7 @@ test('part2', async () => {
   expect(getGroupScoreSum(await getDayInput(3))).toBe(2577)
 })
 
-function getGroupScoreSum (shit: string) {
+function getGroupScoreSum (shit: string): any {
   const parsed = shit.split('\n')
 
   const groups: string[][] = []
@@ -52,11 +51,11 @@ function getGroupScoreSum (shit: string) {
     }
   }
 
-  const groupScoreSum = sum(groups.map((group) => getGroupScore(group)))
+  const groupScoreSum = _.sum(groups.map((group) => getGroupScore(group)))
   return groupScoreSum
 }
 
-function getGroupScore (group: string[]) {
+function getGroupScore (group: string[]): number {
   const firstIntersection = intersection(group[1], group[2])
   const secondIntersection = intersection(group[0], firstIntersection)
   const groupItem = secondIntersection
@@ -64,17 +63,17 @@ function getGroupScore (group: string[]) {
   return groupScore
 }
 
-function getScoreSum (inputString: string) {
+function getScoreSum (inputString: string): number {
   const parsed = inputString.split('\n')
 
   const itemScores = parsed.map((backpackString) =>
     getItemScore(getCommonItem(backpackString)[0])
   )
-  const itemSum = sum(itemScores)
+  const itemSum = _.sum(itemScores)
   return itemSum
 }
 
-function getCommonItem (backpack: string) {
+function getCommonItem (backpack: string): string[] {
   const len = backpack.length
   const halfLength = len / 2
 
@@ -88,13 +87,13 @@ function getCommonItem (backpack: string) {
 function intersection (
   inA: string | Set<string> | string[],
   inB: string | Set<string> | string[]
-) {
+): string[] {
   const a = new Set(inA)
   const b = new Set(inB)
   const intersection = [...new Set([...a].filter((x) => b.has(x)))]
   return intersection
 }
 
-function getItemScore (item: string) {
+function getItemScore (item: string): number {
   return ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.indexOf(item)
 }
