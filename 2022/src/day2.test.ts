@@ -1,5 +1,4 @@
-import { sum } from 'mathjs'
-import { describe, expect, test } from 'vitest'
+import { expect, test } from 'vitest'
 import _ from 'lodash'
 import { getDayInput } from './god'
 
@@ -16,7 +15,10 @@ test('part1', async () => {
   expect(getScoreSum(await getDayInput(2), getScore)).toBe(12740)
 })
 
-function getScoreSum (input: string, scoreFunc: (game: ParsedGame) => number) {
+function getScoreSum (
+  input: string,
+  scoreFunc: (game: ParsedGame) => number
+): any {
   const scores = input
     .split('\n')
     .map(
@@ -24,7 +26,7 @@ function getScoreSum (input: string, scoreFunc: (game: ParsedGame) => number) {
         gameString.split(' ') as ['A' | 'B' | 'C', 'X' | 'Y' | 'Z']
     )
     .map((game) => scoreFunc(game))
-  return sum(scores)
+  return _.sum(scores)
 }
 
 test('getGameResult', () => {
@@ -92,7 +94,7 @@ const shapeScore: { [key in Hand]: number } = {
 
 type ParsedGame = ['A' | 'B' | 'C', 'X' | 'Y' | 'Z']
 
-function getHandOutcome (opponent: Hand, you: Hand) {
+function getHandOutcome (opponent: Hand, you: Hand): Outcome {
   return outcome[opponent][you]
 }
 
@@ -136,16 +138,18 @@ function getScore2 (firstGame: ParsedGame): number {
 
   let wantedYourHand: Hand | null = null
 
-  for (const shit of Object.entries(outcome[opponentHand]) as Array<[
-    Hand,
-    Outcome
-  ]>) {
+  for (const shit of Object.entries(outcome[opponentHand]) as Array<
+  [Hand, Outcome]
+  >) {
     if (shit[1] === wantedResult) wantedYourHand = shit[0]
   }
 
-  if (!wantedYourHand) throw Error('shit hit the fan')
+  if (wantedYourHand === null) {
+    throw Error('shit hit the fan')
+  }
 
   const resultScore = outcomeScore[wantedResult]
 
-  return resultScore + shapeScore[wantedYourHand]
+  const wantedShapeScore: number = shapeScore[wantedYourHand]
+  return resultScore + wantedShapeScore
 }
