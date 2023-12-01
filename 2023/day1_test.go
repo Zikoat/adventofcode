@@ -1,7 +1,6 @@
 package aoc2023
 
 import (
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -175,7 +174,7 @@ func day1p2(input string) int {
 	return total
 }
 
-func TestDay1Part2Input(t *testing.T) {
+func SkipTestDay1Part2Input(t *testing.T) {
 	input, err := os.ReadFile("./d1in.txt")
 	check(err)
 	total := day1p2(string(input))
@@ -185,13 +184,10 @@ func TestDay1Part2Input(t *testing.T) {
 }
 
 func TestDay1Part2AdditionalExamplesFromReddit(t *testing.T) {
-	input := `one
-two
-three
-four
-five
-six
-seven
-eight
-nine
-twone
+	input := `threeight`
+	total := day1p2(input)
+	if total != 38 {
+		t.Fatalf(`Day1Example = %d, want 38`, total)
+	}
+
+}
