@@ -1,6 +1,7 @@
 package aoc2023
 
 import (
+	"fmt"
 	"os"
 	"regexp"
 	"strconv"
@@ -83,9 +84,10 @@ zoneight234
 7pqrstsixteen`
 
 	total := day1p2(input)
+	// 330 is too low
 
 	if total != 281 {
-		t.Fatalf(`Day1Example = %d, want 280`, total)
+		t.Fatalf(`Day1Example = %d, want 281`, total)
 	}
 
 }
@@ -94,103 +96,171 @@ func day1p2(input string) int {
 	newInput := ""
 
 	splitLines := strings.Split(input, "\n")
+	total := 0
 	for _, line := range splitLines {
 
-		newLine := line
 		i := 0
-		// while i < len(newLine)
-		for i < len(newLine) {
-			// if position i in newLine is "one", replace it with 1
+		firstNumberSeen := false
+		firstNumber := 0
+		lastNumber := 0
+		for i < len(line) {
+			// if position i in line is "one", replace it with 1
 			number := "zero"
 			numberNumber := 0
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 
 			number = "one"
 			numberNumber++
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "two"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "three"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "four"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "five"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "six"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "seven"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "eight"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "nine"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 
 			i++
 		}
 
-		// fmt.Printf("newLine: %s", newLine)
-		newInput += newLine + "\n"
+		// fmt.Printf("line: %s", line)
+		newInput += line + "\n"
+		lineNumber := strconv.Itoa(firstNumber) + strconv.Itoa(lastNumber)
+
+		// fmt.Println("lineNumber:", lineNumber)
+
+		// add linenumber to total
+		lineNumberInt, err := strconv.Atoi(lineNumber)
+		check(err)
+		total += lineNumberInt
 
 	}
 
 	// fmt.Printf("input: %s", newInput)
-	total := day1(strings.Trim(newInput, "\n"))
+	// total := day1(strings.Trim(newInput, "\n"))
 
 	return total
 }
 
-func SkipTestDay1Part2Input(t *testing.T) {
+func TestDay1Part2Input(t *testing.T) {
 	input, err := os.ReadFile("./d1in.txt")
 	check(err)
 	total := day1p2(string(input))
-	if total <= 56001 {
-		t.Fatalf(`Day1Input = %d, want more than 56001`, total)
+	if total != 56017 {
+		t.Fatalf(`Day1Input = %d`, total)
 	}
 }
 
-func skipTestDay1Part2AdditionalExamplesFromReddit(t *testing.T) {
+func TestDay1Part2AdditionalExamplesFromReddit(t *testing.T) {
 	input := `threeight`
 	total := day1p2(input)
 	if total != 38 {
 		t.Fatalf(`Day1Example = %d, want 38`, total)
 	}
-
 }
 
 func TestDay2Part1Input(t *testing.T) {
