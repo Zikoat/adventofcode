@@ -208,18 +208,45 @@ func TestDay2Part1Input(t *testing.T) {
 }
 
 func TestDay2Part1Example(t *testing.T) {
-
-	input := `Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
+	d2example := `Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
 Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
 Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
 Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
 Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green`
 
-	sumOfValidGames := d2p1(input)
+	sumOfValidGames := d2p1(d2example)
 
 	// should be 8
 	if sumOfValidGames != 8 {
 		t.Fatalf(`Day2Example = %d, want 8`, sumOfValidGames)
+	}
+
+}
+
+func TestDay2Part2Example(t *testing.T) {
+	inputFile, err := os.ReadFile("./d2in.txt")
+	check(err)
+	input := string(inputFile)
+
+	output := d2p2(input)
+
+	if output != 72422 {
+		t.Fatalf(`Day2Example = %d`, output)
+	}
+
+}
+
+func TestDay2Part2Input(t *testing.T) {
+	d2example := `Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
+Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
+Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
+Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
+Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green`
+
+	output := d2p2(d2example)
+
+	if output != 2286 {
+		t.Fatalf(`Day2Example = %d`, output)
 	}
 
 }
@@ -309,4 +336,39 @@ func d2p1(input string) int {
 		// fmt.Println(i+1, gameValid, game, sumOfValidGames)
 	}
 	return sumOfValidGames
+}
+
+func d2p2(input string) int {
+	games := d2parse(input)
+
+	powerSum := 0
+	for _, game := range games {
+
+		maxRed := 0
+		maxGreen := 0
+		maxBlue := 0
+
+		for _, bag := range game {
+			bagRed := bag[0]
+			bagGreen := bag[1]
+			bagBlue := bag[2]
+
+			if bagRed > maxRed {
+				maxRed = bagRed
+			}
+			if bagGreen > maxGreen {
+				maxGreen = bagGreen
+			}
+			if bagBlue > maxBlue {
+				maxBlue = bagBlue
+			}
+
+		}
+		power := maxRed * maxGreen * maxBlue
+		powerSum += power
+		// fmt.Println(i+1, ",", maxRed, maxGreen, maxBlue, power, powerSum)
+		// fmt.Println(i+1, gameValid, game, sumOfValidGames)
+	}
+
+	return powerSum
 }
