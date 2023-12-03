@@ -442,3 +442,239 @@ func d2p2(input string) int {
 
 	return powerSum
 }
+func d3p1(input string) int {
+
+	lines := strings.Split(input, "\n")
+
+	// currentnumber, int slice
+	isNumberBesideSymbol := false
+	currentNumber := []int{}
+
+	// 8 directional neighbours
+	neighbours := [8][2]int{
+		{-1, -1}, // top left
+		{0, -1},  // top
+		{1, -1},  // top right
+		{1, 0},   // right
+		{1, 1},   // bottom right
+		{0, 1},   // bottom
+		{-1, 1},  // bottom left
+		{-1, 0},  // left
+	}
+
+	sum := 0
+	for y, lineshit := range lines {
+		trimmedLine := strings.Trim(lineshit, "\r\n")
+
+		for x, char := range trimmedLine {
+			parsedNumber, err := strconv.Atoi(string(char))
+			isDot := string(char) == "."
+
+			if len(currentNumber) == 0 {
+				isNumberBesideSymbol = false
+			}
+
+			if err == nil {
+				if isDot {
+					panic("number is dot")
+				}
+				currentNumber = append(currentNumber, parsedNumber)
+
+				for _, neighbour := range neighbours {
+					globalX := x + neighbour[0]
+					globalY := y + neighbour[1]
+
+					if globalX >= 0 && globalX < len(trimmedLine) && globalY >= 0 && globalY < len(lines) {
+						// fmt.Println(globalX, globalY, lines[globalY][globalX])
+						neighbourChar := lines[globalY][globalX]
+						_, err := strconv.Atoi(string(neighbourChar))
+						neighbourDot := string(neighbourChar) == "."
+						if err != nil && !neighbourDot {
+							// at least one neighbour is a symbol
+							isNumberBesideSymbol = true
+						}
+					}
+				}
+			} else {
+				currentNumber = []int{}
+				// if !isDot {
+				// 	fmt.Println("symbol", string(char))
+				// }
+			}
+
+			numberIsFinished := false
+			if len(currentNumber) > 0 {
+				if x+1 < len(trimmedLine) {
+					nextChar := trimmedLine[x+1]
+					_, err := strconv.Atoi(string(nextChar))
+					if err != nil {
+						numberIsFinished = true
+					}
+				} else {
+
+					numberIsFinished = true
+				}
+			}
+
+			currentNumberString := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(currentNumber)), ""), "[]")
+			currentNumberInt, err := strconv.Atoi(currentNumberString)
+			if currentNumberString != "" && err != nil {
+				panic(err)
+			}
+			if numberIsFinished && isNumberBesideSymbol {
+				sum += currentNumberInt
+				// fmt.Println("number beside symbol", currentNumberInt, sum)
+			} else if numberIsFinished {
+				// fmt.Println("number not beside symbol", currentNumberInt)
+			}
+
+			// fmt.Println(x, y, string(char))
+
+		}
+	}
+	return sum
+}
+func d3p2(input string) int {
+
+	lines := strings.Split(input, "\n")
+
+	// currentnumber, int slice
+	isNumberBesideSymbol := false
+	currentNumber := []int{}
+
+	// 8 directional neighbours
+	neighbours := [8][2]int{
+		{-1, -1}, // top left
+		{0, -1},  // top
+		{1, -1},  // top right
+		{1, 0},   // right
+		{1, 1},   // bottom right
+		{0, 1},   // bottom
+		{-1, 1},  // bottom left
+		{-1, 0},  // left
+	}
+
+	sum := 0
+	for y, lineshit := range lines {
+		trimmedLine := strings.Trim(lineshit, "\r\n")
+
+		for x, char := range trimmedLine {
+			parsedNumber, err := strconv.Atoi(string(char))
+			isDot := string(char) == "."
+
+			if len(currentNumber) == 0 {
+				isNumberBesideSymbol = false
+			}
+
+			if err == nil {
+				if isDot {
+					panic("number is dot")
+				}
+				currentNumber = append(currentNumber, parsedNumber)
+
+				for _, neighbour := range neighbours {
+					globalX := x + neighbour[0]
+					globalY := y + neighbour[1]
+
+					if globalX >= 0 && globalX < len(trimmedLine) && globalY >= 0 && globalY < len(lines) {
+						// fmt.Println(globalX, globalY, lines[globalY][globalX])
+						neighbourChar := lines[globalY][globalX]
+						_, err := strconv.Atoi(string(neighbourChar))
+						neighbourDot := string(neighbourChar) == "."
+						if err != nil && !neighbourDot {
+							// at least one neighbour is a symbol
+							isNumberBesideSymbol = true
+						}
+					}
+				}
+			} else {
+				currentNumber = []int{}
+				// if !isDot {
+				// 	fmt.Println("symbol", string(char))
+				// }
+			}
+
+			numberIsFinished := false
+			if len(currentNumber) > 0 {
+				if x+1 < len(trimmedLine) {
+					nextChar := trimmedLine[x+1]
+					_, err := strconv.Atoi(string(nextChar))
+					if err != nil {
+						numberIsFinished = true
+					}
+				} else {
+
+					numberIsFinished = true
+				}
+			}
+
+			currentNumberString := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(currentNumber)), ""), "[]")
+			currentNumberInt, err := strconv.Atoi(currentNumberString)
+			if currentNumberString != "" && err != nil {
+				panic(err)
+			}
+			if numberIsFinished && isNumberBesideSymbol {
+				sum += currentNumberInt
+				// fmt.Println("number beside symbol", currentNumberInt, sum)
+			} else if numberIsFinished {
+				// fmt.Println("number not beside symbol", currentNumberInt)
+			}
+
+			// fmt.Println(x, y, string(char))
+
+		}
+	}
+	return sum
+}
+func SkipTestD3P1Example(t *testing.T) {
+	input := `467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..`
+
+	sum := d3p1(input)
+
+	if sum != 4361 {
+
+		t.Fatalf(`D3P1Example = %d`, sum)
+	}
+
+}
+func TestD3P1Input(t *testing.T) {
+	inputFile, err := os.ReadFile("./d3in.txt")
+	check(err)
+	input := string(inputFile)
+
+	sum := d3p1(input)
+	if sum != 551094 {
+
+		t.Fatalf(`D3P1Input = %d`, sum)
+	}
+
+}
+
+func TestD3P2Example(t *testing.T) {
+	input := `467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..`
+
+	sum := d3p2(input)
+
+	if sum != 467835 {
+
+		t.Fatalf(`D3P2Example = %d`, sum)
+	}
+}
