@@ -230,33 +230,69 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11`
 const lines = inputd4.split('\n')
 let output = 0
 for (const line of lines) {
-  const [cardString, cardsShit] = line.split(':')
-const [winningnumbersshit,numbersyouhaveshit] = cardsShit.split(' | ')
-
-const numberRegex = /\d+/g
-const winningNumbers = winningnumbersshit.match(numberRegex)?.map(Number)
-const numbersYouHave = numbersyouhaveshit.match(numberRegex)?.map(Number)
-
-  console.log(winningNumbers)
-  console.log(numbersYouHave)
-
-// elements in both arrays
-const intersection = winningNumbers?.filter(value => numbersYouHave?.includes(value))
-console.log(intersection)
-const i = intersection?.length
-assert(i !== undefined)
-let cardScore = 0
-if (i === 0) {
-    cardScore = 0
+    const [cardString, cardsShit] = line.split(':')
+  const [winningnumbersshit,numbersyouhaveshit] = cardsShit.split(' | ')
   
-}else{
+  const numberRegex = /\d+/g
+  const winningNumbers = winningnumbersshit.match(numberRegex)?.map(Number)
+  const numbersYouHave = numbersyouhaveshit.match(numberRegex)?.map(Number)
+  
+    // console.log(winningNumbers)
+    // console.log(numbersYouHave)
+  
+  // elements in both arrays
+  const intersection = winningNumbers?.filter(value => numbersYouHave?.includes(value))
+  const i = intersection?.length
+  assert(i !== undefined)
+  let cardScore = 0
+  if (i === 0) {
+      cardScore = 0
+    
+  }else{
+  
+      cardScore=(2**(i-1))
+  }
+  output += cardScore
+  
+//   console.log(output)
+  }
+  
+//   we start totalcards with the same length as lines, but with all 1s
+const totalCards = new Array(lines.length).fill(1)
 
-    cardScore=(2**(i-1))
-}
-output += cardScore
+//   for (const line of lines) {
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+    const [cardString, cardsShit] = line.split(':')
+  const [winningnumbersshit,numbersyouhaveshit] = cardsShit.split(' | ')
+  
+  const numberRegex = /\d+/g
+  const winningNumbers = winningnumbersshit.match(numberRegex)?.map(Number)
+  const numbersYouHave = numbersyouhaveshit.match(numberRegex)?.map(Number)
+  
+    // console.log(winningNumbers)
+    // console.log(numbersYouHave)
+  
+  // elements in both arrays
+  const intersection = winningNumbers?.filter(value => numbersYouHave?.includes(value))
+  const score = intersection?.length
+  assert(score !== undefined)
+  console.log("card " + i + " has " + score +" winning numbers ")
 
-console.log(output)
+const amountOfThisCard = totalCards[i]
+// loop from 1 to score
+for (let j = 1; j <= score; j++) {
+    totalCards[i+j] += amountOfThisCard
+  }
+  console.log(totalCards)
 }
+    
+// sum totalCards
+let total = 0
+for (const card of totalCards) {
+    total += card
+  }
+    console.log(total)
 
 export function assert(
     condition: unknown,
@@ -268,6 +304,7 @@ export function assert(
 
 
 const d4p1solution = 32609
+
 
 
 
