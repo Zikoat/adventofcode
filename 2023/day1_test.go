@@ -1,7 +1,9 @@
 package aoc2023
 
 import (
+	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -36,7 +38,7 @@ func day1(input string) int {
 
 		combined := first + last
 		combinedInt, err := strconv.Atoi(combined)
-		// log.Printf("first: %s, last: %s, combined: %s", first, last, combined)
+		// fmt.Printf("first: %s, last: %s, combined: %s", first, last, combined)
 		check(err)
 		total += combinedInt
 	}
@@ -82,9 +84,10 @@ zoneight234
 7pqrstsixteen`
 
 	total := day1p2(input)
+	// 330 is too low
 
 	if total != 281 {
-		t.Fatalf(`Day1Example = %d, want 280`, total)
+		t.Fatalf(`Day1Example = %d, want 281`, total)
 	}
 
 }
@@ -93,93 +96,162 @@ func day1p2(input string) int {
 	newInput := ""
 
 	splitLines := strings.Split(input, "\n")
+	total := 0
 	for _, line := range splitLines {
 
-		newLine := line
 		i := 0
-		// while i < len(newLine)
-		for i < len(newLine) {
-			// if position i in newLine is "one", replace it with 1
+		firstNumberSeen := false
+		firstNumber := 0
+		lastNumber := 0
+		for i < len(line) {
+			// if position i in line is "one", replace it with 1
 			number := "zero"
 			numberNumber := 0
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 
 			number = "one"
 			numberNumber++
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "two"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "three"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "four"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "five"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "six"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "seven"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "eight"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 			number = "nine"
 			numberNumber++
 
-			if i+len(number) <= len(newLine) && newLine[i:i+len(number)] == number {
-				newLine = newLine[:i] + strconv.Itoa(numberNumber) + newLine[i+len(number):]
+			if (i+len(number) <= len(line) && line[i:i+len(number)] == number) || (line[i:i+1] == fmt.Sprint(numberNumber)) {
+
+				if !firstNumberSeen {
+
+					firstNumber = numberNumber
+				}
+				firstNumberSeen = true
+				lastNumber = numberNumber
 			}
 
 			i++
 		}
 
-		// log.Printf("newLine: %s", newLine)
-		newInput += newLine + "\n"
+		// fmt.Printf("line: %s", line)
+		newInput += line + "\n"
+		lineNumber := strconv.Itoa(firstNumber) + strconv.Itoa(lastNumber)
+
+		// fmt.Println("lineNumber:", lineNumber)
+
+		// add linenumber to total
+		lineNumberInt, err := strconv.Atoi(lineNumber)
+		check(err)
+		total += lineNumberInt
 
 	}
 
-	// log.Printf("input: %s", newInput)
-	total := day1(strings.Trim(newInput, "\n"))
+	// fmt.Printf("input: %s", newInput)
+	// total := day1(strings.Trim(newInput, "\n"))
 
 	return total
 }
 
-func SkipTestDay1Part2Input(t *testing.T) {
+func TestDay1Part2Input(t *testing.T) {
 	input, err := os.ReadFile("./d1in.txt")
 	check(err)
 	total := day1p2(string(input))
-	if total <= 56001 {
-		t.Fatalf(`Day1Input = %d, want more than 56001`, total)
+	if total != 56017 {
+		t.Fatalf(`Day1Input = %d`, total)
 	}
 }
 
@@ -189,5 +261,420 @@ func TestDay1Part2AdditionalExamplesFromReddit(t *testing.T) {
 	if total != 38 {
 		t.Fatalf(`Day1Example = %d, want 38`, total)
 	}
+}
 
+func TestDay2Part1Input(t *testing.T) {
+
+	inputFile, err := os.ReadFile("./d2in.txt")
+	check(err)
+	input := string(inputFile)
+
+	sumOfValidGames := d2p1(input)
+
+	// less tnan 2200
+	if sumOfValidGames != 2105 {
+		t.Fatalf(`Day2Example = %d, want 8`, sumOfValidGames)
+	}
+}
+
+func TestDay2Part1Example(t *testing.T) {
+	d2example := `Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
+Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
+Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
+Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
+Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green`
+
+	sumOfValidGames := d2p1(d2example)
+
+	// should be 8
+	if sumOfValidGames != 8 {
+		t.Fatalf(`Day2Example = %d, want 8`, sumOfValidGames)
+	}
+
+}
+
+func TestDay2Part2Example(t *testing.T) {
+	inputFile, err := os.ReadFile("./d2in.txt")
+	check(err)
+	input := string(inputFile)
+
+	output := d2p2(input)
+
+	if output != 72422 {
+		t.Fatalf(`Day2Example = %d`, output)
+	}
+
+}
+
+func TestDay2Part2Input(t *testing.T) {
+	d2example := `Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
+Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
+Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
+Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
+Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green`
+
+	output := d2p2(d2example)
+
+	if output != 2286 {
+		t.Fatalf(`Day2Example = %d`, output)
+	}
+
+}
+
+func d2parse(input string) [][][3]int {
+	lines := strings.Split(input, "\n")
+
+	games := [][][3]int{}
+
+	for _, line := range lines {
+		game := [][3]int{}
+
+		lineRegex := regexp.MustCompile(`^Game (\d+): (.*)$`)
+
+		lineMatches := lineRegex.FindStringSubmatch(line)
+		if len(lineMatches) != 3 {
+			errorMessage := "line did not match regex, " + line + ", " + lineMatches[0] + ", " + lineMatches[1] + ", " + lineMatches[2]
+			panic(errorMessage)
+		}
+		// gameNumber, err := strconv.Atoi(lineMatches[1])
+		// check(err)
+		gameString := lineMatches[2]
+		bags := strings.Split(gameString, "; ")
+		for _, bag := range bags {
+
+			// fmt.Println("'" + bag + "'")
+
+			colors := strings.Split(bag, ", ")
+
+			red := 0
+			green := 0
+			blue := 0
+
+			for _, color := range colors {
+				colorRegex := regexp.MustCompile(`^(\d+) (.*)$`)
+				colorMatches := colorRegex.FindStringSubmatch(color)
+				if len(colorMatches) != 3 {
+					panic("color did not match regex " + color + ", " + colorMatches[0] + ", " + colorMatches[1] + ", " + colorMatches[2])
+				}
+				colorNumber, err := strconv.Atoi(colorMatches[1])
+				check(err)
+
+				colorName := strings.Trim(colorMatches[2], "\r\n")
+				// fmt.Printf("gameNumber: %d, colorNumber: %d, colorName: '%s'", gameNumber, colorNumber, colorMatches[2])
+
+				if colorName == "red" {
+					red = colorNumber
+				} else if colorName == "green" {
+					green = colorNumber
+				} else if colorName == "blue" {
+					blue = colorNumber
+				} else {
+					panic("colorName not recognized: '" + colorName + "'")
+				}
+			}
+			bagInGames := [3]int{red, green, blue}
+
+			game = append(game, bagInGames)
+		}
+		games = append(games, game)
+	}
+	return games
+}
+
+func d2p1(input string) int {
+
+	// fmt.Sprint(games)
+	games := d2parse(input)
+
+	maxRed := 12
+	maxGreen := 13
+	maxBlue := 14
+
+	sumOfValidGames := 0
+
+	for i, game := range games {
+
+		gameValid := true
+		for _, bag := range game {
+			if bag[0] > maxRed || bag[1] > maxGreen || bag[2] > maxBlue {
+				gameValid = false
+			}
+		}
+		if gameValid {
+			sumOfValidGames += i + 1
+		}
+		// fmt.Println(i+1, gameValid, game, sumOfValidGames)
+	}
+	return sumOfValidGames
+}
+
+func d2p2(input string) int {
+	games := d2parse(input)
+
+	powerSum := 0
+	for _, game := range games {
+
+		maxRed := 0
+		maxGreen := 0
+		maxBlue := 0
+
+		for _, bag := range game {
+			bagRed := bag[0]
+			bagGreen := bag[1]
+			bagBlue := bag[2]
+
+			if bagRed > maxRed {
+				maxRed = bagRed
+			}
+			if bagGreen > maxGreen {
+				maxGreen = bagGreen
+			}
+			if bagBlue > maxBlue {
+				maxBlue = bagBlue
+			}
+
+		}
+		power := maxRed * maxGreen * maxBlue
+		powerSum += power
+		// fmt.Println(i+1, ",", maxRed, maxGreen, maxBlue, power, powerSum)
+		// fmt.Println(i+1, gameValid, game, sumOfValidGames)
+	}
+
+	return powerSum
+}
+func d3p1(input string) int {
+
+	lines := strings.Split(input, "\n")
+
+	// currentnumber, int slice
+	isNumberBesideSymbol := false
+	currentNumber := []int{}
+
+	// 8 directional neighbours
+	neighbours := [8][2]int{
+		{-1, -1}, // top left
+		{0, -1},  // top
+		{1, -1},  // top right
+		{1, 0},   // right
+		{1, 1},   // bottom right
+		{0, 1},   // bottom
+		{-1, 1},  // bottom left
+		{-1, 0},  // left
+	}
+
+	sum := 0
+	for y, lineshit := range lines {
+		trimmedLine := strings.Trim(lineshit, "\r\n")
+
+		for x, char := range trimmedLine {
+			parsedNumber, err := strconv.Atoi(string(char))
+			isDot := string(char) == "."
+
+			if len(currentNumber) == 0 {
+				isNumberBesideSymbol = false
+			}
+
+			if err == nil {
+				if isDot {
+					panic("number is dot")
+				}
+				currentNumber = append(currentNumber, parsedNumber)
+
+				for _, neighbour := range neighbours {
+					globalX := x + neighbour[0]
+					globalY := y + neighbour[1]
+
+					if globalX >= 0 && globalX < len(trimmedLine) && globalY >= 0 && globalY < len(lines) {
+						// fmt.Println(globalX, globalY, lines[globalY][globalX])
+						neighbourChar := lines[globalY][globalX]
+						_, err := strconv.Atoi(string(neighbourChar))
+						neighbourDot := string(neighbourChar) == "."
+						if err != nil && !neighbourDot {
+							// at least one neighbour is a symbol
+							isNumberBesideSymbol = true
+						}
+					}
+				}
+			} else {
+				currentNumber = []int{}
+				// if !isDot {
+				// 	fmt.Println("symbol", string(char))
+				// }
+			}
+
+			numberIsFinished := false
+			if len(currentNumber) > 0 {
+				if x+1 < len(trimmedLine) {
+					nextChar := trimmedLine[x+1]
+					_, err := strconv.Atoi(string(nextChar))
+					if err != nil {
+						numberIsFinished = true
+					}
+				} else {
+
+					numberIsFinished = true
+				}
+			}
+
+			currentNumberString := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(currentNumber)), ""), "[]")
+			currentNumberInt, err := strconv.Atoi(currentNumberString)
+			if currentNumberString != "" && err != nil {
+				panic(err)
+			}
+			if numberIsFinished && isNumberBesideSymbol {
+				sum += currentNumberInt
+				// fmt.Println("number beside symbol", currentNumberInt, sum)
+			} else if numberIsFinished {
+				// fmt.Println("number not beside symbol", currentNumberInt)
+			}
+
+			// fmt.Println(x, y, string(char))
+
+		}
+	}
+	return sum
+}
+func d3p2(input string) int {
+
+	lines := strings.Split(input, "\n")
+
+	// currentnumber, int slice
+	isNumberBesideSymbol := false
+	currentNumber := []int{}
+
+	// 8 directional neighbours
+	neighbours := [8][2]int{
+		{-1, -1}, // top left
+		{0, -1},  // top
+		{1, -1},  // top right
+		{1, 0},   // right
+		{1, 1},   // bottom right
+		{0, 1},   // bottom
+		{-1, 1},  // bottom left
+		{-1, 0},  // left
+	}
+
+	sum := 0
+	for y, lineshit := range lines {
+		trimmedLine := strings.Trim(lineshit, "\r\n")
+
+		for x, char := range trimmedLine {
+			parsedNumber, err := strconv.Atoi(string(char))
+			isDot := string(char) == "."
+
+			if len(currentNumber) == 0 {
+				isNumberBesideSymbol = false
+			}
+
+			if err == nil {
+				if isDot {
+					panic("number is dot")
+				}
+				currentNumber = append(currentNumber, parsedNumber)
+
+				for _, neighbour := range neighbours {
+					globalX := x + neighbour[0]
+					globalY := y + neighbour[1]
+
+					if globalX >= 0 && globalX < len(trimmedLine) && globalY >= 0 && globalY < len(lines) {
+						// fmt.Println(globalX, globalY, lines[globalY][globalX])
+						neighbourChar := lines[globalY][globalX]
+						_, err := strconv.Atoi(string(neighbourChar))
+						neighbourDot := string(neighbourChar) == "."
+						if err != nil && !neighbourDot {
+							// at least one neighbour is a symbol
+							isNumberBesideSymbol = true
+						}
+					}
+				}
+			} else {
+				currentNumber = []int{}
+				// if !isDot {
+				// 	fmt.Println("symbol", string(char))
+				// }
+			}
+
+			numberIsFinished := false
+			if len(currentNumber) > 0 {
+				if x+1 < len(trimmedLine) {
+					nextChar := trimmedLine[x+1]
+					_, err := strconv.Atoi(string(nextChar))
+					if err != nil {
+						numberIsFinished = true
+					}
+				} else {
+
+					numberIsFinished = true
+				}
+			}
+
+			currentNumberString := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(currentNumber)), ""), "[]")
+			currentNumberInt, err := strconv.Atoi(currentNumberString)
+			if currentNumberString != "" && err != nil {
+				panic(err)
+			}
+			if numberIsFinished && isNumberBesideSymbol {
+				sum += currentNumberInt
+				// fmt.Println("number beside symbol", currentNumberInt, sum)
+			} else if numberIsFinished {
+				// fmt.Println("number not beside symbol", currentNumberInt)
+			}
+
+			// fmt.Println(x, y, string(char))
+
+		}
+	}
+	return sum
+}
+func SkipTestD3P1Example(t *testing.T) {
+	input := `467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..`
+
+	sum := d3p1(input)
+
+	if sum != 4361 {
+
+		t.Fatalf(`D3P1Example = %d`, sum)
+	}
+
+}
+func TestD3P1Input(t *testing.T) {
+	inputFile, err := os.ReadFile("./d3in.txt")
+	check(err)
+	input := string(inputFile)
+
+	sum := d3p1(input)
+	if sum != 551094 {
+
+		t.Fatalf(`D3P1Input = %d`, sum)
+	}
+
+}
+
+func TestD3P2Example(t *testing.T) {
+	input := `467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..`
+
+	sum := d3p2(input)
+
+	if sum != 467835 {
+
+		t.Fatalf(`D3P2Example = %d`, sum)
+	}
 }
