@@ -1,3 +1,4 @@
+import { assert } from "./common"
 
 
 
@@ -294,12 +295,6 @@ for (const card of totalCards) {
   }
     console.log(total)
 
-export function assert(
-    condition: unknown,
-    message?: string,
-  ): asserts condition {
-    if (!condition) throw Error(message ?? "assertion failed");
-  }
   
 
 
