@@ -1,4 +1,4 @@
-import { assert } from "./common"
+import { assert, assertEqual } from "./common"
 
 const input = `seeds: 104847962 3583832 1212568077 114894281 3890048781 333451605 1520059863 217361990 310308287 12785610 3492562455 292968049 1901414562 516150861 2474299950 152867148 3394639029 59690410 862612782 176128197
 
@@ -241,7 +241,7 @@ humidity-to-location map:
 60 56 37
 56 93 4`
 
-const [seeds, ...maps] = input.split('\n\n')
+const [seeds, ...maps] = example.split('\n\n')
 const seedstrings = seeds.split(': ')[1].split(' ')
 assert(seedstrings.every(n => n.match(/^\d+$/)))
 const seednumbers = seedstrings.map(Number)
@@ -327,10 +327,43 @@ console.log("solution:", smallest)
 
 
 // ------------------
-function mapseed(seed, map) {
-    throw new Error("not implemented")
+// function mapseed(seed, map) {
+//     throw new Error("not implemented")
+// }
+
+type SeedRange = {
+    start:number
+    count:number
 }
 
-function mapSeeds(seedrange, map) seedrange[] {
-    throw new Error("not implemented")
+function mapSeedRange(seedrange:SeedRange, parsedLine:ParsedLine) :SeedRange[] {
+
+    const {source, destination, rangeLength} = parsedLine
+    const {start, count} = seedrange
+    
+    if (start >= source && start < source + rangeLength) {
+        // partial overlap between seedrange and parsedLine
+        // we have to split the seedrange into two parts
+        // and map each part separately
+        const endLine = source + rangeLength
+        const count = endLine - start
+        const firstPartNotMapped = {
+            start,
+            count
+        }
+
+        const secondPartNotMapped = {
+            start: endLine,
+            count: seedrange.count - count
+        }
+
+
+    }
+
+    return []
 }
+
+const expected = [
+    {start:10, count:1}
+]
+assertEqual(JSON.stringify(mapSeedRange({start:0, count:1}, {source: 0, destination: 10, rangeLength: 1}),null,2),JSON.stringify(expected,null,2))
