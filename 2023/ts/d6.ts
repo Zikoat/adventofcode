@@ -10,7 +10,7 @@ const example :InputType = {
     distance:[  940200]
 }
 
-const input = realinput
+const input = example
 type InputType = {
     time: number[];
     distance: number[];
