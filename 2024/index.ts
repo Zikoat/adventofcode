@@ -1,4 +1,3 @@
-import {} from "./d1";
-import {} from "./d2";
-
-
+import "./d1";
+import "./d2";
+import "./d3";
