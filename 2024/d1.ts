@@ -1,6 +1,6 @@
 console.log("d1");
 
-import { assert } from "../2023/ts/common";
+import { ass } from "../2023/ts/common";
 import { Schema } from "effect";
 
 const d1realinput = `16435   48069
@@ -1017,13 +1017,15 @@ function getSumDifference(input: string) {
   const sortedLeft = leftList.toSorted();
   const sortedRight = rightList.toSorted();
 
-  assert(sortedLeft.length === sortedRight.length);
+  ass(sortedLeft.length === sortedRight.length);
 
   let differenceSum = 0;
 
   for (let i = 0; i < sortedLeft.length; i++) {
     const left = sortedLeft[i];
     const right = sortedRight[i];
+    ass(left);
+    ass(right);
 
     const difference = Math.abs(left - right);
     differenceSum += difference;
@@ -1046,8 +1048,11 @@ function parseLists(input: string) {
   for (const line of lines) {
     const [left, right] = line.split("   ");
 
-    assert(/^\d+$/.test(left));
-    assert(/^\d+$/.test(right));
+    ass(left);
+    ass(right);
+
+    ass(/^\d+$/.test(left));
+    ass(/^\d+$/.test(right));
 
     leftList.push(Number(left));
     rightList.push(Number(right));
@@ -1056,9 +1061,9 @@ function parseLists(input: string) {
   return Schema.encodeSync(Lists)({ rightList, leftList });
 }
 
-assert(getSumDifference(d1testinput) === 11);
+ass(getSumDifference(d1testinput) === 11);
 
-assert(getSumDifference(d1realinput) === 1722302);
+ass(getSumDifference(d1realinput) === 1722302);
 
 function p2(input: string): number {
   const { rightList, leftList } = parseLists(input);
@@ -1070,6 +1075,6 @@ function p2(input: string): number {
   return score;
 }
 
-assert(p2(d1testinput) === 31);
+ass(p2(d1testinput) === 31);
 
-assert(p2(d1realinput) === 20373490);
+ass(p2(d1realinput) === 20373490);

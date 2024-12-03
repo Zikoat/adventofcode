@@ -1,19 +1,7 @@
 console.log("d2");
 
-import { assert, assertEqual } from "../2023/ts/common";
+import { asseq, ass } from "../2023/ts/common";
 import { Schema } from "effect";
-import { deepEquals } from "bun";
-
-export function assertEqualObject<T>(
-  got: T,
-  want?: T
-  // message?: string,
-): asserts want is T {
-  if (!deepEquals(want, got, true)) {
-    const actualString = JSON.stringify(got);
-    throw Error(actualString + " should be " + want);
-  }
-}
 
 const d1testinput = `7 6 4 2 1
 1 2 7 8 9
@@ -1039,6 +1027,8 @@ function areLevelsSafe(levels: readonly number[]): boolean {
   for (let i = 1; i < levels.length; i++) {
     const element = levels[i];
     const prev = levels[i - 1];
+    ass(element);
+    ass(prev);
     derivative.push(element - prev);
   }
   // console.log(derivative);
@@ -1063,7 +1053,7 @@ function parse(input: string) {
     const levels = report.split(" ");
     const levelsArray: number[] = [];
     for (const level of levels) {
-      assert(/^\d+$/.test(level), `${level} should be an int`);
+      ass(/^\d+$/.test(level), `${level} should be an int`);
       const levelNumber = Number(level);
       levelsArray.push(levelNumber);
     }
@@ -1074,7 +1064,7 @@ function parse(input: string) {
   return Schema.encodeSync(Reports)(reportsArray);
 }
 
-assertEqualObject(parse(d1testinput), [
+asseq(parse(d1testinput), [
   { levels: [7, 6, 4, 2, 1] },
   { levels: [1, 2, 7, 8, 9] },
   { levels: [9, 7, 6, 2, 1] },
@@ -1083,9 +1073,9 @@ assertEqualObject(parse(d1testinput), [
   { levels: [1, 3, 6, 7, 9] },
 ]);
 
-assertEqualObject(p1(d1testinput), 2);
+asseq(p1(d1testinput), 2);
 
-assertEqualObject(p1(d1realinput), 359);
+asseq(p1(d1realinput), 359);
 
 function p2(input: string): number {
   let score = 0;
@@ -1114,6 +1104,6 @@ function p2(input: string): number {
   return score;
 }
 
-assertEqual(p2(d1testinput), 4);
+asseq(p2(d1testinput), 4);
 
-assertEqual(p2(d1realinput), 418);
+asseq(p2(d1realinput), 418);

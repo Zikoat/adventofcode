@@ -1,21 +1,9 @@
 console.log("d3");
 
-import { Schema } from "effect";
-import { deepEquals } from "bun";
-import { assert } from "../2023/ts/common";
+import { Schema as s } from "effect";
+import { asseq, ass } from "../2023/ts/common";
 
-export function assertEqual<T>(
-  got: T,
-  want?: T
-  // message?: string,
-): asserts want is T {
-  if (!deepEquals(want, got, true)) {
-    const actualString = JSON.stringify(got);
-    throw Error(actualString + " should be " + want);
-  }
-}
-
-const d1testinput = `xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))`;
+const d1p1testinput = `xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))`;
 
 const d1realinput = `where()(< }when()mul(678,62)%mul(747,584)from()-select(59,725)mul(570,425)<~^:$where()!@}where()mul(542,816):don't()select()from()#(;!select()mul(541,668)mul(557,427)what()<#-why(952,537)*what()}mul(723,604)/^]'+;from()('-mul(227,146)'what()~*who():select()~from()do()mul(640,593)^$<*from()??>$mul(879,96),}?;(mul(465,50)>!~%'do()$'#'<**mul(781,977)-,?where();mul(154,168)>mul(532,770)(>#*what()/^}?mul(498,722)%^mul(710,295)from()@>mul(816,977)how(80,33)^$?what()how(),what()mul(987,59)'-mul(106,916) when();^(from()where()(what()mul(474,920)?%,mul(435,248)<mul(701,405)] {@mul(44,889)#>do(),:>$how();~^ from()mul(48,417),#,{mul(430,437)%[,@@mul(953,728)'mul(556,935)]]&select()when()!:/when()%mul(249,960)+;{select(),#mul(713,901)!?^when()%mul(910,594)&where()how(316,735)<mul(615,61)}-mul(539,208)what()@)?/#}(^mul(312,368)[%what(965,619)how()do():'}&;]>{mul(838,23)$mul(690,953)from();)who()}from()mul(803,624)when(){mul(280,406)mul(190,779)select()#+,[-mul(381,486)*&+['*mul(566,57)mul(91,816)>select()mul(578,725)%&!mul(173,595)*;'do()when()from()/mul(438,7)%mul(15,794)?when()from()}where()  who()-mul(103,235);mul(971,383)@do()$mul(250,84)<from()$;from(),what(359,353) )mul(525,511)$^{select() +}what()from()mul(159,625):where()!:###~><mul(823,941)what()mul(935,812)when()select()when():mul(736,661)how()mul(728,742)how()*+mul(627,380)?when(589,538)+mul(531,652)>when()where(306,50)select(454,21)@)*mul(419,450):{)mul(736,148))when()*{what()mul(831,562)>]/}who()'do()&who()*+,who(637,20)#/$mul(896,737)-#when()select()when(),:~$@mul(988,98) select()who(709,386);-*!where()~do()!^mul(870,729)what();@mul(749,333)&when()&#how() where()}who()#mul(935,153)[from()!mul(781,341)&){what()mul(833,819)/[~{/]@mul(184,985)^<%{;{mul(630,218){what()}#when()~$'mul(14,702)%>select()^[@mul(474,41)from(){$do()*select()#/how()mul(488,463:where()where(){]-,#-mul(407,949)what()select()where(364,988)^~#*who(){mul(999,525);;select()from()@'why()don't()<+:where()^from()-mul(558,527)@from()<what()&why()when()!from()mul(28,969)&where()};mul(101,807)~,~?mul(21,300)?mul(784,363)]?&{+^who())<mul(751,251)}where()when() mul(129,699)when()&[; do()#mul(593,157!  -how() {mul(336,273)$[mul(767*&:from()mul(350,145)]who(524,855)/#from()'/[!&mul(311,457)<select(259,997)}from()>$</+ do()from()!}where()~]:>!mul(838,414)where()-/mul(810,111)'<mul(973,153)~!mul(143,649)[}$don't()#:)$?*when()(select()mul(466,395)^#[<';&from(96,136)$(mul(371,173)$>how()who() :,where()mul(355,829what()'%^[mul(196,488)[mul(547,815)-how()$when()~ ~how()mul(24,761)!from()%]%?>mul(950,754)mul(649,683){>where()select()mul(771,439)mul(236,961)@what(),~what();^how()mul(791,10))why(),mul(278,737),why()<@~,]?from()do()+#/;} (/^when()mul(139,448)+%^(@ what())mul(122,226)select()[]select():mul(890>when()&what(508,897)select()>~{{{}mul(831,320)from())how()how()who()'mul(283,391);#@mul(310,864)&$-@!:where()mul(869,883)<$}@+<))mul(380,96)%?~ when()how()mul(629,878)#what()who()mul(888,359)$&*![&{~who()'mul(820,290)from()!{/(?,@^~mul(34,230);,don't()why(737,412):?mul(66,718)what(376,732)<mul(797,825)who()],<]why()mul(634,889)where()when()&!how(760,87)select():@what()mul(280,650)-! $ mul(509how()-#why()(>mul(315,501),:mul(706,831)when()mul(9,585)select()&from()mul(612,24)
 )what()]'why()how(654,256)-mul(806,436)!/>~select():;'$from()mul(899,742)[%~mul(736,580)@where()who()why();how()>mul(23,836)when():when()}{}mul(715,293):mul(282,580)from()$?/*>mul(201,586);#;where()mul(118,230)who(){~!@!mul(88,537)#}-^/~mul(910,268)mul(976,63)^&{( :'mul(458,717)$$-how()^-]&+!mul(984,138)>;@where(752,136)mul(697,113)mul(124,665);!select()&how()what()mul(829,781)mul(380,512){!/<(]from()mul!@from():how()}<;(where()mul(206,188)>*how()%*when()mul(702,947)select(36,946)%}why()&+mul(129,741){/<)mul(16,381)how()what()*&{'}mul(192,91)who()$+&++mul(250,605)[[}select()-@,who(798,362)@don't()#how()} {?,who():mul(359,185)who(){ mul(467,606){why()-select()/*?mul(180,855)why()mul(134,121)!;'@~why(187,921)mul(437,28)mul(176,665)*?*!from()who()mul(432,913)[how()when()what()^/mul(277,854)$mul(311,503),%how()]/mul(290,640)where()<!mul(633,634)}[]mul(622,202)where()mul(524,996)!mul(432,456)%[what()what()@?<'who()mul(458,188)[^why()why()}^]mul(635,632)}where()from()^$how();}mul [mul(814,798)%mul(707,658);&+#,what() mul(493,278)what();[<#who()~mul(71,275)]/)>mul(945,575)@where(394,615)why()from(){where()/when()}mul(186,609)mul(105,239)&><)select()when():!mul(352,943)[ how()'why()#?how()who()]mul(148,156)~mul(797,298)#&-(++where(36,220)(~mul(141,332) mul(963,953)mul(79,791)~#);who())mul(465,458);#when(243,832)>#$*!?mul(977,49)where(808,80)$~]mul(84,878)where():(<< mul)/ :; mul(698,14)when()what()'>mul(455,546)%where()&@;when(491,752)$mul(185,720)?%]from()}how()%mul(402,280) #what()[[%' mul(612,36){when()mul(159,470)@*mul(238,734)}?from()why()' do()@who()mul(172,976)](;/what()<where()do()'[;from()who(),}where()select(542,70)mul(886,778)when()~who()mul(564,730)>-(how()$@@'mul(84,598)<@where()?what()<{?when()mul(162,924)mul(545,472)select(886,293){$when()from()//*mul(59,957)^*why(31,601)mul(608,367)'?@mul(915,987) +[mul(678,85) mul(501,729)-how()how()&select()($^$~do()!-what()-^;mul(682,420)when()mul(469,47)why(119,43)}~mul(699,30)?%>who()?{'mul(264,568)<}+!who()mul(579,479)mul(642,809)/,+>)<[mul(351,839){%(where()-}$mul(240,335)mul(475,338)^who()[{$@when();/mul(335,996)[+mul(954,892):when()what():who()mul(703,909))^,$'(what()do()&mul(675,270)%*];do()$<what()~# *where(){mul(700,774)+why()!mul(167,944)why()-{,?#*mul(263,222)when(937,759)how()[%do()when()~]*; how(),][mul(797,496)*# ,who()what()mul(417,548)+<@&who()mul(410,219)<how()-mul(946,326)how()mul(672,637),mul(928,490)who()why(217,124)from()mul(922,974)!^% mul(132+select()don't()who())<from()  &what()mul(357,21)who()({what()$mul(79,941)@>/select())#]#*mul(463,143)}how()when()!$]do()mul(832,164)-what()<what()//&#)what()mul(588,879)):?!;%mul(854,370)-#[[]why()mul(853,834)&!:!how()mul(83,715)who()select();#when();{mul(498,332):mul(681,273who()$<@# !why()mul(206,67)when());',%mul(341,939) ',mul(344,602)mul(803,721){{(mul(353,665)where()^)*^^(?(mul(19,951)&don't()where()mul(453,418)who():select(503,219)when()},mul(99,836);!mul(688,742)?when()^!how()why()mul(643,864)}%from()$mul(217,653)
@@ -25,123 +13,85 @@ const d1realinput = `where()(< }when()mul(678,62)%mul(747,584)from()-select(59,7
 mul(485,849)%'&/} #why()mul(337,670)}&when(292,584)mul(291,636)$<,}mul(873,787)mul(583,597)from()%-{-(+!do()]?mul(508,735)where()+<[*,[^#mul(356,730) why()^what()@?where(558,563)!mul(254,728)mul(573,97)'when(){[!mul(847,358)>+-%[mul(445,707)~<+< *&who(192,588)/mul(339,368)why()?>how())*&when() mul(807,43)don't()$@%who();&(how()mul(719,162)#{(from(),;mul:~-where()%who()how(84,44),mul(970,95)where()(/]how():mul(223[;'?why()!/how()@@who()mul(507,673))^mul(977,524)from()select()^}{#)when()*mul(454,303)%select()*@,mul(563,289)*}who()<}<;why()&mul(673,375)^where()~mul(637,689)'*^who()?don't()who()where()<mul(729,329),?+mul(452,183)where();mul(412,329)select()&{^select()mul(304,748/-<~{$'$mul(250,311)^[!*@don't()-]%when()who()mul(275,612)mul(808,359)%:?how()'/$what()mul(125,6)>mul(347,707)[#mul(714,896)]mul(249,387)mul(991,762)from()when()where()how(553,916)-mul(116,473)& {who()mul(934,426)#)}from()mul(305,521)why(583,561)-;<}/how()mulwhat()<@&mul(667,932)%select()%mul(196,687))select()*do()from()/what()select()}mul(141,484)+]from()!'^how()who()[$mul(493,253):)&<mul(106,339)[#}[mul(527,610)/@&,#)/;who())mul(945,633)#who()!&,when(),]mul(699,592)*%mul(533,983)#:where()who()>$;[<]mul(663,997) {#@~:#-!mul(869,651)?*@/<#--do()mul(584,519)%select()what()who()-(!@how()don't()<,[!!;where()<^)mul(670,564);$what(),}mul(584,531)-(*mul(727,546)$:how(410,917)select()mul(447,208)'who()( ')&mul(476,15)how()where()^what()mul(332,458)what()?^where()how()how() {&how()mul(265,666)+(-~$mul(341,155)!,where()[mul(302,949);]select()-mul(459,712)-,+{$$+why()(from()mul(764,395)what()]!:do()$where()select():(when()when()where()mul(504,781)/'[why(65,459)where()**(select()%mul(215,820)(how()#{from()@why()do())$+?(*mul(59,437)!why()when()$)%)(when()mul(496,71) ]mul(265,963)/}mul(26,629)why()@]?-where()mul(918,981)#{@mul(179,990)when()%how()# ,mul(762,324)?from()%from(613,182)from(983,106)$!+mul(403,875)/>when(695,810))}when()@mul(992,141)*^who()when()what() do()how()why())[{[]&<mul(758,998)<!)#//'how()mul(966,404)* when()select()mul(772,998)'}&;;when()when(647,664)[;mul(357,688)(:mul(936,619)-'!)]from()why()what()[*mul(35,397)select()@@' mul(690,152)#where()mul(918,315)*'~];{%#mul(705,251),($;'mul(229,687)mul(12,423);# ;who()#('mul(409,16)mul(734,661)@[}*;{]*mul(642,531)(mul(897,68)}*[%-what()>why()when()mul(156,843)!;}/do()/<$mul(707,716)*why()'(mul(534,614),'((>mul(89,31)[-what(943,12)]from()-$mul(663,578)!^>mul(726,923)what():; ;$don't() mul(660,32)when()'what()^-]mul(684,845)@+#>#^~/^%mul(385,586)%what()mul(800,106)<mul(390,554)}mul(93,903)from()?;$mul(334,112)#what(549,926)-[ (mul(822,67)^'+%how(922,819) %^mul(535,921)mul(585,568)/:don't()mul(996,381);[mul(750,438)who()$;why()^?%[do()mul(837,207)@,select();^-$don't()why()why()>#why()mul(960,402)<,&{%what()]select()mul(289,89)%){>?+//mul(23,303)what()select(708,763)where()%how()><select()mul(542,492)how()when(976,435)select()#>%mul(224,519)+  ]mul(152,297)]mul(49,650)why()<)%where()mul(783,630)# `;
 
 function p1(input: string): number {
-  const reports = input.matchAll(/mul\((\d{1,3}),(\d{1,3})\)/g).toArray();
-
-  let mySchema = Schema.Array(
-    Schema.Tuple(
-      Schema.String,
-      Schema.NumberFromString,
-      Schema.NumberFromString
-    )
-  );
-
-  const shit = Schema.decodeUnknownSync(mySchema)(reports);
+  const shit = s.decodeUnknownSync(
+    s.Array(s.Tuple(s.String, s.NumberFromString, s.NumberFromString))
+  )(input.matchAll(/mul\((\d{1,3}),(\d{1,3})\)/g).toArray());
 
   // console.log(shit);
 
-  const parsed = shit.map((i) => [i[1], i[2]] as const);
-
   let score = 0;
 
-  for (const mul of parsed) {
-    score += mul[0] * mul[1];
+  for (const mul of shit) {
+    score += mul[1] * mul[2];
   }
 
   return score;
 }
 function p2(input: string): number {
-  const reports = input
-    .matchAll(/(mul)\((\d{1,3}),(\d{1,3})\)|(do)\(\)|(don't)\(\)/g)
-    .toArray();
-
-  const Do = Schema.Tuple(
-    Schema.Literal("do()"),
-    Schema.Undefined,
-    Schema.Undefined,
-    Schema.Undefined,
-    Schema.Literal("do"),
-    Schema.Undefined
-  );
-  const Dont = Schema.Tuple(
-    Schema.Literal("don't()"),
-    Schema.Undefined,
-    Schema.Undefined,
-    Schema.Undefined,
-    Schema.Undefined,
-    Schema.Literal("don't")
-  );
-  const Mul = Schema.Tuple(
-    Schema.String,
-    Schema.Literal("mul"),
-    Schema.NumberFromString,
-    Schema.NumberFromString,
-    Schema.Undefined,
-    Schema.Undefined
-  );
-
-  let mySchema = Schema.Array(Schema.Union(Mul, Do, Dont));
-  // console.table(reports.toSorted());
-  const parsed = Schema.decodeUnknownSync(mySchema)(reports, {
-    exact: true,
-    onExcessProperty: "error",
-  });
-
-  // console.log(parsed);
-  type Command =
-    | {
-        type: "mul";
-        args: [number, number];
-      }
-    | {
-        type: "do";
-      }
-    | {
-        type: "dont";
-      };
-
-  const shit: Array<Command> = parsed.map((report): Command => {
-    const maybeDo = report[4];
-    if (maybeDo === "do") {
-      return { type: "do" };
+  const parsed = s.decodeUnknownSync(
+    s.Array(
+      s.Union(
+        s.Tuple(
+          s.String,
+          s.Literal("mul"),
+          s.NumberFromString,
+          s.NumberFromString,
+          s.Undefined,
+          s.Undefined
+        ),
+        s.Tuple(
+          s.Literal("do()"),
+          s.Undefined,
+          s.Undefined,
+          s.Undefined,
+          s.Literal("do"),
+          s.Undefined
+        ),
+        s.Tuple(
+          s.Literal("don't()"),
+          s.Undefined,
+          s.Undefined,
+          s.Undefined,
+          s.Undefined,
+          s.Literal("don't")
+        )
+      )
+    )
+  )(
+    input
+      .matchAll(/(mul)\((\d{1,3}),(\d{1,3})\)|(do)\(\)|(don't)\(\)/g)
+      .toArray(),
+    {
+      exact: true,
+      onExcessProperty: "error",
     }
+  );
 
-    const maybeDont = report[5];
-    if (maybeDont === "don't") {
-      return { type: "dont" };
-    }
-    const maybeMul = report[1];
-    if (maybeMul === "mul") {
-      return { type: "mul", args: [report[2], report[3]] };
-    }
-
-    throw Error("type not recognized");
-  });
+  // console.table(parsed);
 
   let enabled = true;
   let score = 0;
-  for (let i = 0; i < shit.length; i++) {
-    const command = shit[i];
-    assert(command);
-    if (command.type === "do") enabled = true;
-    else if (command.type === "dont") enabled = false;
-    else if (command.type === "mul") {
-      if (enabled) {
-        score += command.args[0] * command.args[1];
-      }
-    } else {
-      throw Error("unrecognized command");
-    }
+
+  for (let i = 0; i < parsed.length; i++) {
+    const command = parsed[i];
+    ass(command);
+
+    if (command[4] === "do") enabled = true;
+    else if (command[5] === "don't") enabled = false;
+    else if (command[1] === "mul") {
+      if (enabled) score += command[2] * command[3];
+    } else throw Error("type not recognized");
   }
 
   return score;
 }
 
-assertEqual(p1(d1testinput), 161);
+asseq(p1(d1p1testinput), 161);
 
-assertEqual(p1(d1realinput), 180233229);
+asseq(p1(d1realinput), 180233229);
 
 const d1p2testinput = `xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))`;
 
-assertEqual(p2(d1p2testinput), 48);
+asseq(p2(d1p2testinput), 48);
 
-assertEqual(p2(d1realinput), 95411583);
+asseq(p2(d1realinput), 95411583);

@@ -1,16 +1,19 @@
-export function assert(
-  condition: unknown,
+import { deepEquals } from "bun";
+
+export function ass(
+  truthy: unknown,
   message?: string
-): asserts condition {
-  if (!condition) throw Error(message ?? "assertion failed");
+): asserts truthy {
+  if (!truthy) throw Error(message ?? "assertion failed");
 }
-export function assertEqual<T>(
-  actual: T,
-  expected: T
-  // message?: string,
-): asserts expected is T {
-  if (!Object.is(expected, actual)) {
-    const actualString = JSON.stringify(actual);
-    throw Error(actualString + " should be " + expected);
+
+export function asseq<T>(
+  got: T,
+  want?: T,
+  message?: string
+): asserts want is T {
+  if (!deepEquals(want, got, true)) {
+    const actualString = JSON.stringify(got);
+    throw Error(message + actualString + " should be " + want);
   }
 }
