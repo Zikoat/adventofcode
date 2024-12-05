@@ -14,3 +14,8 @@ export function asseq<T>(
     throw Error((message ?? "") + actualString + " should be " + want);
   }
 }
+
+export function nonNull<T>(shit: NonNullable<T> | undefined): T {
+  ass(shit);
+  return shit;
+}

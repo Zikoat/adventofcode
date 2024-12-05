@@ -1,11 +1,53 @@
-console.log("d5");
+console.log(import.meta.file);
 
-import { Schema as s } from "effect";
 import { asseq, ass } from "../2023/ts/common";
-import { assert } from "effect/FastCheck";
-import { deepEquals, type ZlibCompressionOptions } from "bun";
+import { deepEquals } from "bun";
 
-const p1testinput = `47|53
+function calcBoth(input: string): { p1: number; p2: number } {
+  const [rawRules, rawUpdates] = input
+    .split("\n\n")
+    .map((ruleOrUpdate) => ruleOrUpdate.split("\n"));
+
+  ass(rawRules);
+  ass(rawUpdates);
+
+  const rules = rawRules.map((rule) => rule.split("|"));
+  const updates = rawUpdates.map((update) => update.split(","));
+
+  let p1 = 0;
+  let p2 = 0;
+
+  for (const update of updates) {
+    const sortedUpdate = update.toSorted((first, second) => {
+      const orders = rules.filter(
+        (rule) =>
+          (rule[0] === first && rule[1] === second) ||
+          (rule[0] === second && rule[1] === first)
+      );
+
+      asseq(orders.length, 1);
+      const order = orders[0];
+      ass(order);
+
+      if (order[0] === first) return -1;
+      else return 1;
+    });
+
+    if (deepEquals(update, sortedUpdate)) {
+      p1 += Number(update[Math.floor(update.length / 2)]);
+    } else {
+      p2 += Number(sortedUpdate[Math.floor(sortedUpdate.length / 2)]);
+    }
+  }
+
+  return {
+    p1,
+    p2,
+  };
+}
+
+asseq(
+  calcBoth(`47|53
 97|13
 97|61
 97|47
@@ -32,89 +74,12 @@ const p1testinput = `47|53
 75,29,13
 75,97,47,61,53
 61,13,29
-97,13,75,29,47`;
-
-// function p1(input: string): number {
-//   let score = 0;
-//   return score;
-// }
-const Rules = s.Array(s.Tuple(s.NumberFromString, s.NumberFromString));
-const Update = s.Array(s.NumberFromString);
-const Updates = s.Array(Update);
-const ParsedSchema = s.Struct({
-  rules: Rules,
-  updates: Updates,
-});
-
-function parse(input: string): typeof ParsedSchema.Type {
-  const [shit5, shit6] = input.split("\n\n");
-  ass(shit5);
-  ass(shit6);
-  const shit = shit5.split("\n").map((rule) => rule.split("|"));
-  const shit2 = shit6.split("\n").map((update) => update.split(","));
-  const parsedRaw = { rules: shit, updates: shit2 };
-
-  // console.log(parsedRaw);
-
-  const shit3 = s.decodeUnknownSync(ParsedSchema)(parsedRaw);
-  return shit3;
-}
-
-asseq(parse(p1testinput), {
-  rules: [
-    [47, 53],
-    [97, 13],
-    [97, 61],
-    [97, 47],
-    [75, 29],
-    [61, 13],
-    [75, 53],
-    [29, 13],
-    [97, 29],
-    [53, 29],
-    [61, 53],
-    [97, 53],
-    [61, 29],
-    [47, 13],
-    [75, 47],
-    [97, 75],
-    [47, 61],
-    [75, 61],
-    [47, 29],
-    [75, 13],
-    [53, 13],
-  ],
-  updates: [
-    [75, 47, 61, 53, 29],
-    [97, 61, 53, 29, 13],
-    [75, 29, 13],
-    [75, 97, 47, 61, 53],
-    [61, 13, 29],
-    [97, 13, 75, 29, 47],
-  ],
-});
-
-function isUpdatesCorrect(
-  update: readonly number[],
-  rules: (typeof ParsedSchema.Type)["rules"]
-): boolean {
-  const orderedUpdate = sort(update, rules);
-  return deepEquals(update, orderedUpdate);
-}
-
-function nonNull<T>(shit: NonNullable<T> | undefined): T {
-  ass(shit);
-  return shit;
-}
-
-ass(
-  isUpdatesCorrect(
-    nonNull(parse(p1testinput).updates[0]),
-    parse(p1testinput).rules
-  )
+97,13,75,29,47`),
+  { p1: 143, p2: 123 }
 );
 
-const realInput = `86|99
+asseq(
+  calcBoth(`86|99
 69|32
 69|42
 77|99
@@ -1472,80 +1437,6 @@ const realInput = `86|99
 95,11,61,73,55,51,76,35,57,17,21,33,98,85,32,36,34,25,64
 97,83,61,32,11,73,98,25,17,31,55,33,79,36,85,34,21
 85,21,51,95,16,94,77,91,26,65,49,89,15
-72,29,32,69,49,83,89,15,42,27,65`;
-
-function p1(input: string): number {
-  const { updates, rules } = parse(input);
-  let score = 0;
-  for (let i = 0; i < updates.length; i++) {
-    const update = updates[i];
-    ass(update);
-
-    const cor = isUpdatesCorrect(update, rules);
-    // console.log(update, " correct:", cor);
-    if (cor) {
-      asseq(update.length % 2, 1);
-      const middle = update[Math.floor(update.length / 2)];
-      ass(middle);
-      // console.log("middle", middle);
-      score += middle;
-    }
-  }
-  // console.log(score);
-  return score;
-}
-
-asseq(p1(p1testinput), 143);
-asseq(p1(realInput), 4872);
-
-function order(
-  first: number,
-  second: number,
-  rules: typeof Rules.Type
-): 1 | -1 {
-  const orders = rules.filter(
-    (rule) =>
-      (rule[0] === first && rule[1] === second) ||
-      (rule[0] === second && rule[1] === first)
-  );
-  asseq(orders.length, 1);
-  const order = orders[0];
-  ass(order);
-  if (order[0] === first) return -1;
-  else return 1;
-}
-
-function sort(
-  update: typeof Update.Type,
-  rules: typeof Rules.Type
-): typeof Update.Type {
-  return update.toSorted((a, b) => order(a, b, rules));
-}
-const testParsed = parse(p1testinput);
-asseq(
-  sort(nonNull(testParsed.updates[0]), testParsed.rules),
-  [75, 47, 61, 53, 29]
+72,29,32,69,49,83,89,15,42,27,65`),
+  { p1: 4872, p2: 5564 }
 );
-
-function p2(input: string): number {
-  const { updates, rules } = parse(input);
-
-  let score = 0;
-
-  for (const update of updates) {
-    const orderedUpdate = sort(update, rules);
-    if (deepEquals(update, orderedUpdate)) {
-      // console.log("sort is correct for ", orderedUpdate);
-    } else {
-      // console.log("correct sort for " + update + " is " + orderedUpdate);
-      const middle = orderedUpdate[Math.floor(orderedUpdate.length / 2)];
-      ass(middle);
-      score += middle;
-    }
-  }
-
-  return score;
-}
-
-asseq(p2(p1testinput), 123);
-asseq(p2(realInput), 5564);

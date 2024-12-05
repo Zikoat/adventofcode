@@ -1,8 +1,6 @@
-console.log("d4");
+console.log(import.meta.file);
 
-import { Schema as s } from "effect";
 import { asseq, ass } from "../2023/ts/common";
-import { assert } from "effect/FastCheck";
 
 const p1testinput1 = `..X...
 .SAMX.

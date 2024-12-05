@@ -1,4 +1,4 @@
-console.log("d1");
+console.log(import.meta.file);
 
 import { ass } from "../2023/ts/common";
 import { Schema } from "effect";

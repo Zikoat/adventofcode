@@ -1,4 +1,4 @@
-console.log("d3");
+console.log(import.meta.file);
 
 import { Schema as s } from "effect";
 import { asseq, ass } from "../2023/ts/common";
