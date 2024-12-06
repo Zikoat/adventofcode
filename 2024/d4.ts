@@ -1,4 +1,4 @@
-console.log(import.meta.file);
+// console.log(import.meta.file);
 
 import { asseq, ass } from "../2023/ts/common";
 
