@@ -11,7 +11,7 @@ export function asseq<T>(
 ): asserts want is T {
   if (!deepEquals(want, got, true)) {
     const actualString = JSON.stringify(got);
-    throw Error((message ?? "") + actualString + " should be " + want);
+    throw Error((message ?? "") + actualString + " should be " + JSON.stringify(want));
   }
 }
 
