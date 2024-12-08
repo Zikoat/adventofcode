@@ -1,6 +1,7 @@
 import { test } from "bun:test";
 
 test.each([
+  8,
   // 7,
   // 6,
   5,
