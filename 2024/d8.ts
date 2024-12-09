@@ -1,6 +1,7 @@
+import { differ } from "effect/RuntimeFlags";
 import { ass, asseq } from "../2023/ts/common";
 
-const testa = `............
+const test = `............
 ........0...
 .....0......
 .......0....
@@ -62,76 +63,107 @@ G....N.....uJ...............................0.....
 ...C....q...........R.........P...................
 .....q..tC....2.9.....B............P....f.........
 ...............2.................................7`;
+const testT = `T.........
+...T......
+.T........
+..........
+..........
+..........
+..........
+..........
+..........
+..........`;
 
-asseq(p1(testa), 14);
-asseq(p1(real), 344);
-function p1(input: string): number {
-  const coordinates: Record<string, { x: number; y: number }[]> = {};
+asseq(p2(test), 34);
+asseq(p2(testT), 9);
+asseq(p2(real), 1182);
 
-  const shit = input.split("\n").map((row, y) =>
+function p2(input: string): number {
+  const frequenciesMap: Record<string, { x: number; y: number }[]> = {};
+
+  const map = input.split("\n").map((row, y) =>
     row.split("").map((char, x) => {
       if (char === ".") return ".";
-      let antennasForFreq = coordinates[char];
+      let antennasForFreq = frequenciesMap[char];
       if (!antennasForFreq) {
-        coordinates[char] = [];
-        antennasForFreq = coordinates[char];
+        frequenciesMap[char] = [];
+        antennasForFreq = frequenciesMap[char];
       }
       antennasForFreq.push({ x, y });
       return char;
     })
   );
 
-  // asseq(coordinates, {
-  //   "0": [
-  //     { x: 8, y: 1 },
-  //     { x: 5, y: 2 },
-  //     { x: 7, y: 3 },
-  //     { x: 4, y: 4 },
-  //   ],
-  //   A: [
-  //     { x: 6, y: 5 },
-  //     { x: 8, y: 8 },
-  //     { x: 9, y: 9 },
-  //   ],
-  // });
-  // console.table(shit);
-  // asseq(shit)
-  // console.log(shit.map(a => a.join("")).join("\n"))
   const antinodes: boolean[][] = [];
   let score = 0;
 
-  const entries = Object.values(coordinates);
-  for (const entry of entries) {
-    const acoords = entry;
+  const frequencies = Object.values(frequenciesMap);
+  for (const frequency of frequencies) {
+    const antennas = frequency;
 
-    for (let i = 0; i < acoords.length; i++) {
-      const ian = acoords[i];
-      for (let j = 0; j < acoords.length; j++) {
-        if (j === i) continue;
-        const jan = acoords[j];
-        ass(ian);
-        ass(jan);
+    for (let i = 0; i < antennas.length; i++) {
+      const firstAntenna = antennas[i];
+      for (let j = i + 1; j < antennas.length; j++) {
+        // console.log(i, j);
+        const secondAntenna = antennas[j];
+        ass(firstAntenna);
+        ass(secondAntenna);
 
-        const difference = { x: ian.x - jan.x, y: ian.y - jan.y };
-        const antinode = { x: ian.x + difference.x, y: ian.y + difference.y };
-        // console.log(antinode);
-        let rowanti = antinodes[antinode.y];
-        if (!rowanti) {
-          antinodes[antinode.y] = [];
+        const delta = {
+          x: firstAntenna.x - secondAntenna.x,
+          y: firstAntenna.y - secondAntenna.y,
+        };
+        // console.log(delta);
+        const commonDivisor = gcd(delta.x, delta.y);
 
-          rowanti = antinodes[antinode.y];
-          ass(rowanti);
-        }
-        // we could go through the antinodes and count instead of doing this logic. might be easier, but this is more perf?
-        if (shit[antinode.y]?.[antinode.x] && !rowanti[antinode.x]) {
-          score++;
-        }
+        const smallDelta = {
+          x: delta.x / commonDivisor,
+          y: delta.y / commonDivisor,
+        };
 
-        rowanti[antinode.x] = true;
+        ass(smallDelta.x % 1 === 0);
+        ass(smallDelta.y % 1 === 0);
 
-        const row = shit[antinode.y];
-        if (row?.[antinode.x]) {
-          row[antinode.x] = "#";
+        const directions = [
+          { x: smallDelta.x, y: smallDelta.y },
+          { x: -smallDelta.x, y: -smallDelta.y },
+        ];
+
+        for (const direction of directions) {
+          let currentPosition = firstAntenna;
+          while (true) {
+            const isInBounds = !!map[currentPosition.y]?.[currentPosition.x];
+            // console.log("curpos:", currentPosition.x, currentPosition.y);
+            if (!isInBounds) {
+              // console.log("out of bounds");
+              break;
+            }
+
+            // const curpos= { x: ian.x + difference.x, y: ian.y + difference.y };
+            // console.log(antinode);
+            let antinodeRow = antinodes[currentPosition.y];
+            if (!antinodeRow) {
+              antinodes[currentPosition.y] = [];
+              antinodeRow = antinodes[currentPosition.y];
+              ass(antinodeRow);
+            }
+
+            // // we could go through the antinodes and count instead of doing this logic. might be easier, but this is more perf?
+            if (!antinodeRow[currentPosition.x]) {
+              score++;
+            }
+            antinodeRow[currentPosition.x] = true;
+            const row = map[currentPosition.y];
+            ass(row);
+            row[currentPosition.x] = "#";
+            // console.table(map);
+
+            currentPosition = {
+              x: currentPosition.x + direction.x,
+              y: currentPosition.y + direction.y,
+            };
+            // break;
+          }
         }
       }
     }
@@ -141,4 +173,12 @@ function p1(input: string): number {
   // console.table(shit);
 
   return score;
+}
+
+asseq(gcd(48, 18), 6);
+asseq(gcd(3, 2), 1);
+
+function gcd(a: number, b: number): number {
+  if (b === 0) return a;
+  return gcd(b, a % b);
 }
