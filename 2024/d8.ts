@@ -78,8 +78,34 @@ asseq(p2(test), 34);
 asseq(p2(testT), 9);
 asseq(p2(real), 1182);
 
+type Vector = {
+  x: number;
+  y: number;
+};
+
+function add(a: Vector, b: Vector): Vector {
+  return { x: a.x + b.x, y: a.y + b.y };
+}
+
+function diff(a: Vector, b: Vector): Vector {
+  return { x: a.x - b.x, y: a.y - b.y };
+}
+
+function div(v: Vector, scalar: number): Vector {
+  ass(scalar % 1 === 0);
+
+  const newVector = { x: v.x / scalar, y: v.y / scalar };
+
+  ass(newVector.x % 1 === 0);
+  ass(newVector.y % 1 === 0);
+
+  return newVector;
+}
+function negate(v: Vector): Vector {
+  return div(v, -1);
+}
 function p2(input: string): number {
-  const frequenciesMap: Record<string, { x: number; y: number }[]> = {};
+  const frequenciesMap: Record<string, Vector[]> = {};
 
   const map = input.split("\n").map((row, y) =>
     row.split("").map((char, x) => {
@@ -109,25 +135,13 @@ function p2(input: string): number {
         ass(firstAntenna);
         ass(secondAntenna);
 
-        const delta = {
-          x: firstAntenna.x - secondAntenna.x,
-          y: firstAntenna.y - secondAntenna.y,
-        };
+        const delta = diff(firstAntenna, secondAntenna);
         // console.log(delta);
         const commonDivisor = gcd(delta.x, delta.y);
 
-        const smallDelta = {
-          x: delta.x / commonDivisor,
-          y: delta.y / commonDivisor,
-        };
+        const smallDelta = div(delta, commonDivisor);
 
-        ass(smallDelta.x % 1 === 0);
-        ass(smallDelta.y % 1 === 0);
-
-        const directions = [
-          { x: smallDelta.x, y: smallDelta.y },
-          { x: -smallDelta.x, y: -smallDelta.y },
-        ];
+        const directions = [smallDelta, negate(smallDelta)];
 
         for (const direction of directions) {
           let currentPosition = firstAntenna;
@@ -158,10 +172,7 @@ function p2(input: string): number {
             row[currentPosition.x] = "#";
             // console.table(map);
 
-            currentPosition = {
-              x: currentPosition.x + direction.x,
-              y: currentPosition.y + direction.y,
-            };
+            currentPosition = add(currentPosition, direction);
             // break;
           }
         }
