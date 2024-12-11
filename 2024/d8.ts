@@ -1,5 +1,6 @@
 import { differ } from "effect/RuntimeFlags";
 import { ass, asseq } from "../2023/ts/common";
+import { add, diff, div, negate, type Vector } from "./common";
 
 const test = `............
 ........0...
@@ -78,32 +79,6 @@ asseq(p2(test), 34);
 asseq(p2(testT), 9);
 asseq(p2(real), 1182);
 
-type Vector = {
-  x: number;
-  y: number;
-};
-
-function add(a: Vector, b: Vector): Vector {
-  return { x: a.x + b.x, y: a.y + b.y };
-}
-
-function diff(a: Vector, b: Vector): Vector {
-  return { x: a.x - b.x, y: a.y - b.y };
-}
-
-function div(v: Vector, scalar: number): Vector {
-  ass(scalar % 1 === 0);
-
-  const newVector = { x: v.x / scalar, y: v.y / scalar };
-
-  ass(newVector.x % 1 === 0);
-  ass(newVector.y % 1 === 0);
-
-  return newVector;
-}
-function negate(v: Vector): Vector {
-  return div(v, -1);
-}
 function p2(input: string): number {
   const frequenciesMap: Record<string, Vector[]> = {};
 
