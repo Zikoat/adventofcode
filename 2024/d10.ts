@@ -1,6 +1,8 @@
+console.log("before import");
 import { ass, asseq, nonNull } from "../2023/ts/common";
 import { Brand } from "effect";
 import { add } from "./common";
+import { sleep } from "bun";
 
 const test = `0123
 1234
@@ -21,7 +23,7 @@ const Head = Brand.refined<Head>(
   (n) => Brand.error(`Expected ${n} to be a head`)
 );
 
-function getTrailHeads(input: string): Trails {
+function getTrailHeads(input: string): Record<Head, number>[] {
   function stringToInt(input: string): number {
     ass(/^\d+$/.test(input), `${input} is not an int`);
     return Number(input);
@@ -44,17 +46,17 @@ function getTrailHeads(input: string): Trails {
     return Head(`${v.x}|${v.y}`);
   }
 
-  const trails: Array<Set<Head>> = [];
+  const trails: Record<Head, number>[] = [];
 
   for (let y = 0; y < shit.length; y++) {
     for (let x = 0; x < nonNull(shit[y]).length; x++) {
       const cell = getshit({ x, y });
 
-      // ass(typeof cell === "number");
       if (cell === 0) {
         const trailRoot = vectorToHead({ x, y });
-        const trail = new Set<Head>();
-        trail.add(trailRoot);
+
+        const trail: Record<Head, number> = {};
+        trail[trailRoot] = 1;
         trails.push(trail);
       }
     }
@@ -68,8 +70,11 @@ function getTrailHeads(input: string): Trails {
     for (let trailId = 0; trailId < trails.length; trailId++) {
       const trail = trails[trailId];
       ass(trail);
-      const newTrailHeads = new Set<Head>();
-      for (const trailHead of [...trail]) {
+      const newTrailHeads: Record<Head, number> = {};
+
+      for (const trailEntries2 of Object.entries(trail)) {
+        const trailHead = Head(trailEntries2[0]);
+        const score = trailEntries2[1];
         const trailHeadVector = headToVector(trailHead);
         const directions = [
           { x: 1, y: 0 },
@@ -77,31 +82,69 @@ function getTrailHeads(input: string): Trails {
           { x: -1, y: 0 },
           { x: 0, y: -1 },
         ];
+
+        const newSteps: Head[] = [];
         for (const direction of directions) {
           const nextCellLocation = add(trailHeadVector, direction);
           const cell = getshit(nextCellLocation);
-          if (cell === i) newTrailHeads.add(vectorToHead(nextCellLocation));
+
+          if (cell === i) {
+            const newHead = vectorToHead(nextCellLocation);
+            newSteps.push(newHead);
+          }
+        }
+
+        // first new trailhead should have score of previous
+        if (newSteps.length >= 1) {
+          const newStep = nonNull(newSteps[0]);
+          const previousScore = newTrailHeads[newStep] ?? 0;
+          newTrailHeads[newStep] = score + previousScore;
+        }
+
+        // second and subsequeunt should have score 1
+        for (let j = 1; j < newSteps.length; j++) {
+          const newStep = nonNull(newSteps[j]);
+          const previousScore = newTrailHeads[newStep] ?? 0;
+          console.log("splitted trail", newStep, previousScore);
+          newTrailHeads[newStep] = previousScore + 1;
         }
       }
-      console.log("i", i, "trail", ...trail, "newTrailHeads", ...newTrailHeads);
+      console.log(
+        i,
+        // "trail",
+        // trailToString(trail),
+
+        trailToString(newTrailHeads)
+      );
       trails[trailId] = newTrailHeads;
     }
   }
 
   return trails;
 }
-type Trails = Set<Head>[];
-const testResult = getTrailHeads(test);
-asseq(testResult, [new Set(["0|3"])]);
-asseq(score(testResult), 1);
 
-printTrails(testResult);
+// const testResult = getTrailHeads(test);
+// asseq(
+//   testResult.map((res) => Object.keys(res)),
+//   [["0|3"]]
+// );
+// asseq(scorep1(testResult), 1);
 
-function printTrails(trails: Trails): void {
-  console.log("trails", trails.map((trail) => `${[...trail]}`).join("  \n"));
+// printTrails(testResult);
+
+function trailToString(trail: Record<Head, number>): string {
+  return Object.entries(trail)
+    .map(([head, score]) => `${head}:${score}`)
+    .join(", ");
 }
-printTrails(getTrailHeads(test2));
-asseq(score(getTrailHeads(test2)), 2);
+function trailsToString(trails: Record<Head, number>[]): string {
+  return `${trails.map(trailToString)}`;
+}
+function printTrails(trails: Record<Head, number>[]): void {
+  console.log("trails", trailsToString(trails));
+}
+// printTrails(getTrailHeads(test2));
+// asseq(scorep1(getTrailHeads(test2)), 2);
 const test4 = `10..9..
 2...8..
 3...7..
@@ -109,11 +152,11 @@ const test4 = `10..9..
 ...8..3
 ...9..2
 .....01`;
-asseq(score(getTrailHeads(test4)), 3);
-function score(trails: Trails): number {
+// asseq(scorep1(getTrailHeads(test4)), 3);
+function scorep1(trails: Record<Head, number>[]): number {
   let score = 0;
   for (const trail of trails) {
-    score += trail.size;
+    score += Object.keys(trail).length;
   }
   return score;
 }
@@ -126,7 +169,7 @@ const test5 = `89010123
 01329801
 10456732`;
 
-asseq(score(getTrailHeads(test5)), 36);
+// asseq(scorep1(getTrailHeads(test5)), 36);
 const real = `034988701278987676012129801065432105421103432103454096565
 125679872367010982101036782196501234910012501012763187434
 787610765456123673412345693887321045823459621029872236121
@@ -185,4 +228,41 @@ const real = `034988701278987676012129801065432105421103432103454096565
 454189432521001876038983465243214323676901765489160010967
 565076521010122345127654564101233010987810894321054323456`;
 
-asseq(score(getTrailHeads(real)), 794);
+// asseq(scorep1(getTrailHeads(real)), 794);
+
+// asseq(
+//   scorep2(
+//     getTrailHeads(`.....0.
+// ..4321.
+// ..5..2.
+// ..6543.
+// ..7..4.
+// ..8765.
+// ..9....`)
+//   ),
+//   3
+// );
+function scorep2(trails: Record<Head, number>[]): number {
+  let score = 0;
+  for (const trail of trails) {
+    for (const trailHead of Object.entries(trail)) {
+      score += trailHead[1];
+    }
+  }
+  return score;
+}
+console.log("starting");
+// await sleep(40_000);
+debugger;
+console.log("continueing");
+asseq(
+  getTrailHeads(
+    `..90..9
+...1.98
+...2..7
+6543456
+765.987
+876....
+987....`
+  )
+);
