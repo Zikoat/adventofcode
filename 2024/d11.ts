@@ -1,23 +1,7 @@
-import { trimStart } from "effect/String";
-import { ass, asseq } from "../2023/ts/common";
-import { memo } from "effect/FastCheck";
-
-const test = ``;
-
-function blink(input: string[]): string[] {
-  const shit = input;
-
-  const newString: string[] = [];
-
-  for (const brickString of shit) {
-    // console.log(brickString, "turns to", blinkBrickOnce(brickString));
-    newString.push(...blinkBrickOnce(brickString));
-    // console.log(newString);
-  }
-  return newString;
-}
+import { ass, asseq, assInt } from "../2023/ts/common";
 
 function blinkBrickOnce(brick: string): [string] | [string, string] {
+  // assInt(brick);
   if (brick === "0") {
     return ["1"];
   }
@@ -31,45 +15,64 @@ function blinkBrickOnce(brick: string): [string] | [string, string] {
   return [(Number(brick) * 2024).toString()];
 }
 
-asseq(blinkn("0 1 10 99 999", 1).join(" "), "1 2024 1 0 9 9 2021976");
-asseq(s(blinkn("0 1 10 99 999", 1)), 7);
-asseq(
-  blink(blink(blink(blink(blink(blink("125 17".split(" "))))))).join(" "),
-  "2097446912 14168 4048 2 0 2 4 40 48 2024 40 48 80 96 2 8 6 7 6 0 3 2"
-);
-asseq(s(blinkn("125 17", 6)), 22);
-function blinkn(input: string, count: number): string[] {
-  let newShit: string[] = input.split(" ");
-  for (let i = 0; i < count; i++) {
-    console.log(i);
-    newShit = blink(newShit);
-  }
-  return newShit;
-}
-
-function s(stones: string[]): number {
-  return stones.length;
-}
-asseq(s(blinkn("125 17", 25)), 55312);
-asseq(s(blinkn("1950139 0 3 837 6116 18472 228700 45", 25)), 235850);
-asseq(s(blinkn("1950139 0 3 837 6116 18472 228700 45", 75)));
-
-const memory: Record<string, string> = {};
-function memoize(func: (arg0: string) => string): (arg0: string) => string {
-  return (arg1) => {
-    const memoized = memory[arg1];
+function memoize(
+  func: (arg0: string, arg2: number) => number
+): (arg0: string, arg2: number) => number {
+  return (arg1, arg4) => {
+    if ((memoryHit + memoryMiss) % 10000 === 0)
+      console.log(memoryHit / memoryMiss, memoryHit, memoryMiss);
+    const key = arg1 + "|" + arg4;
+    const memoized = memory[key];
     if (memoized) {
+      memoryHit++;
       return memoized;
-    } else return func(arg1);
+    } else {
+      memoryMiss++;
+      const output = func(arg1, arg4);
+      memory[key] = output;
+      return output;
+    }
   };
 }
 
-const blinkMemoized = memoize(blink);
-// pseudocode:
-// a brick has to blink n times.
-// when a brick is blinked, it creates multiple new bricks, each brick has
-// when a brick is
+const memory: Record<string, number> = {};
+let memoryHit = 0;
+let memoryMiss = 0;
+const blinkMemoized = memoize(__newBlink);
+asseq(newBlinkMultiple("0 1 10 99 999", 1), 7);
+asseq(newBlinkMultiple("125 17", 6), 22);
+asseq(newBlinkMultiple("0", 0), 1);
+asseq(newBlinkMultiple("0", 1), 1);
+asseq(newBlinkMultiple("1", 1), 1);
+asseq(newBlinkMultiple("10", 1), 2);
+asseq(newBlinkMultiple("99", 1), 2);
+asseq(newBlinkMultiple("999", 1), 1);
+asseq(newBlinkMultiple("125", 6), 7);
+asseq(newBlinkMultiple("125 17", 6), 22);
+asseq(newBlinkMultiple("125 17", 25), 55312);
+asseq(newBlinkMultiple("1950139 0 3 837 6116 18472 228700 45", 25), 235850);
+asseq(
+  newBlinkMultiple("1950139 0 3 837 6116 18472 228700 45", 75),
+  279903140844645
+);
 
-function newBlink(brick: string, blinksLeft: number): unknown {
-  return;
+function __newBlink(brick: string, blinksLeft: number): number {
+  if (blinksLeft === 0) return 1;
+  const newBricks = blinkBrickOnce(brick);
+
+  if (blinksLeft === 1) return newBricks.length;
+  let totalBricks = 0;
+  for (const newBrick of newBricks) {
+    totalBricks += blinkMemoized(newBrick, blinksLeft - 1);
+  }
+  return totalBricks;
+}
+
+function newBlinkMultiple(input: string, blinksTotal: number): number {
+  const bricks = input.split(" ");
+  let score = 0;
+  for (const brick of bricks) {
+    score += blinkMemoized(brick, blinksTotal);
+  }
+  return score;
 }

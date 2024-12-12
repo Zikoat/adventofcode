@@ -11,11 +11,18 @@ export function asseq<T>(
 ): asserts want is T {
   if (!deepEquals(want, got, true)) {
     const actualString = JSON.stringify(got);
-    throw Error((message ?? "") + actualString + " should be " + JSON.stringify(want));
+    throw Error(
+      (message ?? "") + actualString + " should be " + JSON.stringify(want)
+    );
   }
 }
 
 export function nonNull<T>(shit: NonNullable<T> | undefined): T {
   ass(shit);
   return shit;
+}
+
+export function assInt(input: string): asserts input {
+  ass(/^\d+$/.test(input));
+  return;
 }
