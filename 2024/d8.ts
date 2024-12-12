@@ -1,6 +1,4 @@
-import { differ } from "effect/RuntimeFlags";
-import { ass, asseq } from "../2023/ts/common";
-import { add, diff, div, negate, type Vector } from "./common";
+import { add, ass, asseq, diff, div, negate, type Vector } from "./common";
 
 const test = `............
 ........0...

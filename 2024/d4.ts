@@ -1,6 +1,4 @@
-// console.log(import.meta.file);
-
-import { asseq, ass } from "../2023/ts/common";
+import { ass, asseq } from "./common";
 
 const p1testinput1 = `..X...
 .SAMX.

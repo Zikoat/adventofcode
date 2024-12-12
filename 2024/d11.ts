@@ -1,4 +1,4 @@
-import { asseq } from "../2023/ts/common";
+import { asseq } from "./common";
 
 const memory: Record<string, number> = {};
 {

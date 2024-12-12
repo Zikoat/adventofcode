@@ -1,6 +1,4 @@
-import { withConsoleLog } from "effect/Logger";
-import { ass, asseq } from "../2023/ts/common";
-import { next } from "effect/Random";
+import { ass, asseq } from "./common";
 
 const testa = `190: 10 19
 3267: 81 40 27
@@ -10,7 +8,7 @@ const testa = `190: 10 19
 161011: 16 10 13
 192: 17 8 14
 21037: 9 7 18 13
-292: 11 6 16 20`
+292: 11 6 16 20`;
 // shit, don't know what to do for perf
 
 function getAllBitCombinations(x: number): (0 | 1 | 2)[][] {
@@ -19,11 +17,13 @@ function getAllBitCombinations(x: number): (0 | 1 | 2)[][] {
   // console.log(totalCombinations, x)
 
   for (let num = 0; num < totalCombinations; num++) {
-
-    const myString = (num.toString(3).padStart(x, "0").split("")).map(Number) as (0 | 1 | 2)[]
+    const myString = num.toString(3).padStart(x, "0").split("").map(Number) as (
+      | 0
+      | 1
+      | 2
+    )[];
 
     // console.log(myString)
-
 
     combinations.push(myString);
   }
@@ -34,22 +34,48 @@ function getAllBitCombinations(x: number): (0 | 1 | 2)[][] {
 const x = 3;
 const allCombinations = getAllBitCombinations(x);
 // asseq(allCombinations, [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]])
-asseq(allCombinations, [[0, 0, 0], [0, 0, 1], [0, 0, 2], [0, 1, 0], [0, 1, 1], [0, 1, 2], [0, 2, 0], [0, 2, 1], [0, 2, 2], [1, 0, 0], [1, 0, 1], [1, 0, 2], [1, 1, 0], [1, 1, 1], [1, 1, 2], [1, 2, 0], [1, 2, 1], [1, 2, 2], [2, 0, 0], [2, 0, 1], [2, 0, 2], [2, 1, 0], [2, 1, 1], [2, 1, 2], [2, 2, 0], [2, 2, 1], [2, 2, 2]])
+asseq(allCombinations, [
+  [0, 0, 0],
+  [0, 0, 1],
+  [0, 0, 2],
+  [0, 1, 0],
+  [0, 1, 1],
+  [0, 1, 2],
+  [0, 2, 0],
+  [0, 2, 1],
+  [0, 2, 2],
+  [1, 0, 0],
+  [1, 0, 1],
+  [1, 0, 2],
+  [1, 1, 0],
+  [1, 1, 1],
+  [1, 1, 2],
+  [1, 2, 0],
+  [1, 2, 1],
+  [1, 2, 2],
+  [2, 0, 0],
+  [2, 0, 1],
+  [2, 0, 2],
+  [2, 1, 0],
+  [2, 1, 1],
+  [2, 1, 2],
+  [2, 2, 0],
+  [2, 2, 1],
+  [2, 2, 2],
+]);
 
 function p1(input: string): number {
-
   let sumOfCorrect = 0;
 
-  const lines = input.split("\n")
+  const lines = input.split("\n");
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    ass(line)
-
+    ass(line);
 
     const [sumRaw, partsRaw] = line.split(": ");
-    const sum = Number(sumRaw)
-    ass(sum)
-    ass(partsRaw)
+    const sum = Number(sumRaw);
+    ass(sum);
+    ass(partsRaw);
 
     const parts = partsRaw.split(" ").map(Number);
 
@@ -62,29 +88,28 @@ function p1(input: string): number {
     for (let j = 0; j < combinationList.length; j++) {
       let sumprod = parts[0];
 
-      ass(sumprod)
+      ass(sumprod);
       const combination = combinationList[j];
 
-      ass(combination)
+      ass(combination);
 
       for (let i = 0; i < combination.length; i++) {
         const operatorType = combination[i];
-        ass(typeof operatorType === "number")
+        ass(typeof operatorType === "number");
 
         const nextOperator = parts[i + 1];
-        ass(nextOperator)
+        ass(nextOperator);
 
         if (operatorType === 0) {
           sumprod += nextOperator;
         } else if (operatorType === 1) {
-          sumprod *= nextOperator
+          sumprod *= nextOperator;
         } else if (operatorType === 2) {
-          sumprod = Number(sumprod.toString() + nextOperator.toString())
+          sumprod = Number(sumprod.toString() + nextOperator.toString());
           // throw Error("not implemented")
         } else {
-          throw Error("shit")
+          throw Error("shit");
         }
-
       }
 
       const sumEqual = sumprod === sum;
@@ -95,14 +120,14 @@ function p1(input: string): number {
       }
     }
     // console.log(anySumEqual)
-    console.log(i, lines.length, anySumEqual, combinationList.length)
+    console.log(i, lines.length, anySumEqual, combinationList.length);
   }
 
   return sumOfCorrect;
 }
 
 // asseq(p1(testa), 3749)
-asseq(p1(testa), 11387)
+asseq(p1(testa), 11387);
 
 const real = `558536: 8 5 8 2 3 958 69 1 4 54 8
 62085452: 2 95 32 2 54 51
@@ -956,4 +981,4 @@ const real = `558536: 8 5 8 2 3 958 69 1 4 54 8
 31622640411: 3 226 80 49 2 2 11 1`;
 
 // asseq(p1(real), 12553187650171)
-asseq(p1(real), 96779702119491)
+asseq(p1(real), 96779702119491);

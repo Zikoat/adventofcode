@@ -1,7 +1,5 @@
-// console.log(import.meta.file);
-
-import { asseq, ass } from "../2023/ts/common";
 import { Schema } from "effect";
+import { ass, asseq } from "./common";
 
 const d1testinput = `7 6 4 2 1
 1 2 7 8 9

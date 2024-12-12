@@ -1,7 +1,5 @@
-// console.log(import.meta.file);
-
-import { ass } from "../2023/ts/common";
 import { Schema } from "effect";
+import { ass } from "./common";
 
 const d1realinput = `16435   48069
 29877   97906

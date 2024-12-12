@@ -1,7 +1,7 @@
 // console.log(import.meta.file);
 
-import { asseq, ass } from "../2023/ts/common";
 import { deepEquals } from "bun";
+import { ass, asseq } from "./common";
 
 function calcBoth(input: string): { p1: number; p2: number } {
   const [rawRules, rawUpdates] = input

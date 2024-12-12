@@ -1,6 +1,4 @@
-// console.log(import.meta.file);
-
-import { asseq, ass, nonNull } from "../2023/ts/common";
+import { ass, asseq, nonNull } from "./common";
 
 const test = `....#.....
 .........#
