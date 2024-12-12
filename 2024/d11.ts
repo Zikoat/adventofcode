@@ -20,28 +20,28 @@ const memory: Record<string, number> = {};
 }
 
 function blinkN(brick: string, blinksLeft: number): number {
-  if (blinksLeft === 0) return 1;
-  let newBricks: [string] | [string, string];
-
-  if (brick === "0") {
-    newBricks = ["1"];
-  } else if (brick.length % 2 == 0) {
-    newBricks = [
-      Number(brick.slice(0, brick.length / 2)).toString(),
-      Number(brick.slice(brick.length / 2, brick.length)).toString(),
-    ];
-  } else {
-    newBricks = [(Number(brick) * 2024).toString()];
-  }
-
-  if (blinksLeft === 1) return newBricks.length;
-
-  const key = brick + "|" + blinksLeft.toString();
+  const key = brick + "|" + blinksLeft;
   const memoized = memory[key];
 
   if (memoized) {
     return memoized;
   } else {
+    if (blinksLeft === 0) return 1;
+    let newBricks: [string] | [string, string];
+
+    if (brick === "0") {
+      newBricks = ["1"];
+    } else if (brick.length % 2 == 0) {
+      newBricks = [
+        Number(brick.slice(0, brick.length / 2)).toString(),
+        Number(brick.slice(brick.length / 2, brick.length)).toString(),
+      ];
+    } else {
+      newBricks = [(Number(brick) * 2024).toString()];
+    }
+
+    if (blinksLeft === 1) return newBricks.length;
+
     let totalBricks = 0;
     for (const newBrick of newBricks) {
       const newBlinksLeft = blinksLeft - 1;
