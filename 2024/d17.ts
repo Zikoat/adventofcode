@@ -1,108 +1,127 @@
 import { ass, asseq, assInt, nonNull } from "./common";
 
-function run(comp: Computer): {
-  A: number;
-  B: number;
-  C: number;
-  output: string;
-} {
+function run(program: Program): void {
   let pointer = 0;
-  let output = [];
+  let output = 0;
+  // let A = a;
+  let B_count = 0;
+  let C_count = 0;
+  let A_count = 0;
+  console.log("B_0 == 0, C_0 == 0");
   for (let i = 0; i <= 1000; i++) {
-    ass(i < 800);
-    const opcode = comp.program[pointer];
+    ass(i < 999);
+    const opnum = program[pointer];
 
-    if (opcode === undefined) {
+    if (opnum === undefined) {
       break;
     }
 
-    const literal = comp.program[pointer + 1];
+    const literal = program[pointer + 1];
+
     ass(literal !== undefined);
 
     let combo;
     if (literal === 1 || literal === 0 || literal === 2 || literal === 3)
-      combo = literal;
-    else if (literal === 4) combo = comp.A;
-    else if (literal === 5) combo = comp.B;
-    else if (literal === 6) combo = comp.C;
+      combo = literal.toString() + "";
+    else if (literal === 4) combo = "A_" + A_count;
+    else if (literal === 5) combo = "B_" + B_count;
+    else if (literal === 6) combo = "C_" + C_count;
     else {
       ass(literal === 7);
     }
 
     // console.log(opcode, literal, combo, comp.B);
-
-    if (opcode === 0) {
-      ass(typeof combo === "number");
+    const common = "";
+    `p ` +
+      pointer.toString().padEnd(2) +
+      " op " +
+      opnum +
+      " lit " +
+      literal +
+      " comb " +
+      combo?.toString().padEnd(4);
+    if (opnum === 0) {
       // adv
-      const numerator = comp.A;
-      const denominotar = 2 ** combo;
-      const divided = numerator / denominotar;
-      const truncated = Math.floor(divided);
-      comp.A = truncated;
-    } else if (opcode === 1) {
+      console.log(
+        common,
+        "adv, A_" + (A_count + 1),
+        "== floor(A_" + A_count + " / (2 ** " + combo + "))"
+      );
+      A_count++;
+      // A = Math.floor(A / 2 ** combo);
+    } else if (opnum === 1) {
       // bxl
-      comp.B = comp.B ^ literal;
-    } else if (opcode === 2) {
-      ass(typeof combo === "number");
+      console.log(
+        common,
+        "bxl, B_" + (B_count + 1),
+        "== B_" + B_count + " XOR " + literal
+      );
+      // B = B ^ literal;
+      B_count++;
+    } else if (opnum === 2) {
       // bst
-      comp.B = combo % 8;
-    } else if (opcode === 3) {
+      // ass(typeof combo === "number");
+      console.log(
+        common,
+        "bst, B_" + (B_count + 1),
+        "== B_" + B_count + " % 8"
+      );
+      B_count++;
+    } else if (opnum === 3) {
       // jnz
-      if (comp.A !== 0) {
-        pointer = literal;
-        // hehe lazy
-        pointer -= 2;
+      asseq(literal % 2, 0);
+      asseq(program[pointer + 2], undefined);
+      if (output + 1 === program.length) {
+        console.log(common, "jnz, A_" + A_count, "== 0");
+      } else {
+        console.log(common, "jnz, A_" + A_count, "!= 0");
+        pointer = literal - 2;
       }
-    } else if (opcode === 4) {
+    } else if (opnum === 4) {
       // bxc
-      comp.B = comp.B ^ comp.C;
-    } else if (opcode === 5) {
-      ass(typeof combo === "number");
+      console.log(
+        common,
+        "bxc, B_" + (B_count + 1),
+        "== B_" + B_count + " XOR C_" + C_count
+      );
+      B_count++;
+      // B = B ^ C;
+    } else if (opnum === 5) {
       // out
-      output.push(combo % 8);
-    } else if (opcode === 6) {
+      // ass(typeof combo === "number");
+
+      const expectedOutput = program[output];
+      console.log(common, "out, A_" + A_count, "% 8 == " + expectedOutput);
+      // output.push(combo % 8);
+      output++;
+    } else if (opnum === 6) {
       ass(false);
-    } else if (opcode === 7) {
-      ass(typeof combo === "number");
-      // adv
-      const numerator = comp.A;
-      const denominotar = 2 ** combo;
-      const divided = numerator / denominotar;
-      const truncated = Math.floor(divided);
-      comp.C = truncated;
+    } else if (opnum === 7) {
+      // cdv
+      console.log(
+        common,
+        "cdv, C_" + (A_count + 1),
+        "== floor(A_" + A_count + " / (2 ** " + combo + "))"
+      );
+      C_count++;
+
+      // C = Math.floor(A / 2 ** combo);
     } else {
       ass(false);
     }
     pointer += 2;
   }
-  return { ...comp, output: output.join(",") };
+
+  return;
 }
-// asseq(run(computer).output, "4,6,3,5,6,3,5,2,1,0");
-
-asseq(run({ A: 0, B: 0, C: 9, program: [2, 6] }).B, 1);
-asseq(run({ A: 10, B: 0, C: 0, program: [5, 0, 5, 1, 5, 4] }).output, "0,1,2");
-const shit2 = run({ A: 2024, B: 0, C: 0, program: [0, 1, 5, 4, 3, 0] });
-asseq(shit2.A, 0);
-asseq(shit2.output, "4,2,5,6,7,7,7,7,3,1,0");
-asseq(run({ A: 0, B: 29, C: 0, program: [1, 7] }).B, 26);
-asseq(run({ A: 0, B: 2024, C: 43690, program: [4, 0] }).B, 44354);
-
-const test = `Register A: 729
-Register B: 0
-Register C: 0
-
-Program: 0,1,5,4,3,0`;
-
-asseq(run(parse(test)).output, "4,6,3,5,6,3,5,2,1,0");
 
 const real = `Register A: 38610541
 Register B: 0
 Register C: 0
 
 Program: 2,4,1,1,7,5,1,5,4,3,5,5,0,3,3,0`;
-asseq(run(parse(real)).output, "7,5,4,3,4,5,3,4,6");
 
-function parse(input: string): Computer {
+function parse(input: string): Program {
   const parsed = input
     .matchAll(
       /^Register A: (\d+)\nRegister B: (\d+)\nRegister C: (\d+)\n\nProgram: ((?:\d,?)+)$/g
@@ -111,44 +130,26 @@ function parse(input: string): Computer {
 
   ass(parsed);
 
-  // shit assert integer
-  let A = Number(parsed[1]);
-  // shit assert integer
-  let B = Number(parsed[2]);
-  // shit assert integer
-  let C = Number(parsed[3]);
-
   const program = nonNull(parsed[4])
     .split(",")
-    .map(
-      (a) => {
-        assInt(a);
-        const num = Number(a);
-        ass(num <= 7);
-        ass(num >= 0);
-        return num as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
-      }
-      // shit assert 3 bit
-    );
-  const computer: Computer = { A, B, C, program };
-  return computer;
+    .map((a) => {
+      assInt(a);
+      const num = Number(a);
+      ass(num <= 7);
+      ass(num >= 0);
+      return num as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+    });
+
+  return program;
 }
 
-type Computer = {
-  A: number;
-  B: number;
-  C: number;
-  program: (0 | 1 | 2 | 3 | 4 | 5 | 6 | 7)[];
-};
+type Program = (0 | 1 | 2 | 3 | 4 | 5 | 6 | 7)[];
 
-function findSmallest(computer: Computer): number {
-  for (let i = 0; i < 100000000; i++) {
-    const result = run({ ...computer, A: i });
-    if (i % 100000 === 0) console.log(i);
-    if (result.output === computer.program.join(",")) return i;
-  }
-  ass(false);
+function findSmallest(program: Program): void {
+  console.log(...program);
+  run(program);
 }
+
 asseq(
   findSmallest(
     parse(`Register A: 2024
@@ -156,8 +157,7 @@ Register B: 0
 Register C: 0
 
 Program: 0,3,5,4,3,0`)
-  ),
-  117440
+  )
 );
-
+console.log("--- OK ---");
 asseq(findSmallest(parse(real)));
