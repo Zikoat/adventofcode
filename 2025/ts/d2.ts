@@ -71,9 +71,9 @@ function sum(nums: number[]) {
   return nums.reduce((prev, cur, _i, _arr) => prev + cur, 0);
 }
 
-const rangeLength = ({ from, to }: Rang) => {
-  return to - from + 1;
-};
+// const rangeLength = ({ from, to }: Rang) => {
+//   return to - from + 1;
+// };
 
 // function allRangesLength(ranges: Rang[]): number {
 //   return sum(

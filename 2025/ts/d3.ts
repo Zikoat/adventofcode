@@ -264,7 +264,7 @@ function getLargestJoltage(bank: Bank): number {
 }
 
 function getLargestJoltage12(bank: Bank): number {
-  let largestJoltage = 0;
+  
   // first digit should be the first instance of the largest of the digits from 0 to len-12
   const n1_digitsFrom0toLen12 = bank.toSpliced(bank.length - 12, Infinity);
   const n1_maxDigit = Math.max(...n1_digitsFrom0toLen12);
