@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\zikoat\\dev\\adventofcode"
+		}
+	],
+	"settings": {
+		"files.autoSave": "afterDelay"
+	}
+}
