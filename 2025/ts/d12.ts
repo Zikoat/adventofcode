@@ -142,7 +142,7 @@ function trimGift(gift: string): string {
 
 
   const trimmedGifts = trimGift2(rows);
-  console.log("rows", rows, "trimmedGifts", trimmedGifts)
+  // console.log("rows", rows, "trimmedGifts", trimmedGifts)
   return trimmedGifts.map(row => row.join("")).join("\n")
 }
 
@@ -194,11 +194,11 @@ asseq(trimGift2([[".", ".", "."], [".", "#", "."], [".", ".", "."],]), [["#"]])
 const performanceOptimizations = { countGiftSpaces: false } as const;
 
 function canFitString(input: string): boolean {
-  console.log(input)
+  // console.log(input)
   const parsed2: Puzzle = parseInput(input)
 
   const gifts = parsed2.gifts.map(gift => {
-    console.log(gift)
+    // console.log(gift)
 
     return trimGift2(gift)
   })
@@ -269,19 +269,19 @@ function canFitString(input: string): boolean {
   // for each gift
   for (const [giftType, gift] of gifts.entries()) {
     const giftCount = nonNull(firstTree.giftCounts[giftType])
-    console.log("giftCount", giftCount)
+    // console.log("giftCount", giftCount)
     for (let i = 0; i < giftCount; i++) {
       for (let x = 0; x < firstTree.width; x++) {
         for (let y = 0; y < firstTree.height; y++) {
-          console.log(x, y)
+          // console.log(x, y)
           giftPlacements.push({ type: giftType, x, y })
         }
       }
     }
   }
-  console.log(giftPlacements)
+  // console.log(giftPlacements)
   const thisIsValidPlacement = isValidPlacement(gifts, firstTree.width, firstTree.height, giftPlacements);
-  console.log(thisIsValidPlacement)
+  // console.log(thisIsValidPlacement)
   return thisIsValidPlacement
   // for each x of the board
   // for each y of the board
@@ -378,11 +378,10 @@ function isValidPlacement(gifts: Gifts, width: Int, height: Int, placedGifts: Pl
             const gift2Local = diff(globalPos, { x: placedGift2.x, y: placedGift2.y })
             const gift2Cell = nonNull((gifts[placedGift2.type])?.[gift2Local.y]?.[gift2Local.x])
             if (gift2Cell === "#") {
-              console.log("there is overlap");
+              // console.log("there is overlap");
               return false
             }
           }
-
       }
     }
   }
