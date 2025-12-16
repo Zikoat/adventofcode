@@ -44,10 +44,11 @@ type Tree = { width: Int; height: Int; giftCounts: GiftCounts };
 type Puzzle = { gifts: Gifts; trees: Tree[] };
 type GiftsWithRotations = Gifts[];
 
-function shape(twoDArray: unknown[][]): [number, number] {
-  const firstRow = nonNull(twoDArray[0]);
-  ass(twoDArray.every((row) => row.length === firstRow.length));
-  return [twoDArray.length, firstRow.length];
+function shape(matrix: unknown[][]): [number, number] {
+  const firstRow = nonNull(matrix[0]);
+  assMatrixSquare(matrix);
+
+  return [matrix.length, firstRow.length];
 }
 
 function parseInput(input: string): Puzzle {
@@ -191,51 +192,11 @@ function testStringToMatrix() {
 
 testStringToMatrix();
 
-function trimGiftString(giftString: string): string {
-  let gift: Gift = assIsGiftMatrix(stringToMatrix(giftString));
-
-  const trimmedGifts = trimGift2(gift);
-
-  return trimmedGifts.map((row) => row.join("")).join("\n");
+function wrapGiftString(giftString: string): Gift {
+  return wrapGift(stringToGift(giftString));
 }
 
-asseq(trimGiftString(`#`), "#");
-asseq(trimGiftString(`##`), "##");
-asseq(
-  trimGiftString(`#
-#`),
-  `#
-#`
-);
-asseq(trimGiftString(`.#`), "#");
-asseq(trimGiftString(`#.`), "#");
-asseq(trimGiftString(`#.#`), "#.#");
-asseq(
-  trimGiftString(
-    `
-#.#
-#..`.trim()
-  ),
-  `
-#.#
-#..`.trim()
-);
-asseq(trimGiftString("..#"), "#");
-asseq(
-  trimGiftString(`.
-.
-#`),
-  "#"
-);
-asseq(
-  trimGiftString(`#
-.
-.`),
-  "#"
-);
-
-// shit why are there 2?
-function trimGift2(input: Gift): Gift {
+function wrapGift(input: Gift): Gift {
   let rows = [...input];
   while (rows.every((row) => row[0] === ".")) {
     rows = rows.map((row) => row.toSpliced(0, 1));
@@ -255,13 +216,52 @@ function trimGift2(input: Gift): Gift {
   return rows;
 }
 
-asseq(
-  trimGift2([
+assmeq(wrapGiftString(`#`), "#");
+assmeq(wrapGiftString(`##`), "##");
+assmeq(
+  wrapGiftString(
+    `#
+     #`
+  ),
+  `#
+   #`
+);
+assmeq(wrapGiftString(`.#`), "#");
+assmeq(wrapGiftString(`#.`), "#");
+assmeq(wrapGiftString(`#.#`), "#.#");
+assmeq(
+  wrapGiftString(
+    `#.#
+     #..`
+  ),
+  `#.#
+   #..`
+);
+assmeq(wrapGiftString("..#"), "#");
+assmeq(
+  wrapGiftString(
+    `.
+     .
+     #`
+  ),
+  "#"
+);
+assmeq(
+  wrapGiftString(
+    `#
+     .
+     .`
+  ),
+  "#"
+);
+
+assmeq(
+  wrapGift([
     [".", ".", "."],
     [".", "#", "."],
     [".", ".", "."],
   ]),
-  [["#"]]
+  "#"
 );
 
 function canFitString(input: string): boolean {
@@ -269,7 +269,7 @@ function canFitString(input: string): boolean {
   asseq(parsed2.trees.length, 1);
 
   const gifts = parsed2.gifts.map((gift) => {
-    return trimGift2(gift);
+    return wrapGift(gift);
   });
 
   const firstTree = nonNull(parsed2.trees[0]);
@@ -297,31 +297,53 @@ function canFitString(input: string): boolean {
   return anyValidPlacements;
 }
 
-// shit refactor to use vectors
-// shit refactor to use rectangles
-function isInBounds(x: Int, y: Int, width: Int, height: Int): boolean {
-  asseq(Math.abs(x % 1), 0);
-  asseq(Math.abs(y % 1), 0);
-  asseq(Math.abs(width % 1), 0);
-  asseq(Math.abs(height % 1), 0);
+type RootRectangle = { width: Int; height: Int };
+type Rectangle = Vector & RootRectangle;
 
-  return !(x < 0 || y < 0 || x > width - 1 || y > height - 1);
+function assVector(
+  vector: Vector | undefined | null
+): asserts vector is Vector {
+  ass(vector);
+  toNumInt(vector.x);
+  toNumInt(vector.y);
 }
 
-asseq(isInBounds(0, 0, 1, 1), true);
-asseq(isInBounds(-1, 0, 1, 1), false);
-asseq(isInBounds(0, -1, 1, 1), false);
-asseq(isInBounds(1, 0, 1, 1), false);
-asseq(isInBounds(0, 1, 1, 1), false);
-asseq(isInBounds(2, 0, 3, 1), true);
-asseq(isInBounds(3, 0, 3, 1), false);
+function assRootRectangle(
+  rootRectangle: RootRectangle | null | undefined
+): asserts rootRectangle is RootRectangle {
+  ass(rootRectangle);
+  toNumInt(rootRectangle.width);
+  toNumInt(rootRectangle.height);
+  ass(rootRectangle.width > 0);
+  ass(rootRectangle.height > 0);
+}
 
-// shit use vector & type here?
+function isInBounds(vector: Vector, rectangle: RootRectangle): boolean {
+  assVector(vector);
+  assRootRectangle(rectangle);
+
+  return !(
+    vector.x < 0 ||
+    vector.y < 0 ||
+    vector.x > rectangle.width - 1 ||
+    vector.y > rectangle.height - 1
+  );
+}
+
+asseq(isInBounds({ x: 0, y: 0 }, { width: 1, height: 1 }), true);
+asseq(isInBounds({ x: -1, y: 0 }, { width: 1, height: 1 }), false);
+asseq(isInBounds({ x: 0, y: -1 }, { width: 1, height: 1 }), false);
+asseq(isInBounds({ x: 1, y: 0 }, { width: 1, height: 1 }), false);
+asseq(isInBounds({ x: 0, y: 1 }, { width: 1, height: 1 }), false);
+asseq(isInBounds({ x: 2, y: 0 }, { width: 3, height: 1 }), true);
+asseq(isInBounds({ x: 3, y: 0 }, { width: 3, height: 1 }), false);
+
 type PlacedGift = {
   type: Int;
   rotation: Int;
 } & Vector;
 
+/** hint: place multiple gifts on a board by using createBoard with an array of placedGifts */
 function placeGift(board: Board, placement: PlacedGift): Board {
   return {
     ...board,
@@ -351,35 +373,69 @@ function testPlaceGift() {
 
 testPlaceGift();
 
+function assMatrixSquare(matrix: unknown[][]): void {
+  ass(matrix.every((row) => row.length === nonNull(matrix[0]).length));
+}
+
+function matrixToRootRectangle(matrix: unknown[][]): RootRectangle {
+  assMatrixSquare(matrix);
+  return { width: nonNull(matrix[0]).length, height: matrix.length };
+}
+
+function rectangleIsInside(inner: Rectangle, outer: RootRectangle): boolean {
+  return (
+    isInBounds(inner, outer) &&
+    isInBounds(
+      add(
+        {
+          x: inner.width - 1,
+          y: inner.height - 1,
+        },
+        { x: inner.x, y: inner.y }
+      ),
+      outer
+    )
+  );
+}
+
+function placedGiftToGift(
+  giftsWithRotations: GiftsWithRotations,
+  placedGift: PlacedGift
+) {
+  return nonNull(giftsWithRotations[placedGift.type]?.[placedGift.rotation]);
+}
+
+function placedGiftToBoundingRectangle(
+  giftsWithRotations: GiftsWithRotations,
+  placedGift: PlacedGift
+): Rectangle {
+  const gift = placedGiftToGift(giftsWithRotations, placedGift);
+  const giftRootRectangle = matrixToRootRectangle(gift);
+
+  return {
+    ...placedGift,
+    ...giftRootRectangle,
+  };
+}
+
 function isValidBoard(board: Board): boolean {
   const placedGifts = board.placedGifts;
-  const width = board.width;
-  const height = board.height;
-  const giftsShapes = board.gifts;
+  const giftsWithRotations = board.gifts;
 
-  // WARNING: assumes wrapped gifts, and verified that every row is the same length
+  giftsWithRotations.forEach((giftWithRotations) =>
+    giftWithRotations.forEach((gift) => {
+      asseq(wrapGift(gift), gift);
+      assMatrixSquare(gift);
+    })
+  );
+
   for (const placedGift of placedGifts) {
-    if (!isInBounds(placedGift.x, placedGift.y, width, height)) {
-      return false;
-    }
-
-    const gift = nonNull(giftsShapes[placedGift.type]?.[placedGift.rotation]);
-    const giftHeight = gift.length;
-    const giftWidth = nonNull(gift[0]).length;
-
-    // shit replace this with something like "rectangles completely overlap"
-    const lowerRightGiftCorner = add(
-      {
-        x: giftWidth - 1,
-        y: giftHeight - 1,
-      },
-      { x: placedGift.x, y: placedGift.y }
+    const giftRectangle = placedGiftToBoundingRectangle(
+      giftsWithRotations,
+      placedGift
     );
-    if (
-      !isInBounds(lowerRightGiftCorner.x, lowerRightGiftCorner.y, width, height)
-    ) {
-      return false;
-    }
+
+    if (!rectangleIsInside(giftRectangle, board)) return false;
   }
 
   for (const [
@@ -393,7 +449,7 @@ function isValidBoard(board: Board): boolean {
       if (placedMultiGift1Index === placedMultiGift2Index) continue;
 
       const gift1 = nonNull(
-        giftsShapes[placedMultiGift1.type]?.[placedMultiGift1.rotation]
+        giftsWithRotations[placedMultiGift1.type]?.[placedMultiGift1.rotation]
       );
 
       // shit todo performance optimization, if the gifts have no overlapping bounds then they cannot have gift tiles on each other
@@ -418,9 +474,9 @@ function isValidBoard(board: Board): boolean {
             );
 
             const gift2Cell =
-              giftsShapes[placedMultiGift2.type]?.[placedMultiGift2.rotation]?.[
-                gift2Local.y
-              ]?.[gift2Local.x];
+              giftsWithRotations[placedMultiGift2.type]?.[
+                placedMultiGift2.rotation
+              ]?.[gift2Local.y]?.[gift2Local.x];
             if (gift2Cell === "#") {
               return false;
             }
@@ -434,10 +490,8 @@ function isValidBoard(board: Board): boolean {
 
 type Board = {
   gifts: GiftsWithRotations;
-  width: Int;
-  height: Int;
   placedGifts: PlacedGift[];
-};
+} & RootRectangle;
 
 function createBoard(options: {
   gifts: Gifts;
@@ -487,23 +541,20 @@ function testIsValidPlacement() {
     ),
     false
   );
-  // shit create placeGifts helper?
+
   // shit create a type for a "validated board", and then we have to pass validated boards to each other?
+
   asseq(
     isValidBoard(
-      placeGift(
-        placeGift(
-          createBoard({
-            gifts: [[["#"]]],
-            width: boardWidth,
-            height: boardHeight,
-          }),
-
-          { type: 0, rotation: 0, x: 0, y: 0 }
-        ),
-
-        { type: 0, rotation: 0, x: 0, y: 0 }
-      )
+      createBoard({
+        gifts: [[["#"]]],
+        width: boardWidth,
+        height: boardHeight,
+        placedGifts: [
+          { type: 0, rotation: 0, x: 0, y: 0 },
+          { type: 0, rotation: 0, x: 0, y: 0 },
+        ],
+      })
     ),
     false,
     "overlapping pieces "
@@ -528,13 +579,7 @@ function testIsValidPlacement() {
     true
   );
 
-  // shit create a helper which turns a string into a gift
-
   const visualizeBoard = (board: Board, expected: string) => {
-    // shit create helper to turn 2d char matrix to string
-    // shit create helper to turn string to 2d char matrix
-    // shit rename gift to giftmatrix
-
     // create a 2d array of the board
     // for each placed gift, set the corresponding cells which are # to #
     const boardMatrix: ("#" | "." | "X")[][] = Array(board.height)
@@ -544,10 +589,9 @@ function testIsValidPlacement() {
       });
 
     for (const placedGift of board.placedGifts) {
-      const giftShape = nonNull(
-        board.gifts[placedGift.type]?.[placedGift.rotation]
-      );
+      const giftShape = placedGiftToGift(board.gifts, placedGift);
       // shit use helper to loop through 2d array
+
       giftShape.map((row, y) => {
         row.map((char, x) => {
           if (char === "#") {
@@ -570,7 +614,7 @@ function testIsValidPlacement() {
   };
 
   let boardState = createBoard({
-    gifts: [[["#", "#"]]] satisfies Gifts,
+    gifts: [[["#", "#"]]],
     width: 2,
     height: 2,
   });
@@ -610,8 +654,6 @@ function testIsValidPlacement() {
     `X#
      #.`
   );
-
-  // shit todo the board should be invalid
 
   asseq(isValidBoard(boardState), false);
 }
@@ -671,11 +713,8 @@ function createCombinations(...args: Int[]) {
       return;
     }
 
-    const first = args[0];
-    ass(typeof first === "number");
+    const currentCount = toNumInt(args[index]);
 
-    const currentCount = args[index];
-    ass(typeof currentCount === "number");
     for (let i = 1; i <= currentCount; i++) {
       accumulator.push(i - 1);
       recurse(index + 1, accumulator);
@@ -768,232 +807,10 @@ function testAllPlacements() {
 
   expect(
     createAllPlacements([[["#"]], [["#", "#"]]], [1, 1], 2, 2)
-  ).toStrictEqual([
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 0,
-        y: 0,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 0,
-        y: 0,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 0,
-        y: 0,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 0,
-        y: 1,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 0,
-        y: 0,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 1,
-        y: 0,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 0,
-        y: 0,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 1,
-        y: 1,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 0,
-        y: 1,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 0,
-        y: 0,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 0,
-        y: 1,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 0,
-        y: 1,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 0,
-        y: 1,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 1,
-        y: 0,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 0,
-        y: 1,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 1,
-        y: 1,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 1,
-        y: 0,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 0,
-        y: 0,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 1,
-        y: 0,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 0,
-        y: 1,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 1,
-        y: 0,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 1,
-        y: 0,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 1,
-        y: 0,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 1,
-        y: 1,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 1,
-        y: 1,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 0,
-        y: 0,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 1,
-        y: 1,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 0,
-        y: 1,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 1,
-        y: 1,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 1,
-        y: 0,
-      },
-    ],
-    [
-      {
-        type: 0,
-        rotation: 0,
-        x: 1,
-        y: 1,
-      },
-      {
-        type: 1,
-        rotation: 0,
-        x: 1,
-        y: 1,
-      },
-    ],
-  ]);
+  ).toStrictEqual(
+    // prettier-ignore
+    [[{type:0,rotation:0,x:0,y:0,},{type:1,rotation:0,x:0,y:0,},],[{type:0,rotation:0,x:0,y:0,},{type:1,rotation:0,x:0,y:1,},],[{type:0,rotation:0,x:0,y:0,},{type:1,rotation:0,x:1,y:0,},],[{type:0,rotation:0,x:0,y:0,},{type:1,rotation:0,x:1,y:1,},],[{type:0,rotation:0,x:0,y:1,},{type:1,rotation:0,x:0,y:0,},],[{type:0,rotation:0,x:0,y:1,},{type:1,rotation:0,x:0,y:1,},],[{type:0,rotation:0,x:0,y:1,},{type:1,rotation:0,x:1,y:0,},],[{type:0,rotation:0,x:0,y:1,},{type:1,rotation:0,x:1,y:1,},],[{type:0,rotation:0,x:1,y:0,},{type:1,rotation:0,x:0,y:0,},],[{type:0,rotation:0,x:1,y:0,},{type:1,rotation:0,x:0,y:1,},],[{type:0,rotation:0,x:1,y:0,},{type:1,rotation:0,x:1,y:0,},],[{type:0,rotation:0,x:1,y:0,},{type:1,rotation:0,x:1,y:1,},],[{type:0,rotation:0,x:1,y:1,},{type:1,rotation:0,x:0,y:0,},],[{type:0,rotation:0,x:1,y:1,},{type:1,rotation:0,x:0,y:1,},],[{type:0,rotation:0,x:1,y:1,},{type:1,rotation:0,x:1,y:0,},],[{type:0,rotation:0,x:1,y:1,},{type:1,rotation:0,x:1,y:1,},],]
+  );
 }
 
 testAllPlacements();
@@ -1050,51 +867,57 @@ function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
 }
 
 function testRotation() {
-  asseq(
-    transposeGift([
-      ["#", ".", "."],
-      ["#", "#", "#"],
-    ]),
-    [
-      ["#", "#"],
-      [".", "#"],
-      [".", "#"],
-    ]
+  console.log(
+    matrixToString([
+      ["#", "."],
+      [".", "."],
+    ])
+  );
+  assmeq(
+    transposeGift(
+      stringToMatrix(
+        `#..
+         ###`
+      )
+    ),
+    `##
+     .#
+     .#`
   );
 
-  asseq(
-    flipGiftHorizontally([
-      ["#", ".", "."],
-      ["#", "#", "#"],
-    ]),
-    [
-      [".", ".", "#"],
-      ["#", "#", "#"],
-    ]
+  assmeq(
+    flipGiftHorizontally(
+      stringToMatrix(
+        `#..
+      ###`
+      )
+    ),
+    `..#
+     ###`
   );
 
-  asseq(
-    flipGiftVertically([
-      ["#", ".", "."],
-      ["#", "#", "#"],
-    ]),
-    [
-      ["#", "#", "#"],
-      ["#", ".", "."],
-    ]
+  assmeq(
+    flipGiftVertically(
+      stringToMatrix(
+        `#..
+      ###`
+      )
+    ),
+    `###
+     #..`
   );
 
   asseq(rotateGift90Right([["#"]]), [["#"]]);
   asseq(rotateGift90Right([["#", "#"]]), [["#"], ["#"]]);
-  asseq(
-    rotateGift90Right([
-      ["#", "."],
-      [".", "."],
-    ]),
-    [
-      [".", "#"],
-      [".", "."],
-    ]
+  assmeq(
+    rotateGift90Right(
+      stringToGift(
+        `#.
+         ..`
+      )
+    ),
+    `.#
+    ..`
   );
 
   const initialGift = `12
