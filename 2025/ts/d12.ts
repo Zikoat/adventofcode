@@ -268,7 +268,7 @@ function canFitString(input: string): boolean {
     return false;
   }
 
-  console.log("next shape");
+  // console.log("next shape");
   // loop over each tile under the tree
   // try to place the gift there
   // if every tile of the gift is inside the bounds, then we can place it there.
@@ -313,17 +313,26 @@ function canFitString(input: string): boolean {
     }
   }
 
+  // console.log(
+  //   "createAllPlacements input",
+  //   gifts,
+  //   firstTree.giftCounts,
+  //   firstTree.width,
+  //   firstTree.height
+  // );
+
   const allGiftPlacements = createAllPlacements(
     gifts,
     firstTree.giftCounts,
-    boardWidth,
-    boardHeight
+    firstTree.width,
+    firstTree.height
   );
-  console.log(
-    "all gift placement count in can fit string",
-    allGiftPlacements.length
-  );
+  // console.log(
+  //   "all gift placement count in can fit string",
+  //   allGiftPlacements.length
+  // );
 
+  // console.log("allGiftPlacements", allGiftPlacements);
   // const giftPlacements: PlacedGift[] = [];
   // // for each gift
   // for (const [giftType, gift] of gifts.entries()) {
@@ -342,7 +351,7 @@ function canFitString(input: string): boolean {
   const validPlacements = allGiftPlacements.map((giftPlacement) =>
     isValidPlacement(gifts, firstTree.width, firstTree.height, giftPlacement)
   );
-  console.log(validPlacements);
+  // console.log("validPlacements", validPlacements);
   const anyValidPlacements = validPlacements.some(Boolean);
   return anyValidPlacements;
   // for each x of the board
@@ -373,10 +382,6 @@ asseq(isInBounds(0, 1, 1, 1), false);
 asseq(isInBounds(2, 0, 3, 1), true);
 asseq(isInBounds(3, 0, 3, 1), false);
 
-const gifts = [[["#"]]] satisfies Gifts;
-const boardWidth = 1;
-const boardHeight = 1;
-
 // shit use vector & type here?
 type PlacedGift = {
   type: number;
@@ -403,11 +408,15 @@ asseq(placeGift(0, { x: 0, y: 0 }, placeGift(0, { x: 1, y: 0 }, [])), [
 ]);
 
 function isValidPlacement(
-  gifts: Gifts,
+  giftsShapes: Gifts,
   width: Int,
   height: Int,
   placedGifts: PlacedGift[]
 ): boolean {
+  // console.log(
+  //   "isValidPlacement input",
+  //   JSON.stringify({ gifts: giftsShapes, width, height, placedGifts })
+  // );
   // if any gift has a location out of bounds
   // WARNING: assumes wrapped gifts, and verified that every row is the same length
   for (const placedGift of placedGifts) {
@@ -415,7 +424,7 @@ function isValidPlacement(
       return false;
     }
 
-    const gift = nonNull(gifts[placedGift.type]);
+    const gift = nonNull(giftsShapes[placedGift.type]);
     const giftHeight = gift.length;
     const giftWidth = nonNull(gift[0]).length;
 
@@ -434,11 +443,17 @@ function isValidPlacement(
     }
   }
 
-  for (const [placedGift1Index, placedGift1] of placedGifts.entries()) {
-    for (const [placedGift2Index, placedGift2] of placedGifts.entries()) {
-      if (placedGift1Index === placedGift2Index) continue;
+  for (const [
+    placedMultiGift1Index,
+    placedMultiGift1,
+  ] of placedGifts.entries()) {
+    for (const [
+      placedMultiGift2Index,
+      placedMultiGift2,
+    ] of placedGifts.entries()) {
+      if (placedMultiGift1Index === placedMultiGift2Index) continue;
 
-      const gift1 = nonNull(gifts[placedGift1.type]);
+      const gift1 = nonNull(giftsShapes[placedMultiGift1.type]);
 
       // shit todo performance optimization, if the gifts have no overlapping bounds then they cannot have gift tiles on each other
       // shit todo performance optimization, if we sort the gifts top to bottom, then we can find the first gift at the correct height, and then only run until the gifts are at different heights again. all of the ones before and after definitely don't overlap.
@@ -448,19 +463,42 @@ function isValidPlacement(
       for (const [gift1LocalY, gift1Row] of gift1.entries()) {
         for (const [gift1LocalX, gift1Cell] of gift1Row.entries())
           if (gift1Cell === "#") {
+            // console.log(
+            //   "shit",
+            //   gift1LocalX,
+            //   gift1LocalY,
+            //   placedMultiGift1,
+            //   placedMultiGift2
+            // );
             const globalPos = add(
-              { y: placedGift1.y, x: placedGift1.x },
+              { y: placedMultiGift1.y, x: placedMultiGift1.x },
               { x: gift1LocalX, y: gift1LocalY }
             );
+            // console.log("globalPos", globalPos);
 
             // note, need to verify this is checking the correct direction.
-            const gift2Local = diff(globalPos, {
-              x: placedGift2.x,
-              y: placedGift2.y,
-            });
-            const gift2Cell = nonNull(
-              gifts[placedGift2.type]?.[gift2Local.y]?.[gift2Local.x]
+            const gift2Local = diff(
+              {
+                x: placedMultiGift2.x,
+                y: placedMultiGift2.y,
+              },
+              globalPos
             );
+            // console.log("pre-error", {
+            //   a: placedMultiGift2.type,
+            //   b: gift2Local.y,
+            //   c: gift2Local.x,
+            //   d: giftsShapes,
+            //   e: giftsShapes[placedMultiGift2.type],
+            //   f: giftsShapes[placedMultiGift2.type]?.[gift2Local.y],
+            //   g: giftsShapes[placedMultiGift2.type]?.[gift2Local.y]?.[
+            //     gift2Local.x
+            //   ],
+            // });
+            const gift2Cell =
+              giftsShapes[placedMultiGift2.type]?.[gift2Local.y]?.[
+                gift2Local.x
+              ];
             if (gift2Cell === "#") {
               // console.log("there is overlap");
               return false;
@@ -473,46 +511,69 @@ function isValidPlacement(
   return true;
 }
 
-asseq(
-  isValidPlacement(
-    gifts,
-    boardWidth,
-    boardHeight,
-    placeGift(0, { x: 0, y: 0 }, [])
-  ),
-  true
-);
-asseq(
-  isValidPlacement(
-    gifts,
-    boardWidth,
-    boardHeight,
-    placeGift(0, { x: 1, y: 0 }, [])
-  ),
-  false
-);
-asseq(
-  isValidPlacement(
-    [[["#", "#"]]],
-    boardWidth,
-    boardHeight,
-    placeGift(0, { x: 0, y: 0 }, [])
-  ),
-  false
-);
-// shit create placeGifts helper?
-// shit create a type for a "validated board", and then we have to pass validated boards to each other?
-asseq(
-  isValidPlacement(
-    [[["#"]]],
-    boardWidth,
-    boardHeight,
-    placeGift(0, { x: 0, y: 0 }, placeGift(0, { x: 0, y: 0 }, []))
-  ),
-  false,
-  "overlapping pieces "
-);
-asseq(isValidPlacement([[["#"]]], 0, 0, []), true);
+function testIsValidPlacement() {
+  const gifts = [[["#"]]] satisfies Gifts;
+  const boardWidth = 1;
+  const boardHeight = 1;
+
+  asseq(
+    isValidPlacement(
+      gifts,
+      boardWidth,
+      boardHeight,
+      placeGift(0, { x: 0, y: 0 }, [])
+    ),
+    true
+  );
+  asseq(
+    isValidPlacement(
+      gifts,
+      boardWidth,
+      boardHeight,
+      placeGift(0, { x: 1, y: 0 }, [])
+    ),
+    false
+  );
+  asseq(
+    isValidPlacement(
+      [[["#", "#"]]],
+      boardWidth,
+      boardHeight,
+      placeGift(0, { x: 0, y: 0 }, [])
+    ),
+    false
+  );
+  // shit create placeGifts helper?
+  // shit create a type for a "validated board", and then we have to pass validated boards to each other?
+  asseq(
+    isValidPlacement(
+      [[["#"]]],
+      boardWidth,
+      boardHeight,
+      placeGift(0, { x: 0, y: 0 }, placeGift(0, { x: 0, y: 0 }, []))
+    ),
+    false,
+    "overlapping pieces "
+  );
+  asseq(isValidPlacement([[["#"]]], 0, 0, []), true);
+
+  // {"gifts":[[["#"]]],"width":2,"height":1,"placedGifts":[{"type":0,"x":0,"y":0},{"type":0,"x":1,"y":0}]}
+  asseq(
+    isValidPlacement([[["#"]]], 2, 1, [
+      { type: 0, x: 0, y: 0 },
+      { type: 0, x: 1, y: 0 },
+    ]),
+    true
+  );
+}
+
+testIsValidPlacement();
+
+function toNumInt(input: Int | undefined | null): Int {
+  ass(typeof input === "number");
+  ass(Math.abs(input) % 1 === 0);
+  return input;
+}
 
 function createAllPlacements(
   gifts: Gifts,
@@ -530,7 +591,7 @@ function createAllPlacements(
     Array(giftCount).fill([width, height]).flat()
   );
 
-  console.log(combinationsInput);
+  // console.log(combinationsInput);
 
   const unmappedplacements = createCombinations(...combinationsInput);
 
@@ -539,28 +600,36 @@ function createAllPlacements(
     // placement is a x / y tuple for each multi gift.
     // the gift index is the same as the gift type
     // if we repeat each gift type count times, then the gift multi index is the index of the
+    // console.log("placement", placement);
     let currentGiftMultiIndex = 0;
     for (const [giftType, giftCount] of giftCounts.entries()) {
       for (let i = 0; i < giftCount; i++) {
-        const x = nonNull(placement[currentGiftMultiIndex * 2]);
-        const y = nonNull(placement[currentGiftMultiIndex * 2 + 1]);
+        // console.log(
+        //   currentGiftMultiIndex,
+        //   currentGiftMultiIndex * 2,
+        //   placement[currentGiftMultiIndex * 2]
+        // );
+        const x = toNumInt(placement[currentGiftMultiIndex * 2]);
+        const y = toNumInt(placement[currentGiftMultiIndex * 2 + 1]);
         singleGiftPlacements.push({ type: giftType, x, y });
 
         currentGiftMultiIndex++;
       }
     }
-    asseq(currentGiftMultiIndex, placement.length);
+
+    // console.log(currentGiftMultiIndex, placement.length);
+    asseq(currentGiftMultiIndex * 2, placement.length);
     return singleGiftPlacements;
   });
 
   const placementCount = countPlacements(giftCounts, width, height);
-  console.log({
-    giftCounts,
-    width,
-    height,
-    placementCount,
-  });
-  console.log(JSON.stringify(allPlacements, null, 2));
+  // console.log({
+  //   giftCounts,
+  //   width,
+  //   height,
+  //   placementCount,
+  // });
+  // console.log(JSON.stringify(allPlacements, null, 2));
   asseq(allPlacements.length, placementCount);
   return allPlacements;
 }
@@ -613,7 +682,7 @@ function testCreateCombinations() {
   asseq(createCombinations(1).length, countCombinations(1));
   asseq(createCombinations(2).length, countCombinations(2));
   asseq(createCombinations(2, 3).length, countCombinations(2, 3));
-  console.log("done combinations");
+  // console.log("done combinations");
 }
 
 testCreateCombinations();
@@ -625,7 +694,7 @@ function countPlacements(giftCounts: GiftCounts, width: Int, height: Int) {
 
   const combinationCount = countCombinations(...combinationsInput);
 
-  console.log("combination count", combinationsInput, combinationCount);
+  // console.log("combination count", combinationsInput, combinationCount);
 
   return combinationCount;
 }
@@ -951,6 +1020,15 @@ asseq(
 
 2x2: 3`),
   false
+);
+
+asseq(
+  canFitString(`1:
+##
+
+1x2: 1`),
+  true,
+  "with rotations "
 );
 
 /**
