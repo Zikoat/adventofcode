@@ -976,6 +976,7 @@ asseq(
   false
 );
 
+// SIGURD TODO TO JUMP BACK IN, create some smaller tests for rotations. and then flipping. and then to do multiple rotation and flipping moves. then a method to dedupe permutated gifts.
 asseq(
   canFitString(`1:
 ##
