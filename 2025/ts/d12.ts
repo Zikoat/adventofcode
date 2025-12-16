@@ -231,6 +231,7 @@ const performanceOptimizations = { countGiftSpaces: false } as const;
 function canFitString(input: string): boolean {
   // console.log(input)
   const parsed2: Puzzle = parseInput(input);
+  asseq(parsed2.trees.length, 1);
 
   const gifts = parsed2.gifts.map((gift) => {
     // console.log(gift)
@@ -268,51 +269,6 @@ function canFitString(input: string): boolean {
     return false;
   }
 
-  // console.log("next shape");
-  // loop over each tile under the tree
-  // try to place the gift there
-  // if every tile of the gift is inside the bounds, then we can place it there.
-  // shit this can be refactored to map over each of the tiles under the tree
-
-  const gift = nonNull(gifts[0]);
-
-  // if all positions say that this gift cannot fit under the tree, then this
-  let canPlaceGiftAnywhereUnderTree = false;
-
-  for (let y = 0; y < firstTree.height; y++) {
-    for (let x = 0; x < firstTree.width; x++) {
-      // console.log(x, y)
-      let giftFitsUnderTreeAtThisLocation = true;
-      // for each tile in the gift
-      for (let giftY = 0; giftY < gift.length; giftY++) {
-        for (let giftX = 0; giftX < nonNull(gift[0]).length; giftX++) {
-          const tile = nonNull(nonNull(gift[giftY])[giftX]);
-          // console.log("gift", giftX, giftY, tile)
-          if (tile === "#") {
-            const worldPos = add({ x: giftX, y: giftY }, { x, y });
-            const width = firstTree.width;
-            const height = firstTree.height;
-            const isGiftTileInBounds = isInBounds(
-              worldPos.x,
-              worldPos.y,
-              width,
-              height
-            );
-            // console.log(worldPos, "should be in", width, height, isGiftTileInBounds)
-            if (!isGiftTileInBounds) {
-              giftFitsUnderTreeAtThisLocation = false;
-            }
-          }
-        }
-      }
-
-      if (giftFitsUnderTreeAtThisLocation) {
-        // shit performance optimization is to cut loop here.
-        canPlaceGiftAnywhereUnderTree = true;
-      }
-    }
-  }
-
   // console.log(
   //   "createAllPlacements input",
   //   gifts,
@@ -327,10 +283,10 @@ function canFitString(input: string): boolean {
     firstTree.width,
     firstTree.height
   );
-  // console.log(
-  //   "all gift placement count in can fit string",
-  //   allGiftPlacements.length
-  // );
+  console.log(
+    "all gift placement count in can fit string",
+    allGiftPlacements.length
+  );
 
   // console.log("allGiftPlacements", allGiftPlacements);
   // const giftPlacements: PlacedGift[] = [];
@@ -352,15 +308,14 @@ function canFitString(input: string): boolean {
     isValidPlacement(gifts, firstTree.width, firstTree.height, giftPlacement)
   );
   // console.log("validPlacements", validPlacements);
+
   const anyValidPlacements = validPlacements.some(Boolean);
+
   return anyValidPlacements;
   // for each x of the board
   // for each y of the board
   // create the placement
   // validate the placement
-
-  if (canPlaceGiftAnywhereUnderTree) return true;
-  else return false;
 }
 
 // shit refactor to use vectors
@@ -964,7 +919,6 @@ asseq(
   false
 );
 
-// SIGURD, TO JUMP BACK IN TO IMPLEMENTATION, you have to implement trying to place a piece at a specific point, and then check if the board is valid.
 asseq(
   canFitString(`1:
 #
@@ -1031,6 +985,57 @@ asseq(
   "with rotations "
 );
 
+asseq(
+  canFitString(`1:
+#.
+##
+#.
+
+2:
+#.
+..
+#.
+
+2x3: 1 1
+`),
+  true,
+  "with flipping"
+);
+
+asseq(
+  canFitString(`0:
+###
+##.
+##.
+
+1:
+###
+##.
+.##
+
+2:
+.##
+###
+##.
+
+3:
+##.
+###
+##.
+
+4:
+###
+#..
+###
+
+5:
+###
+.#.
+###
+
+4x4: 0 0 0 0 2 0`),
+  true
+);
 /**
 # simple and correct algorithm, in small steps
 implement only the first tree
