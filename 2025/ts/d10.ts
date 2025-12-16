@@ -79,9 +79,9 @@ function findSmallestButtonPresses(machine: {
 
   for (let i = 0; i < 10; i++) {
     // const newStates = states.flatMap
-    let currentState = [];
+    let currentState: number[] = [];
     while (currentState) {
-      currentState = states.unshift();
+      // currentState = states.unshift();
     }
 
     for (let state of states) {
@@ -92,7 +92,7 @@ function findSmallestButtonPresses(machine: {
         if (assStateEqual(state, machine.lights)) {
           return i;
         }
-        newStates.push(nextState);
+        // newStates.push(nextState);
         // console.log(newStates);
       }
     }

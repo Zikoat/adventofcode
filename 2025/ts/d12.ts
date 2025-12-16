@@ -518,17 +518,11 @@ function testIsValidPlacement() {
 
   visualizeBoard(
     boardState,
-    `##
-     ..`
+    `X#
+     #.`
   );
 
-  // first gift placed
-  // ##
-  // ..
-  // second gift placed at first location, but rotated
-  // X#
-  // #.
-  // the board should be invalid
+  // shit todo the board should be invalid
 }
 
 testIsValidPlacement();
@@ -545,17 +539,11 @@ function createAllPlacements(
   width: Int,
   height: Int
 ): PlacedGift[][] {
-  // const allPlacements: PlacedGift[][] = [];
-
   asseq(gifts.length, giftCounts.length);
-
-  // const placement = [];
 
   const combinationsInput = giftCounts.flatMap((giftCount) =>
     Array(giftCount).fill([width, height]).flat()
   );
-
-  // console.log(combinationsInput);
 
   const unmappedplacements = createCombinations(...combinationsInput);
 
@@ -610,7 +598,7 @@ function createCombinations(...args: Int[]) {
 }
 
 function countCombinations(...args: Int[]): number {
-  return args.reduce((prev, cur, i, arr) => prev * cur, 1);
+  return args.reduce((prev, cur, _i, _arr) => prev * cur, 1);
 }
 
 function testCreateCombinations() {
