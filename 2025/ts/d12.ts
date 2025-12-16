@@ -1,6 +1,5 @@
 import { expect } from "bun:test";
 import { add, ass, asseq, assInt, diff, nonNull, type Vector } from "./common";
-import { string } from "zod";
 
 const testInput2 = `0:
 ###
@@ -117,7 +116,7 @@ function validateTest() {
 
 validateTest();
 
-function stringToMatrix(input: string): unknown[][] {
+function stringToMatrix(input: string): string[][] {
   const matrix = input
     .trim()
     .split("\n")
@@ -148,6 +147,24 @@ function assmeq(stringMatrix: string[][], expected: string): void {
   ).toBe(cleanViz(expected));
 }
 
+// function map2d<T>(
+//   field: Field,
+//   callback: (cell: boolean, loc: Vector) => T
+// ): T[][] {
+//   return field.map((row, y) => row.map((cell, x) => callback(cell, { x, y })));
+// }
+
+function assMatrix<T extends string>(
+  stringMatrix: string[][],
+  assertionCallback: (input: string) => input is T
+): T[][] {
+  ass(
+    stringMatrix.every((row) => row.every((char) => assertionCallback(char)))
+  );
+
+  return stringMatrix;
+}
+
 function testStringToMatrix() {
   const giftString = `##
                       ..`;
@@ -169,6 +186,17 @@ function testStringToMatrix() {
   );
 
   // shit create assMatrix which takes a validator function and turns a matrix into a more strictly typed element matrix. no interdependencies
+  const gift2: Gift = assMatrix(
+    matrix,
+    (char: unknown) => char === "#" || char === "."
+  );
+
+  assmeq(
+    gift2,
+    `##
+     ..`
+  );
+
   // shit create function to validate present char
 }
 
