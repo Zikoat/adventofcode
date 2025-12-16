@@ -1,3 +1,17 @@
+import { deepEquals } from "bun";
+import { expect } from "bun:test";
+import {
+  add,
+  ass,
+  asseq,
+  assInt,
+  diff,
+  nonNull,
+  sum,
+  type Vector,
+} from "./common";
+import { isValid } from "zod/v3";
+
 console.log("start");
 type TupleOf<
   T,
@@ -28,19 +42,6 @@ const x_2: number = x[2];
 const x_3: number = x[3];
 
 void x_1, x_2, x_3;
-
-import { deepEquals } from "bun";
-import {
-  add,
-  ass,
-  asseq,
-  assInt,
-  diff,
-  nonNull,
-  sum,
-  type Vector,
-} from "./common";
-import { isValid } from "zod/v3";
 
 const testInput2 = `0:
 ###
@@ -312,29 +313,38 @@ function canFitString(input: string): boolean {
     }
   }
 
-  const giftPlacements: PlacedGift[] = [];
-  // for each gift
-  for (const [giftType, gift] of gifts.entries()) {
-    const giftCount = nonNull(firstTree.giftCounts[giftType]);
-    // console.log("giftCount", giftCount)
-    for (let i = 0; i < giftCount; i++) {
-      for (let x = 0; x < firstTree.width; x++) {
-        for (let y = 0; y < firstTree.height; y++) {
-          // console.log(x, y)
-          giftPlacements.push({ type: giftType, x, y });
-        }
-      }
-    }
-  }
-  // console.log(giftPlacements)
-  const thisIsValidPlacement = isValidPlacement(
+  const allGiftPlacements = createAllPlacements(
     gifts,
-    firstTree.width,
-    firstTree.height,
-    giftPlacements
+    firstTree.giftCounts,
+    boardWidth,
+    boardHeight
   );
-  // console.log(thisIsValidPlacement)
-  return thisIsValidPlacement;
+  console.log(
+    "all gift placement count in can fit string",
+    allGiftPlacements.length
+  );
+
+  // const giftPlacements: PlacedGift[] = [];
+  // // for each gift
+  // for (const [giftType, gift] of gifts.entries()) {
+  //   const giftCount = nonNull(firstTree.giftCounts[giftType]);
+  //   // console.log("giftCount", giftCount)
+  //   for (let i = 0; i < giftCount; i++) {
+  //     for (let x = 0; x < firstTree.width; x++) {
+  //       for (let y = 0; y < firstTree.height; y++) {
+  //         // console.log(x, y)
+  //         giftPlacements.push({ type: giftType, x, y });
+  //       }
+  //     }
+  //   }
+  // }
+  // console.log(giftPlacements)
+  const validPlacements = allGiftPlacements.map((giftPlacement) =>
+    isValidPlacement(gifts, firstTree.width, firstTree.height, giftPlacement)
+  );
+  console.log(validPlacements);
+  const anyValidPlacements = validPlacements.some(Boolean);
+  return anyValidPlacements;
   // for each x of the board
   // for each y of the board
   // create the placement
@@ -399,7 +409,7 @@ function isValidPlacement(
   placedGifts: PlacedGift[]
 ): boolean {
   // if any gift has a location out of bounds
-  // WARNING: assumes wrapped gifts, and verified that they aren't jagged
+  // WARNING: assumes wrapped gifts, and verified that every row is the same length
   for (const placedGift of placedGifts) {
     if (!isInBounds(placedGift.x, placedGift.y, width, height)) {
       return false;
@@ -503,6 +513,371 @@ asseq(
   "overlapping pieces "
 );
 asseq(isValidPlacement([[["#"]]], 0, 0, []), true);
+
+function createAllPlacements(
+  gifts: Gifts,
+  giftCounts: GiftCounts,
+  width: Int,
+  height: Int
+): PlacedGift[][] {
+  // const allPlacements: PlacedGift[][] = [];
+
+  asseq(gifts.length, giftCounts.length);
+
+  // const placement = [];
+
+  const combinationsInput = giftCounts.flatMap((giftCount) =>
+    Array(giftCount).fill([width, height]).flat()
+  );
+
+  console.log(combinationsInput);
+
+  const unmappedplacements = createCombinations(...combinationsInput);
+
+  const allPlacements: PlacedGift[][] = unmappedplacements.map((placement) => {
+    const singleGiftPlacements: PlacedGift[] = [];
+    // placement is a x / y tuple for each multi gift.
+    // the gift index is the same as the gift type
+    // if we repeat each gift type count times, then the gift multi index is the index of the
+    let currentGiftMultiIndex = 0;
+    for (const [giftType, giftCount] of giftCounts.entries()) {
+      for (let i = 0; i < giftCount; i++) {
+        const x = nonNull(placement[currentGiftMultiIndex * 2]);
+        const y = nonNull(placement[currentGiftMultiIndex * 2 + 1]);
+        singleGiftPlacements.push({ type: giftType, x, y });
+
+        currentGiftMultiIndex++;
+      }
+    }
+    asseq(currentGiftMultiIndex, placement.length);
+    return singleGiftPlacements;
+  });
+
+  const placementCount = countPlacements(giftCounts, width, height);
+  console.log({
+    giftCounts,
+    width,
+    height,
+    placementCount,
+  });
+  console.log(JSON.stringify(allPlacements, null, 2));
+  asseq(allPlacements.length, placementCount);
+  return allPlacements;
+}
+
+function createCombinations(...args: Int[]) {
+  const allCombinations: Int[][] = [];
+
+  function recurse(index: Int, accumulator: Int[]): void {
+    // console.log(index, accumulator);
+    if (index === args.length) {
+      // console.log("adding to all combinations: ", accumulator);
+      allCombinations.push([...accumulator]);
+      // console.log("new all combinations", allCombinations);
+      return;
+    }
+
+    const first = args[0];
+    ass(typeof first === "number");
+
+    const currentCount = args[index];
+    ass(typeof currentCount === "number");
+    for (let i = 1; i <= currentCount; i++) {
+      accumulator.push(i - 1);
+      recurse(index + 1, accumulator);
+      accumulator.pop();
+    }
+  }
+
+  // console.log("all combinations before", allCombinations);
+
+  recurse(0, []);
+  // console.log("alcl combinations", allCombinations);
+
+  return allCombinations;
+}
+
+function countCombinations(...args: Int[]): number {
+  // ass(args.every((arg) => typeof arg === "number"));
+  return args.reduce((prev, cur, i, arr) => prev * cur, 1);
+}
+
+function testCreateCombinations() {
+  asseq(createCombinations(1, 1), [[0, 0]]);
+  asseq(createCombinations(2, 1), [
+    [0, 0],
+    [1, 0],
+  ]);
+  asseq(createCombinations(2), [[0], [1]]);
+  asseq(createCombinations(2, 2, 2).length, 8);
+  asseq(createCombinations(1).length, countCombinations(1));
+  asseq(createCombinations(2).length, countCombinations(2));
+  asseq(createCombinations(2, 3).length, countCombinations(2, 3));
+  console.log("done combinations");
+}
+
+testCreateCombinations();
+
+function countPlacements(giftCounts: GiftCounts, width: Int, height: Int) {
+  const combinationsInput = giftCounts.flatMap((giftCount) =>
+    Array(giftCount).fill([width, height]).flat()
+  );
+
+  const combinationCount = countCombinations(...combinationsInput);
+
+  console.log("combination count", combinationsInput, combinationCount);
+
+  return combinationCount;
+}
+
+function testAllPlacements() {
+  asseq(countPlacements([1], 1, 1), 1);
+  // 4 shapes need to be placed on one of four spots, they can be on the same spot.
+  asseq(countPlacements([2, 2], 2, 2), 256);
+  asseq(createAllPlacements([[["#"]]], [1], 1, 1), [[{ type: 0, x: 0, y: 0 }]]);
+  // throw Error("stop");
+
+  expect(createAllPlacements([[["#"]]], [1], 2, 1)).toStrictEqual([
+    [{ type: 0, x: 0, y: 0 }],
+    [{ type: 0, x: 1, y: 0 }],
+  ]);
+
+  expect(createAllPlacements([[["#"]]], [2], 1, 1)).toStrictEqual([
+    [
+      { type: 0, x: 0, y: 0 },
+      { type: 0, x: 0, y: 0 },
+    ],
+  ]);
+
+  expect(
+    createAllPlacements([[["#"]], [["#", "#"]]], [1, 1], 1, 1)
+  ).toStrictEqual([
+    [
+      { type: 0, x: 0, y: 0 },
+      { type: 1, x: 0, y: 0 },
+    ],
+  ]);
+
+  expect(
+    createAllPlacements([[["#"]], [["#", "#"]]], [1, 1], 2, 1)
+  ).toStrictEqual([
+    [
+      { type: 0, x: 0, y: 0 },
+      { type: 1, x: 0, y: 0 },
+    ],
+    [
+      { type: 0, x: 0, y: 0 },
+      { type: 1, x: 1, y: 0 },
+    ],
+    [
+      { type: 0, x: 1, y: 0 },
+      { type: 1, x: 0, y: 0 },
+    ],
+    [
+      { type: 0, x: 1, y: 0 },
+      { type: 1, x: 1, y: 0 },
+    ],
+  ]);
+
+  expect(
+    createAllPlacements([[["#"]], [["#", "#"]]], [1, 1], 2, 2)
+  ).toStrictEqual([
+    [
+      {
+        type: 0,
+        x: 0,
+        y: 0,
+      },
+      {
+        type: 1,
+        x: 0,
+        y: 0,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 0,
+        y: 0,
+      },
+      {
+        type: 1,
+        x: 0,
+        y: 1,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 0,
+        y: 0,
+      },
+      {
+        type: 1,
+        x: 1,
+        y: 0,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 0,
+        y: 0,
+      },
+      {
+        type: 1,
+        x: 1,
+        y: 1,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 0,
+        y: 1,
+      },
+      {
+        type: 1,
+        x: 0,
+        y: 0,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 0,
+        y: 1,
+      },
+      {
+        type: 1,
+        x: 0,
+        y: 1,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 0,
+        y: 1,
+      },
+      {
+        type: 1,
+        x: 1,
+        y: 0,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 0,
+        y: 1,
+      },
+      {
+        type: 1,
+        x: 1,
+        y: 1,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 1,
+        y: 0,
+      },
+      {
+        type: 1,
+        x: 0,
+        y: 0,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 1,
+        y: 0,
+      },
+      {
+        type: 1,
+        x: 0,
+        y: 1,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 1,
+        y: 0,
+      },
+      {
+        type: 1,
+        x: 1,
+        y: 0,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 1,
+        y: 0,
+      },
+      {
+        type: 1,
+        x: 1,
+        y: 1,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 1,
+        y: 1,
+      },
+      {
+        type: 1,
+        x: 0,
+        y: 0,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 1,
+        y: 1,
+      },
+      {
+        type: 1,
+        x: 0,
+        y: 1,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 1,
+        y: 1,
+      },
+      {
+        type: 1,
+        x: 1,
+        y: 0,
+      },
+    ],
+    [
+      {
+        type: 0,
+        x: 1,
+        y: 1,
+      },
+      {
+        type: 1,
+        x: 1,
+        y: 1,
+      },
+    ],
+  ]);
+}
+
+testAllPlacements();
 
 asseq(
   canFitString(`1:
