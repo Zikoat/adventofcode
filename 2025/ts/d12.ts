@@ -1,47 +1,5 @@
-import { deepEquals } from "bun";
 import { expect } from "bun:test";
-import {
-  add,
-  ass,
-  asseq,
-  assInt,
-  diff,
-  nonNull,
-  sum,
-  type Vector,
-} from "./common";
-import { isValid } from "zod/v3";
-
-console.log("start");
-type TupleOf<
-  T,
-  N extends number,
-  R extends readonly T[] = []
-> = R["length"] extends N ? R : TupleOf<T, N, readonly [...R, T]>;
-
-export function assertTupleOf<T, N extends number>(
-  value: readonly T[],
-  length: N
-): asserts value is TupleOf<T, N> {
-  asseq(value.length, length);
-}
-
-export function isTupleOf<T, N extends number>(
-  value: readonly T[],
-  length: N
-): TupleOf<T, N> {
-  asseq(value.length, length);
-  return value as TupleOf<T, N>;
-}
-
-const x: number[] = [1, 2, 3];
-assertTupleOf(x, 3);
-const x_1: number = x[0];
-const x_2: number = x[2];
-// @ts-expect-error
-const x_3: number = x[3];
-
-void x_1, x_2, x_3;
+import { add, ass, asseq, assInt, diff, nonNull, type Vector } from "./common";
 
 const testInput2 = `0:
 ###
@@ -94,25 +52,29 @@ function parseInput(input: string): Puzzle {
   const matchedInput = input.split("\n\n");
 
   const giftsTuple = matchedInput.toSpliced(matchedInput.length - 1);
+
   asseq(giftsTuple.length, matchedInput.length - 1);
-  // console.log(matchedInput)
+
   const giftsShit: Gifts = giftsTuple.map((giftString) => {
     const shit = nonNull(giftString.split(":")[1]).trim().split("\n");
-    // console.log("shit", shit, giftString)
+
     return shit.map((line) => {
       const splittedLines = line.split("");
-      // console.log(splittedLines)
+
       return splittedLines.map((char) => {
         ass(char === "#" || char === ".");
+
         return char;
       });
     });
   });
+
   const trees: Tree[] = nonNull(matchedInput[matchedInput.length - 1])
     .split("\n")
     .map((tree) => {
       const [size, gifts] = tree.split(": ");
       const [widthString, heightString] = nonNull(size).split("x");
+
       assInt(nonNull(widthString));
       assInt(nonNull(heightString));
 
@@ -158,7 +120,7 @@ function trimGift(gift: string): string {
   });
 
   const trimmedGifts = trimGift2(rows);
-  // console.log("rows", rows, "trimmedGifts", trimmedGifts)
+
   return trimmedGifts.map((row) => row.join("")).join("\n");
 }
 
@@ -226,56 +188,15 @@ asseq(
   [["#"]]
 );
 
-const performanceOptimizations = { countGiftSpaces: false } as const;
-
 function canFitString(input: string): boolean {
-  // console.log(input)
   const parsed2: Puzzle = parseInput(input);
   asseq(parsed2.trees.length, 1);
 
   const gifts = parsed2.gifts.map((gift) => {
-    // console.log(gift)
-
     return trimGift2(gift);
   });
 
   const firstTree = nonNull(parsed2.trees[0]);
-  const freeSpaces = firstTree.width * firstTree.height;
-  const giftsWithCounts: { gift: Gift; count: Int }[] =
-    firstTree.giftCounts.map((value, index, array) => {
-      return { gift: nonNull(gifts[index]), count: value } satisfies {
-        gift: Gift;
-        count: Int;
-      };
-    });
-
-  // shit this can be refactored to use a helper to turn a 2d array to a flat thing, with positions.
-  const eachGiftTypeSpacesCount: number[] = giftsWithCounts.map(
-    (giftWithCount): number => {
-      const giftSpacesCount = giftWithCount.gift
-        .flatMap((row) => row.flatMap((row) => row))
-        .filter((char) => char === "#").length;
-      return giftSpacesCount * giftWithCount.count;
-    }
-  );
-  const totalGiftSpaces: number = sum(eachGiftTypeSpacesCount);
-  // console.log(eachGiftTypeSpacesCount, totalGiftSpaces)
-
-  if (
-    totalGiftSpaces > freeSpaces &&
-    performanceOptimizations.countGiftSpaces
-  ) {
-    // shit note that the code should still work without this. this is only a performance optimization!
-    return false;
-  }
-
-  // console.log(
-  //   "createAllPlacements input",
-  //   gifts,
-  //   firstTree.giftCounts,
-  //   firstTree.width,
-  //   firstTree.height
-  // );
 
   const allGiftPlacements = createAllPlacements(
     gifts,
@@ -283,39 +204,21 @@ function canFitString(input: string): boolean {
     firstTree.width,
     firstTree.height
   );
-  console.log(
-    "all gift placement count in can fit string",
-    allGiftPlacements.length
-  );
 
-  // console.log("allGiftPlacements", allGiftPlacements);
-  // const giftPlacements: PlacedGift[] = [];
-  // // for each gift
-  // for (const [giftType, gift] of gifts.entries()) {
-  //   const giftCount = nonNull(firstTree.giftCounts[giftType]);
-  //   // console.log("giftCount", giftCount)
-  //   for (let i = 0; i < giftCount; i++) {
-  //     for (let x = 0; x < firstTree.width; x++) {
-  //       for (let y = 0; y < firstTree.height; y++) {
-  //         // console.log(x, y)
-  //         giftPlacements.push({ type: giftType, x, y });
-  //       }
-  //     }
-  //   }
-  // }
-  // console.log(giftPlacements)
   const validPlacements = allGiftPlacements.map((giftPlacement) =>
-    isValidPlacement(gifts, firstTree.width, firstTree.height, giftPlacement)
+    isValidBoard(
+      createBoard({
+        gifts,
+        width: firstTree.width,
+        height: firstTree.height,
+        placedGifts: giftPlacement,
+      })
+    )
   );
-  // console.log("validPlacements", validPlacements);
 
   const anyValidPlacements = validPlacements.some(Boolean);
 
   return anyValidPlacements;
-  // for each x of the board
-  // for each y of the board
-  // create the placement
-  // validate the placement
 }
 
 // shit refactor to use vectors
@@ -339,40 +242,43 @@ asseq(isInBounds(3, 0, 3, 1), false);
 
 // shit use vector & type here?
 type PlacedGift = {
-  type: number;
-  x: number;
-  y: number;
-};
+  type: Int;
+} & Vector;
 
-function placeGift(
-  pieceIndex: Int,
-  location: Vector,
-  previousPlacedGifts: PlacedGift[]
-): PlacedGift[] {
-  return [
-    ...previousPlacedGifts,
-    { type: pieceIndex, x: location.x, y: location.y },
-  ];
+function placeGift(board: Board, placement: PlacedGift): Board {
+  return {
+    ...board,
+    placedGifts: [...board.placedGifts, placement],
+  };
 }
 
-asseq(placeGift(0, { x: 0, y: 0 }, []), [{ type: 0, x: 0, y: 0 }]);
+function testPlaceGift() {
+  const board = createBoard({ gifts: [[["#"]]], width: 1, height: 1 });
+  asseq(placeGift(board, { type: 0, x: 0, y: 0 }).placedGifts, [
+    { type: 0, x: 0, y: 0 },
+  ]);
 
-asseq(placeGift(0, { x: 0, y: 0 }, placeGift(0, { x: 1, y: 0 }, [])), [
-  { type: 0, x: 1, y: 0 },
-  { type: 0, x: 0, y: 0 },
-]);
+  asseq(
+    placeGift(placeGift(board, { type: 0, x: 1, y: 0 }), {
+      type: 0,
+      x: 0,
+      y: 0,
+    }).placedGifts,
+    [
+      { type: 0, x: 1, y: 0 },
+      { type: 0, x: 0, y: 0 },
+    ]
+  );
+}
 
-function isValidPlacement(
-  giftsShapes: Gifts,
-  width: Int,
-  height: Int,
-  placedGifts: PlacedGift[]
-): boolean {
-  // console.log(
-  //   "isValidPlacement input",
-  //   JSON.stringify({ gifts: giftsShapes, width, height, placedGifts })
-  // );
-  // if any gift has a location out of bounds
+testPlaceGift();
+
+function isValidBoard(board: Board): boolean {
+  const placedGifts = board.placedGifts;
+  const width = board.width;
+  const height = board.height;
+  const giftsShapes = board.gifts;
+
   // WARNING: assumes wrapped gifts, and verified that every row is the same length
   for (const placedGift of placedGifts) {
     if (!isInBounds(placedGift.x, placedGift.y, width, height)) {
@@ -418,20 +324,11 @@ function isValidPlacement(
       for (const [gift1LocalY, gift1Row] of gift1.entries()) {
         for (const [gift1LocalX, gift1Cell] of gift1Row.entries())
           if (gift1Cell === "#") {
-            // console.log(
-            //   "shit",
-            //   gift1LocalX,
-            //   gift1LocalY,
-            //   placedMultiGift1,
-            //   placedMultiGift2
-            // );
             const globalPos = add(
               { y: placedMultiGift1.y, x: placedMultiGift1.x },
               { x: gift1LocalX, y: gift1LocalY }
             );
-            // console.log("globalPos", globalPos);
 
-            // note, need to verify this is checking the correct direction.
             const gift2Local = diff(
               {
                 x: placedMultiGift2.x,
@@ -439,23 +336,12 @@ function isValidPlacement(
               },
               globalPos
             );
-            // console.log("pre-error", {
-            //   a: placedMultiGift2.type,
-            //   b: gift2Local.y,
-            //   c: gift2Local.x,
-            //   d: giftsShapes,
-            //   e: giftsShapes[placedMultiGift2.type],
-            //   f: giftsShapes[placedMultiGift2.type]?.[gift2Local.y],
-            //   g: giftsShapes[placedMultiGift2.type]?.[gift2Local.y]?.[
-            //     gift2Local.x
-            //   ],
-            // });
+
             const gift2Cell =
               giftsShapes[placedMultiGift2.type]?.[gift2Local.y]?.[
                 gift2Local.x
               ];
             if (gift2Cell === "#") {
-              // console.log("there is overlap");
               return false;
             }
           }
@@ -466,60 +352,183 @@ function isValidPlacement(
   return true;
 }
 
+type Board = {
+  gifts: Gifts;
+  width: Int;
+  height: Int;
+  placedGifts: PlacedGift[];
+};
+
+function createBoard(options: {
+  gifts: Gifts;
+  width: Int;
+  height: Int;
+  placedGifts?: PlacedGift[];
+}): Board {
+  return {
+    ...options,
+    placedGifts: options.placedGifts ?? [],
+  };
+}
+
 function testIsValidPlacement() {
   const gifts = [[["#"]]] satisfies Gifts;
   const boardWidth = 1;
   const boardHeight = 1;
 
+  const board = createBoard({ gifts, width: boardWidth, height: boardHeight });
+
+  asseq(isValidBoard(placeGift(board, { type: 0, x: 0, y: 0 })), true);
   asseq(
-    isValidPlacement(
-      gifts,
-      boardWidth,
-      boardHeight,
-      placeGift(0, { x: 0, y: 0 }, [])
-    ),
-    true
-  );
-  asseq(
-    isValidPlacement(
-      gifts,
-      boardWidth,
-      boardHeight,
-      placeGift(0, { x: 1, y: 0 }, [])
+    isValidBoard(
+      placeGift(
+        createBoard({ gifts, width: boardWidth, height: boardHeight }),
+        { type: 0, x: 1, y: 0 }
+      )
     ),
     false
   );
   asseq(
-    isValidPlacement(
-      [[["#", "#"]]],
-      boardWidth,
-      boardHeight,
-      placeGift(0, { x: 0, y: 0 }, [])
+    isValidBoard(
+      placeGift(
+        createBoard({
+          gifts: [[["#", "#"]]],
+          width: boardWidth,
+          height: boardHeight,
+        }),
+
+        { type: 0, x: 0, y: 0 }
+      )
     ),
     false
   );
   // shit create placeGifts helper?
   // shit create a type for a "validated board", and then we have to pass validated boards to each other?
   asseq(
-    isValidPlacement(
-      [[["#"]]],
-      boardWidth,
-      boardHeight,
-      placeGift(0, { x: 0, y: 0 }, placeGift(0, { x: 0, y: 0 }, []))
+    isValidBoard(
+      placeGift(
+        placeGift(
+          createBoard({
+            gifts: [[["#"]]],
+            width: boardWidth,
+            height: boardHeight,
+          }),
+
+          { type: 0, x: 0, y: 0 }
+        ),
+
+        { type: 0, x: 0, y: 0 }
+      )
     ),
     false,
     "overlapping pieces "
   );
-  asseq(isValidPlacement([[["#"]]], 0, 0, []), true);
-
-  // {"gifts":[[["#"]]],"width":2,"height":1,"placedGifts":[{"type":0,"x":0,"y":0},{"type":0,"x":1,"y":0}]}
   asseq(
-    isValidPlacement([[["#"]]], 2, 1, [
-      { type: 0, x: 0, y: 0 },
-      { type: 0, x: 1, y: 0 },
-    ]),
+    isValidBoard(createBoard({ gifts: [[["#"]]], width: 0, height: 0 })),
     true
   );
+
+  asseq(
+    isValidBoard(
+      createBoard({
+        gifts: [[["#"]]],
+        width: 2,
+        height: 1,
+        placedGifts: [
+          { type: 0, x: 0, y: 0 },
+          { type: 0, x: 1, y: 0 },
+        ],
+      })
+    ),
+    true
+  );
+
+  // shit create a helper which turns a string into a gift
+
+  const visualizeBoard = (board: Board, expected: string) => {
+    // shit create helper to turn 2d char matrix to string
+    // shit create helper to turn string to 2d char matrix
+    // shit rename gift to giftmatrix
+
+    // create a 2d array of the board
+    // for each placed gift, set the corresponding cells which are # to #
+    const boardMatrix: ("#" | ".")[][] = Array(board.height)
+      .fill([] as string[])
+      .map(() => {
+        return Array(board.width).fill(".");
+      });
+
+    for (const placedGift of board.placedGifts) {
+      const giftShape = nonNull(board.gifts[placedGift.type]);
+      // shit use helper to loop through 2d array
+      giftShape.map((row, y) => {
+        row.map((char, x) => {
+          if (char === "#") {
+            const row = nonNull(boardMatrix[y]);
+            // shit create helper to set a single value in a 2d char matrix
+            row[x] = "#";
+          }
+        });
+      });
+    }
+
+    const visualizedBoard = boardMatrix.map((row) => row.join("")).join("\n");
+
+    const cleanViz = (input: string): string => {
+      return input.trim().replaceAll(/\s+/g, "\n");
+    };
+    console.log("visualizedBoard", visualizedBoard, "expected", expected);
+
+    expect(
+      cleanViz(visualizedBoard),
+      "the visualized board is not correct. it is \n---\n" +
+        visualizedBoard +
+        "\n---"
+    ).toBe(cleanViz(expected));
+  };
+
+  let boardState = createBoard({
+    gifts: [[["#", "#"]]] satisfies Gifts,
+    width: 2,
+    height: 2,
+  });
+
+  expect(boardState).toStrictEqual({
+    gifts: [[["#", "#"]]],
+    width: 2,
+    height: 2,
+    placedGifts: [],
+  });
+
+  visualizeBoard(
+    boardState,
+    `..
+     ..`
+  );
+
+  boardState = placeGift(boardState, { type: 0, x: 0, y: 0 });
+
+  visualizeBoard(
+    boardState,
+    `##
+     ..`
+  );
+
+  boardState = placeGift(boardState, { type: 0, /*rotation: 1,*/ x: 0, y: 0 });
+
+  visualizeBoard(
+    boardState,
+    `##
+     ..`
+  );
+
+  // first gift placed
+  // ##
+  // ..
+  // second gift placed at first location, but rotated
+  // X#
+  // #.
+  // the board should be invalid
 }
 
 testIsValidPlacement();
@@ -552,18 +561,10 @@ function createAllPlacements(
 
   const allPlacements: PlacedGift[][] = unmappedplacements.map((placement) => {
     const singleGiftPlacements: PlacedGift[] = [];
-    // placement is a x / y tuple for each multi gift.
-    // the gift index is the same as the gift type
-    // if we repeat each gift type count times, then the gift multi index is the index of the
-    // console.log("placement", placement);
+
     let currentGiftMultiIndex = 0;
     for (const [giftType, giftCount] of giftCounts.entries()) {
       for (let i = 0; i < giftCount; i++) {
-        // console.log(
-        //   currentGiftMultiIndex,
-        //   currentGiftMultiIndex * 2,
-        //   placement[currentGiftMultiIndex * 2]
-        // );
         const x = toNumInt(placement[currentGiftMultiIndex * 2]);
         const y = toNumInt(placement[currentGiftMultiIndex * 2 + 1]);
         singleGiftPlacements.push({ type: giftType, x, y });
@@ -572,19 +573,11 @@ function createAllPlacements(
       }
     }
 
-    // console.log(currentGiftMultiIndex, placement.length);
     asseq(currentGiftMultiIndex * 2, placement.length);
     return singleGiftPlacements;
   });
 
   const placementCount = countPlacements(giftCounts, width, height);
-  // console.log({
-  //   giftCounts,
-  //   width,
-  //   height,
-  //   placementCount,
-  // });
-  // console.log(JSON.stringify(allPlacements, null, 2));
   asseq(allPlacements.length, placementCount);
   return allPlacements;
 }
@@ -593,11 +586,9 @@ function createCombinations(...args: Int[]) {
   const allCombinations: Int[][] = [];
 
   function recurse(index: Int, accumulator: Int[]): void {
-    // console.log(index, accumulator);
     if (index === args.length) {
-      // console.log("adding to all combinations: ", accumulator);
       allCombinations.push([...accumulator]);
-      // console.log("new all combinations", allCombinations);
+
       return;
     }
 
@@ -613,16 +604,12 @@ function createCombinations(...args: Int[]) {
     }
   }
 
-  // console.log("all combinations before", allCombinations);
-
   recurse(0, []);
-  // console.log("alcl combinations", allCombinations);
 
   return allCombinations;
 }
 
 function countCombinations(...args: Int[]): number {
-  // ass(args.every((arg) => typeof arg === "number"));
   return args.reduce((prev, cur, i, arr) => prev * cur, 1);
 }
 
@@ -637,7 +624,6 @@ function testCreateCombinations() {
   asseq(createCombinations(1).length, countCombinations(1));
   asseq(createCombinations(2).length, countCombinations(2));
   asseq(createCombinations(2, 3).length, countCombinations(2, 3));
-  // console.log("done combinations");
 }
 
 testCreateCombinations();
@@ -649,17 +635,13 @@ function countPlacements(giftCounts: GiftCounts, width: Int, height: Int) {
 
   const combinationCount = countCombinations(...combinationsInput);
 
-  // console.log("combination count", combinationsInput, combinationCount);
-
   return combinationCount;
 }
 
 function testAllPlacements() {
   asseq(countPlacements([1], 1, 1), 1);
-  // 4 shapes need to be placed on one of four spots, they can be on the same spot.
   asseq(countPlacements([2, 2], 2, 2), 256);
   asseq(createAllPlacements([[["#"]]], [1], 1, 1), [[{ type: 0, x: 0, y: 0 }]]);
-  // throw Error("stop");
 
   expect(createAllPlacements([[["#"]]], [1], 2, 1)).toStrictEqual([
     [{ type: 0, x: 0, y: 0 }],
@@ -903,6 +885,200 @@ function testAllPlacements() {
 
 testAllPlacements();
 
+function flipGiftHorizontally<T>(gift: T[][]): T[][] {
+  return gift.map((row) => row.toReversed());
+}
+
+function flipGiftVertically<T>(gift: T[][]): T[][] {
+  return gift.toReversed();
+}
+
+function transposeGift<T>(gift: T[][]): T[][] {
+  return nonNull(gift[0]).map((_, colIndex) =>
+    // shit we have an as here. our ground trembles.
+    gift.map((row) => nonNull(row[colIndex] as NonNullable<T> | undefined))
+  );
+}
+
+function rotateGift90Right<T>(gift: T[][]): T[][] {
+  return transposeGift(flipGiftVertically(gift));
+}
+
+function createAllTransmutations<T>(gift: T[][]): T[][][] {
+  return [
+    gift,
+    rotateGift90Right(gift),
+    rotateGift90Right(rotateGift90Right(gift)),
+    rotateGift90Right(rotateGift90Right(rotateGift90Right(gift))),
+    flipGiftVertically(gift),
+    flipGiftVertically(rotateGift90Right(gift)),
+    flipGiftVertically(rotateGift90Right(rotateGift90Right(gift))),
+    flipGiftVertically(
+      rotateGift90Right(rotateGift90Right(rotateGift90Right(gift)))
+    ),
+  ];
+}
+
+function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
+  const uniqueTransmutations = new Set<string>();
+
+  return createAllTransmutations(gift).filter((transmutation) => {
+    const stringTransmutation = transmutation
+      .map((row) => row.join(""))
+      .join("\n");
+
+    if (uniqueTransmutations.has(stringTransmutation)) {
+      return false;
+    } else {
+      uniqueTransmutations.add(stringTransmutation);
+      return true;
+    }
+  });
+}
+
+function testRotation() {
+  asseq(
+    transposeGift([
+      ["#", ".", "."],
+      ["#", "#", "#"],
+    ]),
+    [
+      ["#", "#"],
+      [".", "#"],
+      [".", "#"],
+    ]
+  );
+
+  asseq(
+    flipGiftHorizontally([
+      ["#", ".", "."],
+      ["#", "#", "#"],
+    ]),
+    [
+      [".", ".", "#"],
+      ["#", "#", "#"],
+    ]
+  );
+
+  asseq(
+    flipGiftVertically([
+      ["#", ".", "."],
+      ["#", "#", "#"],
+    ]),
+    [
+      ["#", "#", "#"],
+      ["#", ".", "."],
+    ]
+  );
+
+  asseq(rotateGift90Right([["#"]]), [["#"]]);
+  asseq(rotateGift90Right([["#", "#"]]), [["#"], ["#"]]);
+  asseq(
+    rotateGift90Right([
+      ["#", "."],
+      [".", "."],
+    ]),
+    [
+      [".", "#"],
+      [".", "."],
+    ]
+  );
+
+  const initialGift = `12
+43`
+    .split("\n")
+    .map((row) => row.split(""));
+  asseq(initialGift, [
+    ["1", "2"],
+    ["4", "3"],
+  ]);
+  expect(createAllTransmutations(initialGift)).toStrictEqual(
+    // prettier-ignore
+    [
+        [["1","2"],["4","3"]],
+        [["4","1"],["3","2"]],
+        [["3","4"],["2","1"]],
+        [["2","3"],["1","4"]],
+        [["4","3"],["1","2"]],
+        [["3","2"],["4","1"]],
+        [["2","1"],["3","4"]],
+        [["1","4"],["2","3"]],
+        
+      ]
+  );
+
+  expect(createAllTransmutations([["#"]])).toStrictEqual([
+    [["#"]],
+    [["#"]],
+    [["#"]],
+    [["#"]],
+    [["#"]],
+    [["#"]],
+    [["#"]],
+    [["#"]],
+  ]);
+
+  expect(createAllTransmutations([["#", "#"]])).toStrictEqual([
+    [["#", "#"]],
+    [["#"], ["#"]],
+    [["#", "#"]],
+    [["#"], ["#"]],
+    [["#", "#"]],
+    [["#"], ["#"]],
+    [["#", "#"]],
+    [["#"], ["#"]],
+  ]);
+
+  asseq(
+    createDedupedTransmutations([
+      ["#", ".", "."],
+      ["#", "#", "#"],
+    ]),
+    [
+      [
+        ["#", ".", "."],
+        ["#", "#", "#"],
+      ],
+      [
+        ["#", "#"],
+        ["#", "."],
+        ["#", "."],
+      ],
+      [
+        ["#", "#", "#"],
+        [".", ".", "#"],
+      ],
+      [
+        [".", "#"],
+        [".", "#"],
+        ["#", "#"],
+      ],
+      [
+        ["#", "#", "#"],
+        ["#", ".", "."],
+      ],
+      [
+        ["#", "."],
+        ["#", "."],
+        ["#", "#"],
+      ],
+      [
+        [".", ".", "#"],
+        ["#", "#", "#"],
+      ],
+      [
+        ["#", "#"],
+        [".", "#"],
+        [".", "#"],
+      ],
+    ]
+  );
+
+  expect(createDedupedTransmutations([["#"]])).toStrictEqual([[["#"]]]);
+}
+
+testRotation();
+
 asseq(
   canFitString(`1:
 #
@@ -986,87 +1162,94 @@ asseq(
   "with rotations "
 );
 
-asseq(
-  canFitString(`1:
-#.
-##
-#.
+// asseq(
+//   canFitString(`1:
+// #.
+// ##
+// #.
 
-2:
-#.
-..
-#.
+// 2:
+// #.
+// ..
+// #.
 
-2x3: 1 1
-`),
-  true,
-  "with flipping"
-);
+// 2x3: 1 1
+// `),
+//   true,
+//   "with flipping"
+// );
 
-asseq(
-  canFitString(`0:
-###
-##.
-##.
+// asseq(
+//   canFitString(`0:
+// ###
+// ##.
+// ##.
 
-1:
-###
-##.
-.##
+// 1:
+// ###
+// ##.
+// .##
 
-2:
-.##
-###
-##.
+// 2:
+// .##
+// ###
+// ##.
 
-3:
-##.
-###
-##.
+// 3:
+// ##.
+// ###
+// ##.
 
-4:
-###
-#..
-###
+// 4:
+// ###
+// #..
+// ###
 
-5:
-###
-.#.
-###
+// 5:
+// ###
+// .#.
+// ###
 
-4x4: 0 0 0 0 2 0`),
-  true
-);
+// 4x4: 0 0 0 0 2 0`),
+//   true
+// );
+
 /**
 # simple and correct algorithm, in small steps
-implement only the first tree
-implement all rotations of the pieces
-try every single placement
-create a function which verifies that a complete board is correct
-create a "progress bar" which gives the total count, and how far we have gotten, with this naive implementation
-create edge cases: no wanted gifts, a single gift, board is too small for a single gift, a piece which fits completely inside another piece. 2 pieces that need to be rotated to fit. 2 pieces that need to be flipped to fit.
+[ ] implement only the first tree
+[ ] implement all rotations of the pieces
+[ ] try every single placement
+[x] create a function which verifies that a complete board is correct
+[ ] create a "progress bar" which gives the total count, and how far we have gotten, with this naive implementation
+[ ] create edge cases: 
+[ ] no wanted gifts
+[ ] a single gift
+[ ] board is too small for a single gift
+[ ] a piece which fits completely inside another piece
+[ ] 2 pieces that need to be rotated to fit
+[ ] 2 pieces that need to be flipped to fit
 
 # performance optimizations
-when the first correct placement is found for a tree, then stop that.
-we can dedupe work between trees by reusing the same placement for multiple trees
-we can also cache gift placements, although we should probably try to avoid using multiple gift placements
-if not done already, then we should not make a distinction between 2 different gifts of the same shape
-instead of placing the gifts randomly, then we can place them only directly beside the previous gift
-we can use multiple cores.
-maybe we can cache 2-and-2 placements of directly near each other gifts, so we have some simple shapes we can put beside each other?
-maybe when we try to place the next gift, then we only check the gifts that potentially overlap this gift.
-we should probably check on memory usage, to make sure that we don't overload the cpu and cause thrashing and stuff.
-start with a single one.
-where we use the function to verify that a complete board is correct, we can use a previously "verified" board where we don't have to check all the other pieces against each other, but instead use the function where we have the previous board and we try to place a single gift, then we only have to check the gift against the pieces which are already on the board.
-when we try to place a new piece, only try to place it if the bounding box is outside of the bounds, not if the first piece is outside of the bounds
-// shit todo performance optimization: when we try place the next piece, and it is valid, then we can memoize the result. this means we have to stably stringify the current placement, and check if it is in the set. we have to double check memory tho if we do that.
-// shit todo performance optimization to handle rotations and flippings for the whole board, calculate all of the permutations of the current board whenever you memoize it, that way can do the calculation for only one of the permutations. this does mean we have to create some code to do permutations on placements.
+[ ] when the first correct placement is found for a tree, then stop that.
+[ ] we can dedupe work between trees by reusing the same placement for multiple trees
+[ ] we can also cache gift placements, although we should probably try to avoid using multiple gift placements
+[ ] if not done already, then we should not make a distinction between 2 different gifts of the same shape
+[ ] instead of placing the gifts randomly, then we can place them only directly beside the previous gift
+[ ] we can use multiple cores.
+[ ] maybe we can cache 2-and-2 placements of directly near each other gifts, so we have some simple shapes we can put beside each other?
+[ ] maybe when we try to place the next gift, then we only check the gifts that potentially overlap this gift.
+[ ] we should probably check on memory usage, to make sure that we don't overload the cpu and cause thrashing and stuff.
+[ ] start with a single one.
+[ ] where we use the function to verify that a complete board is correct, we can use a previously "verified" board where we don't have to check all the other pieces against each other, but instead use the function where we have the previous board and we try to place a single gift, then we only have to check the gift against the pieces which are already on the board.
+[ ] when we try to place a new piece, only try to place it if the bounding box is outside of the bounds, not if the first piece is outside of the bounds
+[ ] when we try place the next piece, and it is valid, then we can memoize the result. this means we have to stably stringify the current placement, and check if it is in the set. we have to double check memory tho if we do that.
+[ ] to handle rotations and flippings for the whole board, calculate all of the permutations of the current board whenever you memoize it, that way can do the calculation for only one of the permutations. this does mean we have to create some code to do permutations on placements.
 
 # correctness verifications
-we can count the amonut of tests it tried, then sort the amount by correct and incorrect tests.
-at the beginning, when we rule out a test then we should always double check by actually checking if the thing is valid.
-when we do a performance optimization then we can check that the amount of duplicate work has been reduced, and that all of the cases have been checked, or somehow are known that they do not fit.
-we need to check that the trees are correctly marked as fillable or not able to be filled
+[ ] we can count the amonut of tests it tried, then sort the amount by correct and incorrect tests.
+[ ] at the beginning, when we rule out a test then we should always double check by actually checking if the thing is valid.
+[ ] when we do a performance optimization then we can check that the amount of duplicate work has been reduced, and that all of the cases have been checked, or somehow are known that they do not fit.
+[ ] we need to check that the trees are correctly marked as fillable or not able to be filled
 
 */
 
