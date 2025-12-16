@@ -1,6 +1,7 @@
 import { expect } from "bun:test";
 import { add, ass, asseq, assInt, diff, nonNull, type Vector } from "./common";
-import { string } from "zod";
+
+const bigBoy = process.env.BIGBOY === "true";
 
 const testInput2 = `0:
 ###
@@ -52,20 +53,22 @@ function shape(matrix: unknown[][]): [number, number] {
 }
 
 function parseInput(input: string): Puzzle {
-  const matchedInput = input.split("\n\n");
+  const matchedInput = input.trim().split("\n\n");
 
   const giftsTuple = matchedInput.toSpliced(matchedInput.length - 1);
 
   asseq(giftsTuple.length, matchedInput.length - 1);
 
-  const gifts: Gifts = giftsTuple.map((giftStringWithNumber) => {
+  const gifts: Gifts = giftsTuple.map(function mapGiftsTuple(
+    giftStringWithNumber
+  ) {
     const giftString = nonNull(giftStringWithNumber.split(":")[1]);
     return stringToGift(giftString);
   });
 
   const trees: Tree[] = nonNull(matchedInput[matchedInput.length - 1])
     .split("\n")
-    .map((tree) => {
+    .map(function mapTree(tree) {
       const [size, giftsCountString] = tree.split(": ");
       const [widthString, heightString] = nonNull(size).split("x");
 
@@ -74,7 +77,7 @@ function parseInput(input: string): Puzzle {
 
       const giftCounts = nonNull(giftsCountString)
         .split(" ")
-        .map((numString) => {
+        .map(function mapGiftCounts(numString) {
           assInt(numString);
           return Number(numString);
         });
@@ -102,7 +105,9 @@ function validateTest() {
      ##.`
   );
 
-  gifts.forEach((gift) => asseq(shape(gift), [3, 3]));
+  gifts.forEach(function forEachGifts(gift) {
+    asseq(shape(gift), [3, 3]);
+  });
 }
 
 validateTest();
@@ -111,22 +116,32 @@ function stringToMatrix(input: string): string[][] {
   const matrix = input
     .trim()
     .split("\n")
-    .map((row) => row.trim().split(""));
+    .map(function splitStringToMatrixMapRow(row) {
+      return row.trim().split("");
+    });
   const firstRow = nonNull(matrix[0]);
 
-  ass(matrix.every((row) => row.length === firstRow.length));
+  ass(
+    matrix.every(function checkMatrixEveryRowLength(row) {
+      return row.length === firstRow.length;
+    })
+  );
 
   return matrix;
 }
 
 function matrixToString(stringMatrix: string[][]): string {
-  return stringMatrix.map((row) => row.join("")).join("\n");
+  return stringMatrix
+    .map(function matrixToStringMapRow(row) {
+      return row.join("");
+    })
+    .join("\n");
 }
 
 function assmeq(stringMatrix: string[][], expected: string): void {
   const visualizedBoard = matrixToString(stringMatrix);
 
-  const cleanViz = (input: string): string => {
+  const cleanViz = function cleanViz(input: string): string {
     return input.trim().replaceAll(/\s+/g, "\n");
   };
 
@@ -143,22 +158,27 @@ function stringToGift(giftString: string): Gift {
 }
 
 function assMatrix<T extends string>(
-  stringMatrix: string[][],
-  assertionCallback: (input: string) => input is T
+  stringMatrix: unknown[][],
+  assertionCallback: (input: unknown) => input is T
 ): T[][] {
   ass(
-    stringMatrix.every((row) => row.every((char) => assertionCallback(char)))
+    stringMatrix.every(function checkMatrixEveryRow(row) {
+      return row.every(function checkMatrixEveryChar(char) {
+        return assertionCallback(char);
+      });
+    })
   );
 
   return stringMatrix;
 }
 
-function isGiftChar(char: string) {
+function isGiftChar(char: unknown): char is "#" | "." {
   return char === "#" || char === ".";
 }
 
 function assIsGiftMatrix(stringMatrix: string[][]): Gift {
-  return assMatrix(stringMatrix, isGiftChar);
+  const newLocal: Gift = assMatrix<"#" | ".">(stringMatrix, isGiftChar);
+  return newLocal;
 }
 
 function testStringToMatrix() {
@@ -198,19 +218,39 @@ function wrapGiftString(giftString: string): Gift {
 
 function wrapGift(input: Gift): Gift {
   let rows = [...input];
-  while (rows.every((row) => row[0] === ".")) {
-    rows = rows.map((row) => row.toSpliced(0, 1));
+  while (
+    rows.every(function checkRowsEveryFirstChar(row) {
+      return row[0] === ".";
+    })
+  ) {
+    rows = rows.map(function mapRowsToSpliced(row) {
+      return row.toSpliced(0, 1);
+    });
   }
 
-  while (rows.every((row) => row[row.length - 1] === ".")) {
-    rows = rows.map((row) => row.toSpliced(row.length - 1, 1));
+  while (
+    rows.every(function checkRowsEveryLastChar(row) {
+      return row[row.length - 1] === ".";
+    })
+  ) {
+    rows = rows.map(function mapRowsToSpliced(row) {
+      return row.toSpliced(row.length - 1, 1);
+    });
   }
 
-  while (nonNull(rows[0]).every((char) => char === ".")) {
+  while (
+    nonNull(rows[0]).every(function checkRowsEveryFirstChar(char) {
+      return char === ".";
+    })
+  ) {
     rows = rows.toSpliced(0, 1);
   }
 
-  while (nonNull(rows[rows.length - 1]).every((char) => char === ".")) {
+  while (
+    nonNull(rows[rows.length - 1]).every(function checkRowsEveryLastChar(char) {
+      return char === ".";
+    })
+  ) {
     rows = rows.toSpliced(rows.length - 1, 1);
   }
   return rows;
@@ -268,29 +308,39 @@ function canFitString(input: string): boolean {
   const parsed2: Puzzle = parseInput(input);
   asseq(parsed2.trees.length, 1);
 
-  const gifts = parsed2.gifts.map((gift) => {
+  const gifts = parsed2.gifts.map(function mapGifts(gift) {
     return wrapGift(gift);
   });
 
   const firstTree = nonNull(parsed2.trees[0]);
 
+  console.log("creating all gift placements");
   const allGiftPlacements = createAllPlacements(
-    gifts,
+    gifts.map(createDedupedTransmutations),
     firstTree.giftCounts,
     firstTree.width,
     firstTree.height
   );
 
-  const validPlacements = allGiftPlacements.map((giftPlacement) =>
-    isValidBoard(
+  const validPlacements = allGiftPlacements.map(function mapAllGiftPlacements(
+    giftPlacement,
+    index
+  ) {
+    if (index % 1000 === 0) {
+      const percentage = (index / allGiftPlacements.length) * 100;
+      console.log(
+        index + " / " + allGiftPlacements.length + " (" + percentage + "%)"
+      );
+    }
+    return isValidBoard(
       createBoard({
         gifts,
         width: firstTree.width,
         height: firstTree.height,
         placedGifts: giftPlacement,
       })
-    )
-  );
+    );
+  });
 
   const anyValidPlacements = validPlacements.some(Boolean);
 
@@ -374,7 +424,11 @@ function testPlaceGift() {
 testPlaceGift();
 
 function assMatrixSquare(matrix: unknown[][]): void {
-  ass(matrix.every((row) => row.length === nonNull(matrix[0]).length));
+  ass(
+    matrix.every(function checkMatrixEveryRowLength(row) {
+      return row.length === nonNull(matrix[0]).length;
+    })
+  );
 }
 
 function matrixToRootRectangle(matrix: unknown[][]): RootRectangle {
@@ -422,12 +476,14 @@ function isValidBoard(board: Board): boolean {
   const placedGifts = board.placedGifts;
   const giftsWithRotations = board.gifts;
 
-  giftsWithRotations.forEach((giftWithRotations) =>
-    giftWithRotations.forEach((gift) => {
-      asseq(wrapGift(gift), gift);
+  giftsWithRotations.forEach(function forEachGiftsWithRotations(
+    giftWithRotations
+  ) {
+    return giftWithRotations.forEach(function forEachGiftWithRotations(gift) {
       assMatrixSquare(gift);
-    })
-  );
+      asseq(wrapGift(gift), gift);
+    });
+  });
 
   for (const placedGift of placedGifts) {
     const giftRectangle = placedGiftToBoundingRectangle(
@@ -448,9 +504,7 @@ function isValidBoard(board: Board): boolean {
     ] of placedGifts.entries()) {
       if (placedMultiGift1Index === placedMultiGift2Index) continue;
 
-      const gift1 = nonNull(
-        giftsWithRotations[placedMultiGift1.type]?.[placedMultiGift1.rotation]
-      );
+      const gift1 = placedGiftToGift(giftsWithRotations, placedMultiGift1);
 
       // shit todo performance optimization, if the gifts have no overlapping bounds then they cannot have gift tiles on each other
       // shit todo performance optimization, if we sort the gifts top to bottom, then we can find the first gift at the correct height, and then only run until the gifts are at different heights again. all of the ones before and after definitely don't overlap.
@@ -465,18 +519,18 @@ function isValidBoard(board: Board): boolean {
               { x: gift1LocalX, y: gift1LocalY }
             );
 
-            const gift2Local = diff(
-              {
-                x: placedMultiGift2.x,
-                y: placedMultiGift2.y,
-              },
-              globalPos
+            const gift2Local = diff(globalPos, {
+              x: placedMultiGift2.x,
+              y: placedMultiGift2.y,
+            });
+
+            const gift2 = placedGiftToGift(
+              giftsWithRotations,
+              placedMultiGift2
             );
 
-            const gift2Cell =
-              giftsWithRotations[placedMultiGift2.type]?.[
-                placedMultiGift2.rotation
-              ]?.[gift2Local.y]?.[gift2Local.x];
+            const gift2Cell = gift2?.[gift2Local.y]?.[gift2Local.x];
+
             if (gift2Cell === "#") {
               return false;
             }
@@ -484,6 +538,10 @@ function isValidBoard(board: Board): boolean {
       }
     }
   }
+
+  console.log("\nboard is valid");
+  console.log(matrixToString(boardToVizualizedBoard(board)));
+  // console.log(board);
 
   return true;
 }
@@ -505,6 +563,70 @@ function createBoard(options: {
     height: options.height,
     placedGifts: options.placedGifts ?? [],
   };
+}
+
+type VisualizedBoard = string[][];
+
+function boardToVizualizedBoard(board: Board): VisualizedBoard {
+  let warning = "";
+
+  // create a 2d array of the board
+  // for each placed gift, set the corresponding cells which are # to #
+
+  const boardMatrix: string[][] = Array(board.height)
+    .fill([] as string[])
+    .map(function fillBoardMatrix() {
+      return Array(board.width).fill(".");
+    });
+
+  for (const [placedGiftIndex, placedGift] of board.placedGifts.entries()) {
+    const letter = nonNull("ABCDEFGHIJKLMNOPQRSTUVWYZ"[placedGiftIndex]);
+    const giftShape = placedGiftToGift(board.gifts, placedGift);
+
+    // shit use helper to loop through 2d array
+
+    giftShape.map(function giftShapeMapRow(row, localY2) {
+      row.map(function giftShapeMapCol(char, localX2) {
+        if (char === "#") {
+          const globalX = placedGift.x + localX2;
+          const globalY = placedGift.y + localY2;
+
+          const row = boardMatrix[globalY];
+          // shit create helper to set a single value in a 2d char matrix
+
+          const char = row?.[globalX];
+          if (char === undefined) {
+            warning =
+              "---piece is outside of board:" +
+              globalX +
+              "," +
+              globalY +
+              "\n" +
+              matrixToString(giftShape) +
+              "\n---";
+          } else if (char === "X") {
+            // nothing
+          } else if (char === ".") {
+            ass(row);
+            row[globalX] = letter;
+          } else {
+            ass(row);
+            row[globalX] = "X";
+          }
+        }
+      });
+    });
+  }
+
+  if (warning) {
+    console.log(warning);
+  }
+
+  return boardMatrix;
+}
+
+function visualizeBoard(board: Board, expected: string) {
+  assmeq(boardToVizualizedBoard(board), expected);
 }
 
 function testIsValidPlacement() {
@@ -579,40 +701,6 @@ function testIsValidPlacement() {
     true
   );
 
-  const visualizeBoard = (board: Board, expected: string) => {
-    // create a 2d array of the board
-    // for each placed gift, set the corresponding cells which are # to #
-    const boardMatrix: ("#" | "." | "X")[][] = Array(board.height)
-      .fill([] as string[])
-      .map(() => {
-        return Array(board.width).fill(".");
-      });
-
-    for (const placedGift of board.placedGifts) {
-      const giftShape = placedGiftToGift(board.gifts, placedGift);
-      // shit use helper to loop through 2d array
-
-      giftShape.map((row, y) => {
-        row.map((char, x) => {
-          if (char === "#") {
-            const row = nonNull(boardMatrix[y]);
-            // shit create helper to set a single value in a 2d char matrix
-            const char = nonNull(row[x]);
-            if (char === ".") {
-              row[x] = "#";
-            } else if (char === "#") {
-              row[x] = "X";
-            } else {
-              ass(char === "X");
-            }
-          }
-        });
-      });
-    }
-
-    assmeq(boardMatrix, expected);
-  };
-
   let boardState = createBoard({
     gifts: [[["#", "#"]]],
     width: 2,
@@ -643,19 +731,212 @@ function testIsValidPlacement() {
 
   visualizeBoard(
     boardState,
-    `#.
-     #.`
+    `A.
+     A.`
   );
 
   boardState = placeGift(boardState, { type: 0, rotation: 0, x: 0, y: 0 });
 
   visualizeBoard(
     boardState,
-    `X#
-     #.`
+    `XB
+     A.`
+  );
+
+  visualizeBoard(
+    createBoard({
+      gifts: [[["#"]]] satisfies Gifts,
+      height: 2,
+      width: 2,
+      placedGifts: [{ type: 0, rotation: 0, x: 1, y: 1 }],
+    }),
+    `..
+     .A`
   );
 
   asseq(isValidBoard(boardState), false);
+
+  const test1Board: Board = {
+    gifts: [
+      [
+        [
+          ["#", "#", "#"],
+          ["#", "#", "."],
+          ["#", "#", "."],
+        ],
+        [
+          ["#", "#", "#"],
+          ["#", "#", "#"],
+          [".", ".", "#"],
+        ],
+        [
+          [".", "#", "#"],
+          [".", "#", "#"],
+          ["#", "#", "#"],
+        ],
+        [
+          ["#", ".", "."],
+          ["#", "#", "#"],
+          ["#", "#", "#"],
+        ],
+        [
+          ["#", "#", "."],
+          ["#", "#", "."],
+          ["#", "#", "#"],
+        ],
+        [
+          [".", ".", "#"],
+          ["#", "#", "#"],
+          ["#", "#", "#"],
+        ],
+        [
+          ["#", "#", "#"],
+          [".", "#", "#"],
+          [".", "#", "#"],
+        ],
+        [
+          ["#", "#", "#"],
+          ["#", "#", "#"],
+          ["#", ".", "."],
+        ],
+      ],
+      [
+        [
+          ["#", "#", "#"],
+          ["#", "#", "."],
+          [".", "#", "#"],
+        ],
+        [
+          [".", "#", "#"],
+          ["#", "#", "#"],
+          ["#", ".", "#"],
+        ],
+        [
+          ["#", "#", "."],
+          [".", "#", "#"],
+          ["#", "#", "#"],
+        ],
+        [
+          ["#", ".", "#"],
+          ["#", "#", "#"],
+          ["#", "#", "."],
+        ],
+        [
+          [".", "#", "#"],
+          ["#", "#", "."],
+          ["#", "#", "#"],
+        ],
+        [
+          ["#", ".", "#"],
+          ["#", "#", "#"],
+          [".", "#", "#"],
+        ],
+        [
+          ["#", "#", "#"],
+          [".", "#", "#"],
+          ["#", "#", "."],
+        ],
+        [
+          ["#", "#", "."],
+          ["#", "#", "#"],
+          ["#", ".", "#"],
+        ],
+      ],
+      [
+        [
+          [".", "#", "#"],
+          ["#", "#", "#"],
+          ["#", "#", "."],
+        ],
+        [
+          ["#", "#", "."],
+          ["#", "#", "#"],
+          [".", "#", "#"],
+        ],
+      ],
+      [
+        [
+          ["#", "#", "."],
+          ["#", "#", "#"],
+          ["#", "#", "."],
+        ],
+        [
+          ["#", "#", "#"],
+          ["#", "#", "#"],
+          [".", "#", "."],
+        ],
+        [
+          [".", "#", "#"],
+          ["#", "#", "#"],
+          [".", "#", "#"],
+        ],
+        [
+          [".", "#", "."],
+          ["#", "#", "#"],
+          ["#", "#", "#"],
+        ],
+      ],
+      [
+        [
+          ["#", "#", "#"],
+          ["#", ".", "."],
+          ["#", "#", "#"],
+        ],
+        [
+          ["#", "#", "#"],
+          ["#", ".", "#"],
+          ["#", ".", "#"],
+        ],
+        [
+          ["#", "#", "#"],
+          [".", ".", "#"],
+          ["#", "#", "#"],
+        ],
+        [
+          ["#", ".", "#"],
+          ["#", ".", "#"],
+          ["#", "#", "#"],
+        ],
+      ],
+      [
+        [
+          ["#", "#", "#"],
+          [".", "#", "."],
+          ["#", "#", "#"],
+        ],
+        [
+          ["#", ".", "#"],
+          ["#", "#", "#"],
+          ["#", ".", "#"],
+        ],
+      ],
+    ],
+    width: 4,
+    height: 4,
+    placedGifts: [
+      {
+        type: 4,
+        rotation: 3,
+        x: 1,
+        y: 1,
+      },
+      {
+        type: 4,
+        rotation: 3,
+        x: 0,
+        y: 1,
+      },
+    ],
+  };
+
+  visualizeBoard(
+    test1Board,
+    `....
+     BABA
+     BABA
+     BXXA`
+  );
+  asseq(isValidBoard(test1Board), false);
 }
 
 testIsValidPlacement();
@@ -667,49 +948,78 @@ function toNumInt(input: Int | undefined | null): Int {
 }
 
 function createAllPlacements(
-  gifts: Gifts,
+  gifts: GiftsWithRotations,
   giftCounts: GiftCounts,
   width: Int,
   height: Int
 ): PlacedGift[][] {
   asseq(gifts.length, giftCounts.length);
 
-  const combinationsInput = giftCounts.flatMap((giftCount) =>
-    Array(giftCount).fill([width, height]).flat()
+  const placementCount = countPlacements(gifts, giftCounts, width, height);
+  console.log("checking " + placementCount);
+
+  const combinationsInput = createCombinationsInput(
+    gifts,
+    giftCounts,
+    width,
+    height
   );
 
+  console.log("creating combinations");
   const unmappedplacements = createCombinations(...combinationsInput);
 
-  const allPlacements: PlacedGift[][] = unmappedplacements.map((placement) => {
-    const singleGiftPlacements: PlacedGift[] = [];
+  console.log("mapping placements");
+  const allPlacements: PlacedGift[][] = unmappedplacements.map(
+    function mapUnmappedPlacements(placement) {
+      const singleGiftPlacements: PlacedGift[] = [];
 
-    let currentGiftMultiIndex = 0;
-    for (const [giftType, giftCount] of giftCounts.entries()) {
-      for (let i = 0; i < giftCount; i++) {
-        const x = toNumInt(placement[currentGiftMultiIndex * 2]);
-        const y = toNumInt(placement[currentGiftMultiIndex * 2 + 1]);
-        singleGiftPlacements.push({ type: giftType, rotation: 0, x, y });
+      let currentGiftMultiIndex = 0;
+      for (const [type, giftCount] of giftCounts.entries()) {
+        for (let i = 0; i < giftCount; i++) {
+          singleGiftPlacements.push({
+            type,
+            rotation: toNumInt(placement[currentGiftMultiIndex * 3]),
+            x: toNumInt(placement[currentGiftMultiIndex * 3 + 1]),
+            y: toNumInt(placement[currentGiftMultiIndex * 3 + 2]),
+          });
 
-        currentGiftMultiIndex++;
+          currentGiftMultiIndex++;
+        }
       }
+
+      asseq(currentGiftMultiIndex * 3, placement.length);
+      return singleGiftPlacements;
     }
+  );
 
-    asseq(currentGiftMultiIndex * 2, placement.length);
-    return singleGiftPlacements;
-  });
-
-  const placementCount = countPlacements(giftCounts, width, height);
   asseq(allPlacements.length, placementCount);
   return allPlacements;
 }
 
 function createCombinations(...args: Int[]) {
+  const placementCount = countCombinations(...args);
+
   const allCombinations: Int[][] = [];
 
   function recurse(index: Int, accumulator: Int[]): void {
     if (index === args.length) {
       allCombinations.push([...accumulator]);
-
+      if (allCombinations.length % 100000 === 0) {
+        const percentage = (allCombinations.length / placementCount) * 100;
+        console.log(
+          new Date().toISOString() +
+            " " +
+            allCombinations.length +
+            " / " +
+            placementCount +
+            " (" +
+            percentage +
+            "%)"
+        );
+      }
+      // 2025-12-16T21:55:11.835Z 10700000 / 47775744000000 (0.000022396302190500684%)
+      // 2025-12-16T21:55:31.810Z 88000000 / 47775744000000 (0.00018419388717421124%)
+      // 142 days to go
       return;
     }
 
@@ -728,7 +1038,9 @@ function createCombinations(...args: Int[]) {
 }
 
 function countCombinations(...args: Int[]): number {
-  return args.reduce((prev, cur, _i, _arr) => prev * cur, 1);
+  return args.reduce(function reduceCombinations(prev, cur, _i, _arr) {
+    return prev * cur;
+  }, 1);
 }
 
 function testCreateCombinations() {
@@ -746,9 +1058,33 @@ function testCreateCombinations() {
 
 testCreateCombinations();
 
-function countPlacements(giftCounts: GiftCounts, width: Int, height: Int) {
-  const combinationsInput = giftCounts.flatMap((giftCount) =>
-    Array(giftCount).fill([width, height]).flat()
+function createCombinationsInput(
+  gifts: GiftsWithRotations,
+  giftCounts: GiftCounts,
+  width: Int,
+  height: Int
+): Int[] {
+  const combinationsInput = giftCounts.flatMap(
+    function flatMapCombinationsInput(giftCount, index) {
+      const giftRotationCount = nonNull(gifts[index]).length;
+      return Array(giftCount).fill([giftRotationCount, width, height]).flat();
+    }
+  );
+  return combinationsInput;
+}
+
+function countPlacements(
+  gifts: GiftsWithRotations,
+  giftCounts: GiftCounts,
+  // shit use board root rectangle
+  width: Int,
+  height: Int
+) {
+  const combinationsInput = createCombinationsInput(
+    gifts,
+    giftCounts,
+    width,
+    height
   );
 
   const combinationCount = countCombinations(...combinationsInput);
@@ -757,18 +1093,49 @@ function countPlacements(giftCounts: GiftCounts, width: Int, height: Int) {
 }
 
 function testAllPlacements() {
-  asseq(countPlacements([1], 1, 1), 1);
-  asseq(countPlacements([2, 2], 2, 2), 256);
-  asseq(createAllPlacements([[["#"]]], [1], 1, 1), [
-    [{ type: 0, rotation: 0, x: 0, y: 0 }],
-  ]);
+  asseq(
+    countPlacements([[[["#"]]]] satisfies GiftsWithRotations, [1], 1, 1),
+    1
+  );
+  asseq(
+    countPlacements(
+      [[[["#"]]], [[["#"]]]] satisfies GiftsWithRotations,
+      [2, 2],
+      2,
+      2
+    ),
+    256
+  );
+  asseq(
+    createAllPlacements(
+      ([[["#"]]] satisfies Gifts).map(createDedupedTransmutations),
+      [1],
+      1,
+      1
+    ),
+    [[{ type: 0, rotation: 0, x: 0, y: 0 }]]
+  );
 
-  expect(createAllPlacements([[["#"]]], [1], 2, 1)).toStrictEqual([
+  expect(
+    createAllPlacements(
+      ([[["#"]]] satisfies Gifts).map(createDedupedTransmutations),
+      [1],
+      2,
+      1
+    )
+  ).toStrictEqual([
     [{ type: 0, rotation: 0, x: 0, y: 0 }],
     [{ type: 0, rotation: 0, x: 1, y: 0 }],
   ]);
 
-  expect(createAllPlacements([[["#"]]], [2], 1, 1)).toStrictEqual([
+  expect(
+    createAllPlacements(
+      ([[["#"]]] satisfies Gifts).map(createDedupedTransmutations),
+      [2],
+      1,
+      1
+    )
+  ).toStrictEqual([
     [
       { type: 0, rotation: 0, x: 0, y: 0 },
       { type: 0, rotation: 0, x: 0, y: 0 },
@@ -776,47 +1143,167 @@ function testAllPlacements() {
   ]);
 
   expect(
-    createAllPlacements([[["#"]], [["#", "#"]]], [1, 1], 1, 1)
+    createAllPlacements(
+      ([[["#"]], [["#", "#"]]] satisfies Gifts).map(
+        createDedupedTransmutations
+      ),
+      [1, 1],
+      1,
+      1
+    )
   ).toStrictEqual([
     [
       { type: 0, rotation: 0, x: 0, y: 0 },
       { type: 1, rotation: 0, x: 0, y: 0 },
     ],
+    [
+      { type: 0, rotation: 0, x: 0, y: 0 },
+      { type: 1, rotation: 1, x: 0, y: 0 },
+    ],
   ]);
 
   expect(
-    createAllPlacements([[["#"]], [["#", "#"]]], [1, 1], 2, 1)
+    createAllPlacements(
+      ([[["#"]], [["#", "#"]]] satisfies Gifts).map(
+        createDedupedTransmutations
+      ),
+      [1, 1],
+      2,
+      1
+    )
   ).toStrictEqual([
     [
-      { type: 0, rotation: 0, x: 0, y: 0 },
-      { type: 1, rotation: 0, x: 0, y: 0 },
+      {
+        rotation: 0,
+        type: 0,
+        x: 0,
+        y: 0,
+      },
+      {
+        rotation: 0,
+        type: 1,
+        x: 0,
+        y: 0,
+      },
     ],
     [
-      { type: 0, rotation: 0, x: 0, y: 0 },
-      { type: 1, rotation: 0, x: 1, y: 0 },
+      {
+        rotation: 0,
+        type: 0,
+        x: 0,
+        y: 0,
+      },
+      {
+        rotation: 0,
+        type: 1,
+        x: 1,
+        y: 0,
+      },
     ],
     [
-      { type: 0, rotation: 0, x: 1, y: 0 },
-      { type: 1, rotation: 0, x: 0, y: 0 },
+      {
+        rotation: 0,
+        type: 0,
+        x: 0,
+        y: 0,
+      },
+      {
+        rotation: 1,
+        type: 1,
+        x: 0,
+        y: 0,
+      },
     ],
     [
-      { type: 0, rotation: 0, x: 1, y: 0 },
-      { type: 1, rotation: 0, x: 1, y: 0 },
+      {
+        rotation: 0,
+        type: 0,
+        x: 0,
+        y: 0,
+      },
+      {
+        rotation: 1,
+        type: 1,
+        x: 1,
+        y: 0,
+      },
+    ],
+    [
+      {
+        rotation: 0,
+        type: 0,
+        x: 1,
+        y: 0,
+      },
+      {
+        rotation: 0,
+        type: 1,
+        x: 0,
+        y: 0,
+      },
+    ],
+    [
+      {
+        rotation: 0,
+        type: 0,
+        x: 1,
+        y: 0,
+      },
+      {
+        rotation: 0,
+        type: 1,
+        x: 1,
+        y: 0,
+      },
+    ],
+    [
+      {
+        rotation: 0,
+        type: 0,
+        x: 1,
+        y: 0,
+      },
+      {
+        rotation: 1,
+        type: 1,
+        x: 0,
+        y: 0,
+      },
+    ],
+    [
+      {
+        rotation: 0,
+        type: 0,
+        x: 1,
+        y: 0,
+      },
+      {
+        rotation: 1,
+        type: 1,
+        x: 1,
+        y: 0,
+      },
     ],
   ]);
 
   expect(
-    createAllPlacements([[["#"]], [["#", "#"]]], [1, 1], 2, 2)
-  ).toStrictEqual(
-    // prettier-ignore
-    [[{type:0,rotation:0,x:0,y:0,},{type:1,rotation:0,x:0,y:0,},],[{type:0,rotation:0,x:0,y:0,},{type:1,rotation:0,x:0,y:1,},],[{type:0,rotation:0,x:0,y:0,},{type:1,rotation:0,x:1,y:0,},],[{type:0,rotation:0,x:0,y:0,},{type:1,rotation:0,x:1,y:1,},],[{type:0,rotation:0,x:0,y:1,},{type:1,rotation:0,x:0,y:0,},],[{type:0,rotation:0,x:0,y:1,},{type:1,rotation:0,x:0,y:1,},],[{type:0,rotation:0,x:0,y:1,},{type:1,rotation:0,x:1,y:0,},],[{type:0,rotation:0,x:0,y:1,},{type:1,rotation:0,x:1,y:1,},],[{type:0,rotation:0,x:1,y:0,},{type:1,rotation:0,x:0,y:0,},],[{type:0,rotation:0,x:1,y:0,},{type:1,rotation:0,x:0,y:1,},],[{type:0,rotation:0,x:1,y:0,},{type:1,rotation:0,x:1,y:0,},],[{type:0,rotation:0,x:1,y:0,},{type:1,rotation:0,x:1,y:1,},],[{type:0,rotation:0,x:1,y:1,},{type:1,rotation:0,x:0,y:0,},],[{type:0,rotation:0,x:1,y:1,},{type:1,rotation:0,x:0,y:1,},],[{type:0,rotation:0,x:1,y:1,},{type:1,rotation:0,x:1,y:0,},],[{type:0,rotation:0,x:1,y:1,},{type:1,rotation:0,x:1,y:1,},],]
-  );
+    createAllPlacements(
+      ([[["#"]], [["#", "#"]]] satisfies Gifts).map(
+        createDedupedTransmutations
+      ),
+      [1, 1],
+      2,
+      2
+    ).length
+  ).toBe(32);
 }
 
 testAllPlacements();
 
 function flipGiftHorizontally<T>(gift: T[][]): T[][] {
-  return gift.map((row) => row.toReversed());
+  return gift.map(function flipGiftHorizontallyMapRow(row) {
+    return row.toReversed();
+  });
 }
 
 function flipGiftVertically<T>(gift: T[][]): T[][] {
@@ -824,10 +1311,12 @@ function flipGiftVertically<T>(gift: T[][]): T[][] {
 }
 
 function transposeGift<T>(gift: T[][]): T[][] {
-  return nonNull(gift[0]).map((_, colIndex) =>
-    // shit we have an as here. our ground trembles.
-    gift.map((row) => nonNull(row[colIndex] as NonNullable<T> | undefined))
-  );
+  return nonNull(gift[0]).map(function transposeGiftMapCol(_, colIndex) {
+    return gift.map(function transposeGiftMapRow(row) {
+      // shit we have an as here. our ground trembles.
+      return nonNull(row[colIndex] as NonNullable<T> | undefined);
+    });
+  });
 }
 
 function rotateGift90Right<T>(gift: T[][]): T[][] {
@@ -852,27 +1341,23 @@ function createAllTransmutations<T>(gift: T[][]): T[][][] {
 function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
   const uniqueTransmutations = new Set<string>();
 
-  return createAllTransmutations(gift).filter((transmutation) => {
-    const stringTransmutation = transmutation
-      .map((row) => row.join(""))
-      .join("\n");
+  return createAllTransmutations(gift).filter(
+    function filterDedupedTransmutations(transmutation) {
+      const stringTransmutation = matrixToString(
+        assMatrix(transmutation, isGiftChar)
+      );
 
-    if (uniqueTransmutations.has(stringTransmutation)) {
-      return false;
-    } else {
-      uniqueTransmutations.add(stringTransmutation);
-      return true;
+      if (uniqueTransmutations.has(stringTransmutation)) {
+        return false;
+      } else {
+        uniqueTransmutations.add(stringTransmutation);
+        return true;
+      }
     }
-  });
+  );
 }
 
 function testRotation() {
-  console.log(
-    matrixToString([
-      ["#", "."],
-      [".", "."],
-    ])
-  );
   assmeq(
     transposeGift(
       stringToMatrix(
@@ -923,7 +1408,9 @@ function testRotation() {
   const initialGift = `12
 43`
     .split("\n")
-    .map((row) => row.split(""));
+    .map(function splitInitialGiftMapRow(row) {
+      return row.split("");
+    });
   asseq(initialGift, [
     ["1", "2"],
     ["4", "3"],
@@ -1088,82 +1575,122 @@ asseq(
   false
 );
 
+console.log("\n--- rotation test");
 // SIGURD TODO TO JUMP BACK IN, create some smaller tests for rotations. and then flipping. and then to do multiple rotation and flipping moves. then a method to dedupe permutated gifts.
-// asseq(
-//   canFitString(`1:
-// ##
+asseq(
+  canFitString(`1:
+##
 
-// 1x2: 1`),
-//   true,
-//   "with rotations "
-// );
+1x2: 1`),
+  true,
+  "with rotations "
+);
 
-// asseq(
-//   canFitString(`1:
-// #.
-// ##
-// #.
+asseq(
+  canFitString(`1:
+#.
+##
+#.
 
-// 2:
-// #.
-// ..
-// #.
+2:
+#.
+..
+#.
 
-// 2x3: 1 1
-// `),
-//   true,
-//   "with flipping"
-// );
+2x3: 1 1
+`),
+  true,
+  "with flipping"
+);
 
-// asseq(
-//   canFitString(`0:
-// ###
-// ##.
-// ##.
+asseq(
+  canFitString(`0:
+###
+##.
+##.
 
-// 1:
-// ###
-// ##.
-// .##
+1:
+###
+##.
+.##
 
-// 2:
-// .##
-// ###
-// ##.
+2:
+.##
+###
+##.
 
-// 3:
-// ##.
-// ###
-// ##.
+3:
+##.
+###
+##.
 
-// 4:
-// ###
-// #..
-// ###
+4:
+###
+#..
+###
 
-// 5:
-// ###
-// .#.
-// ###
+5:
+###
+.#.
+###
 
-// 4x4: 0 0 0 0 2 0`),
-//   true
-// );
+4x4: 0 0 0 0 2 0`),
+  true
+);
+
+if (bigBoy) {
+  asseq(
+    canFitString(`
+0:
+###
+##.
+##.
+
+1:
+###
+##.
+.##
+
+2:
+.##
+###
+##.
+
+3:
+##.
+###
+##.
+
+4:
+###
+#..
+###
+
+5:
+###
+.#.
+###
+
+12x5: 1 0 1 0 2 2`),
+    true
+  );
+}
 
 /**
 # simple and correct algorithm, in small steps
-[ ] implement only the first tree
-[ ] implement all rotations of the pieces
-[ ] try every single placement
-[x] create a function which verifies that a complete board is correct
 [ ] create a "progress bar" which gives the total count, and how far we have gotten, with this naive implementation
+ [ ] needs a generator function because all placements take too much time to compute.
+[x] implement only the first tree
+[x] implement all rotations of the pieces
+[x] try every single placement
+[x] create a function which verifies that a complete board is correct
 [ ] create edge cases: 
-[ ] no wanted gifts
-[ ] a single gift
-[ ] board is too small for a single gift
+[x] no wanted gifts
+[x] a single gift
+[x] board is too small for a single gift
 [ ] a piece which fits completely inside another piece
-[ ] 2 pieces that need to be rotated to fit
-[ ] 2 pieces that need to be flipped to fit
+[x] 2 pieces that need to be rotated to fit
+[x] 2 pieces that need to be flipped to fit
 
 # performance optimizations
 [ ] when the first correct placement is found for a tree, then stop that.
