@@ -1,33 +1,45 @@
-console.log("start")
-type TupleOf<T, N extends number, R extends readonly T[] = []> =
-  R['length'] extends N ? R : TupleOf<T, N, readonly [...R, T]>
+console.log("start");
+type TupleOf<
+  T,
+  N extends number,
+  R extends readonly T[] = []
+> = R["length"] extends N ? R : TupleOf<T, N, readonly [...R, T]>;
 
 export function assertTupleOf<T, N extends number>(
   value: readonly T[],
-  length: N,
+  length: N
 ): asserts value is TupleOf<T, N> {
-  asseq(value.length, length)
+  asseq(value.length, length);
 }
 
 export function isTupleOf<T, N extends number>(
   value: readonly T[],
-  length: N,
+  length: N
 ): TupleOf<T, N> {
-  asseq(value.length, length)
+  asseq(value.length, length);
   return value as TupleOf<T, N>;
 }
 
-const x: number[] = [1, 2, 3]
-assertTupleOf(x, 3)
-const x_1: number = x[0]
-const x_2: number = x[2]
+const x: number[] = [1, 2, 3];
+assertTupleOf(x, 3);
+const x_1: number = x[0];
+const x_2: number = x[2];
 // @ts-expect-error
-const x_3: number = x[3]
+const x_3: number = x[3];
 
 void x_1, x_2, x_3;
 
 import { deepEquals } from "bun";
-import { add, ass, asseq, assInt, diff, nonNull, sum, type Vector } from "./common";
+import {
+  add,
+  ass,
+  asseq,
+  assInt,
+  diff,
+  nonNull,
+  sum,
+  type Vector,
+} from "./common";
 import { isValid } from "zod/v3";
 
 const testInput2 = `0:
@@ -65,191 +77,226 @@ const testInput2 = `0:
 12x5: 1 0 1 0 3 2` as const;
 
 type Gift = ("." | "#")[][];
-type Gifts = readonly Gift[]
+type Gifts = readonly Gift[];
 type Int = number;
-type GiftCounts = readonly Int[]
-type Tree = { width: Int, height: Int, giftCounts: GiftCounts }
-type Puzzle = { gifts: Gifts, trees: Tree[] }
+type GiftCounts = readonly Int[];
+type Tree = { width: Int; height: Int; giftCounts: GiftCounts };
+type Puzzle = { gifts: Gifts; trees: Tree[] };
 
 function shape(twoDArray: unknown[][]): [number, number] {
-  const firstRow = nonNull(twoDArray[0])
-  ass(twoDArray.every(row => row.length === firstRow.length))
-  return [twoDArray.length, firstRow.length]
+  const firstRow = nonNull(twoDArray[0]);
+  ass(twoDArray.every((row) => row.length === firstRow.length));
+  return [twoDArray.length, firstRow.length];
 }
 
-
 function parseInput(input: string): Puzzle {
+  const matchedInput = input.split("\n\n");
 
-  const matchedInput = input.split("\n\n")
-
-  const giftsTuple = matchedInput.toSpliced(matchedInput.length - 1)
-  asseq(giftsTuple.length, matchedInput.length - 1)
+  const giftsTuple = matchedInput.toSpliced(matchedInput.length - 1);
+  asseq(giftsTuple.length, matchedInput.length - 1);
   // console.log(matchedInput)
-  const giftsShit: Gifts = (giftsTuple.map(giftString => {
+  const giftsShit: Gifts = giftsTuple.map((giftString) => {
     const shit = nonNull(giftString.split(":")[1]).trim().split("\n");
     // console.log("shit", shit, giftString)
-    return shit.map(line => {
+    return shit.map((line) => {
       const splittedLines = line.split("");
       // console.log(splittedLines)
-      return splittedLines.map(char => {
-        ass(char === "#" || char === ".")
+      return splittedLines.map((char) => {
+        ass(char === "#" || char === ".");
         return char;
-      })
-    })
-  }))
-  const trees: Tree[] = nonNull(matchedInput[matchedInput.length - 1]).split('\n').map(tree => {
-    const [size, gifts] = tree.split(": ")
-    const [widthString, heightString] = nonNull(size).split("x")
-    assInt(nonNull(widthString)); assInt(nonNull(heightString))
+      });
+    });
+  });
+  const trees: Tree[] = nonNull(matchedInput[matchedInput.length - 1])
+    .split("\n")
+    .map((tree) => {
+      const [size, gifts] = tree.split(": ");
+      const [widthString, heightString] = nonNull(size).split("x");
+      assInt(nonNull(widthString));
+      assInt(nonNull(heightString));
 
-    const giftCounts = (nonNull(gifts).split(" ").map(numString => {
-      assInt(numString)
-      return Number(numString)
-    }))
+      const giftCounts = nonNull(gifts)
+        .split(" ")
+        .map((numString) => {
+          assInt(numString);
+          return Number(numString);
+        });
 
-    const width = Number(widthString);
-    const height = Number(heightString);
+      const width = Number(widthString);
+      const height = Number(heightString);
 
-    asseq(giftCounts.length, giftsShit.length)
+      asseq(giftCounts.length, giftsShit.length);
 
-    return { width, height, giftCounts }
-  })
+      return { width, height, giftCounts };
+    });
 
-  return { gifts: giftsShit, trees }
+  return { gifts: giftsShit, trees };
 }
 
 function validateTest() {
-
   const parsedInput = parseInput(testInput2);
-  const gifts = parsedInput.gifts
-  const first_gift: Gift = nonNull(gifts[0])
+  const gifts = parsedInput.gifts;
+  const first_gift: Gift = nonNull(gifts[0]);
 
+  asseq(first_gift, [
+    ["#", "#", "#"],
+    ["#", "#", "."],
+    ["#", "#", "."],
+  ]);
 
-  asseq(first_gift, [["#", "#", "#"],
-  ["#", "#", "."],
-  ["#", "#", "."]])
-
-  gifts.forEach(gift => asseq(shape(gift), [3, 3]));
+  gifts.forEach((gift) => asseq(shape(gift), [3, 3]));
 }
 
-validateTest()
+validateTest();
 
 function trimGift(gift: string): string {
-  let rows = gift.split("\n").map(row => {
-    const chars = row.split(""); ass(chars.every(char => char === "." || char == "#"));
+  let rows = gift.split("\n").map((row) => {
+    const chars = row.split("");
+    ass(chars.every((char) => char === "." || char == "#"));
     return chars;
   });
 
-
   const trimmedGifts = trimGift2(rows);
   // console.log("rows", rows, "trimmedGifts", trimmedGifts)
-  return trimmedGifts.map(row => row.join("")).join("\n")
+  return trimmedGifts.map((row) => row.join("")).join("\n");
 }
 
-asseq(trimGift(`#`), "#")
-asseq(trimGift(`##`), "##")
-asseq(trimGift(`#
-#`), `#
-#`)
-asseq(trimGift(`.#`), "#")
-asseq(trimGift(`#.`), "#")
-asseq(trimGift(`#.#`), "#.#")
-asseq(trimGift(
+asseq(trimGift(`#`), "#");
+asseq(trimGift(`##`), "##");
+asseq(
+  trimGift(`#
+#`),
+  `#
+#`
+);
+asseq(trimGift(`.#`), "#");
+asseq(trimGift(`#.`), "#");
+asseq(trimGift(`#.#`), "#.#");
+asseq(
+  trimGift(
+    `
+#.#
+#..`.trim()
+  ),
   `
 #.#
-#..`.trim()), `
-#.#
-#..`.trim())
-asseq(trimGift("..#"), "#")
-asseq(trimGift(`.
+#..`.trim()
+);
+asseq(trimGift("..#"), "#");
+asseq(
+  trimGift(`.
 .
-#`), "#")
-asseq(trimGift(`#
+#`),
+  "#"
+);
+asseq(
+  trimGift(`#
 .
-.`), "#")
+.`),
+  "#"
+);
 
 function trimGift2(input: Gift): Gift {
   let rows = [...input];
-  while (rows.every(row => row[0] === ".")) {
-    rows = rows.map(row => row.toSpliced(0, 1))
+  while (rows.every((row) => row[0] === ".")) {
+    rows = rows.map((row) => row.toSpliced(0, 1));
   }
 
-  while (rows.every(row => row[row.length - 1] === ".")) {
-    rows = rows.map(row => row.toSpliced(row.length - 1, 1))
+  while (rows.every((row) => row[row.length - 1] === ".")) {
+    rows = rows.map((row) => row.toSpliced(row.length - 1, 1));
   }
 
-
-  while (nonNull(rows[0]).every(char => char === ".")) {
-    rows = rows.toSpliced(0, 1)
+  while (nonNull(rows[0]).every((char) => char === ".")) {
+    rows = rows.toSpliced(0, 1);
   }
 
-  while (nonNull(rows[rows.length - 1]).every(char => char === ".")) {
-    rows = rows.toSpliced(rows.length - 1, 1)
+  while (nonNull(rows[rows.length - 1]).every((char) => char === ".")) {
+    rows = rows.toSpliced(rows.length - 1, 1);
   }
   return rows;
 }
 
-asseq(trimGift2([[".", ".", "."], [".", "#", "."], [".", ".", "."],]), [["#"]])
+asseq(
+  trimGift2([
+    [".", ".", "."],
+    [".", "#", "."],
+    [".", ".", "."],
+  ]),
+  [["#"]]
+);
 
 const performanceOptimizations = { countGiftSpaces: false } as const;
 
 function canFitString(input: string): boolean {
   // console.log(input)
-  const parsed2: Puzzle = parseInput(input)
+  const parsed2: Puzzle = parseInput(input);
 
-  const gifts = parsed2.gifts.map(gift => {
+  const gifts = parsed2.gifts.map((gift) => {
     // console.log(gift)
 
-    return trimGift2(gift)
-  })
+    return trimGift2(gift);
+  });
 
-  const firstTree = nonNull(parsed2.trees[0])
+  const firstTree = nonNull(parsed2.trees[0]);
   const freeSpaces = firstTree.width * firstTree.height;
-  const giftsWithCounts: { gift: Gift, count: Int }[] = firstTree.giftCounts.map((value, index, array) => {
-    return { gift: nonNull(gifts[index]), count: value } satisfies { gift: Gift, count: Int }
-  })
+  const giftsWithCounts: { gift: Gift; count: Int }[] =
+    firstTree.giftCounts.map((value, index, array) => {
+      return { gift: nonNull(gifts[index]), count: value } satisfies {
+        gift: Gift;
+        count: Int;
+      };
+    });
 
   // shit this can be refactored to use a helper to turn a 2d array to a flat thing, with positions.
-  const eachGiftTypeSpacesCount: number[] = giftsWithCounts.map((giftWithCount): number => {
-    const giftSpacesCount = giftWithCount.gift.flatMap(row => row.flatMap(row => row)).filter(char => char === "#").length
-    return giftSpacesCount * giftWithCount.count
-  })
-  const totalGiftSpaces: number = sum(eachGiftTypeSpacesCount)
+  const eachGiftTypeSpacesCount: number[] = giftsWithCounts.map(
+    (giftWithCount): number => {
+      const giftSpacesCount = giftWithCount.gift
+        .flatMap((row) => row.flatMap((row) => row))
+        .filter((char) => char === "#").length;
+      return giftSpacesCount * giftWithCount.count;
+    }
+  );
+  const totalGiftSpaces: number = sum(eachGiftTypeSpacesCount);
   // console.log(eachGiftTypeSpacesCount, totalGiftSpaces)
 
-  if (totalGiftSpaces > freeSpaces && performanceOptimizations.countGiftSpaces) {
+  if (
+    totalGiftSpaces > freeSpaces &&
+    performanceOptimizations.countGiftSpaces
+  ) {
     // shit note that the code should still work without this. this is only a performance optimization!
-    return false
+    return false;
   }
 
-  console.log("next shape")
+  console.log("next shape");
   // loop over each tile under the tree
   // try to place the gift there
-  // if every tile of the gift is inside the bounds, then we can place it there. 
+  // if every tile of the gift is inside the bounds, then we can place it there.
   // shit this can be refactored to map over each of the tiles under the tree
 
+  const gift = nonNull(gifts[0]);
 
-  const gift = nonNull(gifts[0])
-
-  // if all positions say that this gift cannot fit under the tree, then this 
+  // if all positions say that this gift cannot fit under the tree, then this
   let canPlaceGiftAnywhereUnderTree = false;
 
   for (let y = 0; y < firstTree.height; y++) {
-
     for (let x = 0; x < firstTree.width; x++) {
       // console.log(x, y)
       let giftFitsUnderTreeAtThisLocation = true;
       // for each tile in the gift
       for (let giftY = 0; giftY < gift.length; giftY++) {
-
         for (let giftX = 0; giftX < nonNull(gift[0]).length; giftX++) {
-          const tile = nonNull(nonNull(gift[giftY])[giftX])
+          const tile = nonNull(nonNull(gift[giftY])[giftX]);
           // console.log("gift", giftX, giftY, tile)
           if (tile === "#") {
             const worldPos = add({ x: giftX, y: giftY }, { x, y });
             const width = firstTree.width;
             const height = firstTree.height;
-            const isGiftTileInBounds = isInBounds(worldPos.x, worldPos.y, width, height);
+            const isGiftTileInBounds = isInBounds(
+              worldPos.x,
+              worldPos.y,
+              width,
+              height
+            );
             // console.log(worldPos, "should be in", width, height, isGiftTileInBounds)
             if (!isGiftTileInBounds) {
               giftFitsUnderTreeAtThisLocation = false;
@@ -268,49 +315,53 @@ function canFitString(input: string): boolean {
   const giftPlacements: PlacedGift[] = [];
   // for each gift
   for (const [giftType, gift] of gifts.entries()) {
-    const giftCount = nonNull(firstTree.giftCounts[giftType])
+    const giftCount = nonNull(firstTree.giftCounts[giftType]);
     // console.log("giftCount", giftCount)
     for (let i = 0; i < giftCount; i++) {
       for (let x = 0; x < firstTree.width; x++) {
         for (let y = 0; y < firstTree.height; y++) {
           // console.log(x, y)
-          giftPlacements.push({ type: giftType, x, y })
+          giftPlacements.push({ type: giftType, x, y });
         }
       }
     }
   }
   // console.log(giftPlacements)
-  const thisIsValidPlacement = isValidPlacement(gifts, firstTree.width, firstTree.height, giftPlacements);
+  const thisIsValidPlacement = isValidPlacement(
+    gifts,
+    firstTree.width,
+    firstTree.height,
+    giftPlacements
+  );
   // console.log(thisIsValidPlacement)
-  return thisIsValidPlacement
+  return thisIsValidPlacement;
   // for each x of the board
   // for each y of the board
   // create the placement
   // validate the placement
 
-
   if (canPlaceGiftAnywhereUnderTree) return true;
-  else return false
+  else return false;
 }
 
 // shit refactor to use vectors
 // shit refactor to use rectangles
 function isInBounds(x: Int, y: Int, width: Int, height: Int): boolean {
-  asseq(Math.abs(x % 1), 0)
-  asseq(Math.abs(y % 1), 0)
-  asseq(Math.abs(width % 1), 0)
-  asseq(Math.abs(height % 1), 0)
+  asseq(Math.abs(x % 1), 0);
+  asseq(Math.abs(y % 1), 0);
+  asseq(Math.abs(width % 1), 0);
+  asseq(Math.abs(height % 1), 0);
 
-  return (!(x < 0 || y < 0 || x > width - 1 || y > height - 1))
+  return !(x < 0 || y < 0 || x > width - 1 || y > height - 1);
 }
 
-asseq(isInBounds(0, 0, 1, 1), true)
-asseq(isInBounds(-1, 0, 1, 1), false)
-asseq(isInBounds(0, -1, 1, 1), false)
-asseq(isInBounds(1, 0, 1, 1), false)
-asseq(isInBounds(0, 1, 1, 1), false)
-asseq(isInBounds(2, 0, 3, 1), true)
-asseq(isInBounds(3, 0, 3, 1), false)
+asseq(isInBounds(0, 0, 1, 1), true);
+asseq(isInBounds(-1, 0, 1, 1), false);
+asseq(isInBounds(0, -1, 1, 1), false);
+asseq(isInBounds(1, 0, 1, 1), false);
+asseq(isInBounds(0, 1, 1, 1), false);
+asseq(isInBounds(2, 0, 3, 1), true);
+asseq(isInBounds(3, 0, 3, 1), false);
 
 const gifts = [[["#"]]] satisfies Gifts;
 const boardWidth = 1;
@@ -323,35 +374,52 @@ type PlacedGift = {
   y: number;
 };
 
-function placeGift(pieceIndex: Int, location: Vector, previousPlacedGifts: PlacedGift[]): PlacedGift[] {
-  return [...previousPlacedGifts, { type: pieceIndex, x: location.x, y: location.y }]
+function placeGift(
+  pieceIndex: Int,
+  location: Vector,
+  previousPlacedGifts: PlacedGift[]
+): PlacedGift[] {
+  return [
+    ...previousPlacedGifts,
+    { type: pieceIndex, x: location.x, y: location.y },
+  ];
 }
 
-asseq(placeGift(0, { x: 0, y: 0 }, []),
-  [{ type: 0, x: 0, y: 0 }])
+asseq(placeGift(0, { x: 0, y: 0 }, []), [{ type: 0, x: 0, y: 0 }]);
 
-asseq(placeGift(0, { x: 0, y: 0 }, placeGift(0, { x: 1, y: 0 }, [])),
-  [{ type: 0, x: 1, y: 0 }, { type: 0, x: 0, y: 0 }])
+asseq(placeGift(0, { x: 0, y: 0 }, placeGift(0, { x: 1, y: 0 }, [])), [
+  { type: 0, x: 1, y: 0 },
+  { type: 0, x: 0, y: 0 },
+]);
 
-function isValidPlacement(gifts: Gifts, width: Int, height: Int, placedGifts: PlacedGift[]): boolean {
-
+function isValidPlacement(
+  gifts: Gifts,
+  width: Int,
+  height: Int,
+  placedGifts: PlacedGift[]
+): boolean {
   // if any gift has a location out of bounds
-  // WARNING: assumes wrapped gifts, and verified that they aren't jagged 
+  // WARNING: assumes wrapped gifts, and verified that they aren't jagged
   for (const placedGift of placedGifts) {
     if (!isInBounds(placedGift.x, placedGift.y, width, height)) {
       return false;
     }
 
-    const gift = nonNull(gifts[placedGift.type])
+    const gift = nonNull(gifts[placedGift.type]);
     const giftHeight = gift.length;
-    const giftWidth = nonNull(gift[0]).length
+    const giftWidth = nonNull(gift[0]).length;
 
     // shit replace this with something like "rectangles completely overlap"
-    const lowerRightGiftCorner = add({
-      x: giftWidth
-        - 1, y: giftHeight - 1
-    }, { x: placedGift.x, y: placedGift.y });
-    if (!isInBounds(lowerRightGiftCorner.x, lowerRightGiftCorner.y, width, height)) {
+    const lowerRightGiftCorner = add(
+      {
+        x: giftWidth - 1,
+        y: giftHeight - 1,
+      },
+      { x: placedGift.x, y: placedGift.y }
+    );
+    if (
+      !isInBounds(lowerRightGiftCorner.x, lowerRightGiftCorner.y, width, height)
+    ) {
       return false;
     }
   }
@@ -367,19 +435,25 @@ function isValidPlacement(gifts: Gifts, width: Int, height: Int, placedGifts: Pl
       // shit todo performance optimization, if we have a single board, then we can "cache" which tiles are occupied by storing the field and flipping the bits. maybe its faster to get the exact one instead.
       // shit todo performance optimization, we only need to loop through the tiles that are actually #'s, not the .'s
 
-
       for (const [gift1LocalY, gift1Row] of gift1.entries()) {
         for (const [gift1LocalX, gift1Cell] of gift1Row.entries())
           if (gift1Cell === "#") {
-            const globalPos = add({ y: placedGift1.y, x: placedGift1.x }, { x: gift1LocalX, y: gift1LocalY });
+            const globalPos = add(
+              { y: placedGift1.y, x: placedGift1.x },
+              { x: gift1LocalX, y: gift1LocalY }
+            );
 
-
-            // note, need to verify this is checking the correct direction. 
-            const gift2Local = diff(globalPos, { x: placedGift2.x, y: placedGift2.y })
-            const gift2Cell = nonNull((gifts[placedGift2.type])?.[gift2Local.y]?.[gift2Local.x])
+            // note, need to verify this is checking the correct direction.
+            const gift2Local = diff(globalPos, {
+              x: placedGift2.x,
+              y: placedGift2.y,
+            });
+            const gift2Cell = nonNull(
+              gifts[placedGift2.type]?.[gift2Local.y]?.[gift2Local.x]
+            );
             if (gift2Cell === "#") {
               // console.log("there is overlap");
-              return false
+              return false;
             }
           }
       }
@@ -389,60 +463,120 @@ function isValidPlacement(gifts: Gifts, width: Int, height: Int, placedGifts: Pl
   return true;
 }
 
-asseq(isValidPlacement(gifts, boardWidth, boardHeight, placeGift(0, { x: 0, y: 0 }, [])), true)
-asseq(isValidPlacement(gifts, boardWidth, boardHeight, placeGift(0, { x: 1, y: 0 }, [])), false)
-asseq(isValidPlacement([[["#", "#"]]], boardWidth, boardHeight, placeGift(0, { x: 0, y: 0 }, [])), false)
+asseq(
+  isValidPlacement(
+    gifts,
+    boardWidth,
+    boardHeight,
+    placeGift(0, { x: 0, y: 0 }, [])
+  ),
+  true
+);
+asseq(
+  isValidPlacement(
+    gifts,
+    boardWidth,
+    boardHeight,
+    placeGift(0, { x: 1, y: 0 }, [])
+  ),
+  false
+);
+asseq(
+  isValidPlacement(
+    [[["#", "#"]]],
+    boardWidth,
+    boardHeight,
+    placeGift(0, { x: 0, y: 0 }, [])
+  ),
+  false
+);
 // shit create placeGifts helper?
 // shit create a type for a "validated board", and then we have to pass validated boards to each other?
-asseq(isValidPlacement([[["#"]]], boardWidth, boardHeight, placeGift(0, { x: 0, y: 0 }, placeGift(0, { x: 0, y: 0 }, []))), false, "overlapping pieces ")
-asseq(isValidPlacement([[["#"]]], 0, 0, []), true)
+asseq(
+  isValidPlacement(
+    [[["#"]]],
+    boardWidth,
+    boardHeight,
+    placeGift(0, { x: 0, y: 0 }, placeGift(0, { x: 0, y: 0 }, []))
+  ),
+  false,
+  "overlapping pieces "
+);
+asseq(isValidPlacement([[["#"]]], 0, 0, []), true);
 
-asseq(canFitString(`1:
+asseq(
+  canFitString(`1:
 #
 
-1x1: 1`), true)
+1x1: 1`),
+  true
+);
 
-asseq(canFitString(`1:
+asseq(
+  canFitString(`1:
 #
 
-0x0: 1`), false)
+0x0: 1`),
+  false
+);
 
 // SIGURD, TO JUMP BACK IN TO IMPLEMENTATION, you have to implement trying to place a piece at a specific point, and then check if the board is valid.
-asseq(canFitString(`1:
+asseq(
+  canFitString(`1:
 #
 
-1x1: 2`), false)
+1x1: 2`),
+  false
+);
 
-asseq(canFitString(`1:
+asseq(
+  canFitString(`1:
 #
 
-2x1: 2`), true)
+2x1: 2`),
+  true
+);
 
-asseq(canFitString(`1:
+asseq(
+  canFitString(`1:
 ##
 ##
 
-2x1: 1`), false)
+2x1: 1`),
+  false
+);
 
-asseq(canFitString(`1:
+asseq(
+  canFitString(`1:
 #.#
 
-2x2: 1`), false)
+2x2: 1`),
+  false
+);
 
-asseq(canFitString(`1:
+asseq(
+  canFitString(`1:
 .#
 
-1x1: 1`), true)
+1x1: 1`),
+  true
+);
 
-asseq(canFitString(`1:
+asseq(
+  canFitString(`1:
 ##
 
-2x2: 2`), true)
+2x2: 2`),
+  true
+);
 
-asseq(canFitString(`1:
+asseq(
+  canFitString(`1:
 ##
 
-2x2: 3`), false)
+2x2: 3`),
+  false
+);
 
 /**
 # simple and correct algorithm, in small steps
@@ -477,4 +611,4 @@ we need to check that the trees are correctly marked as fillable or not able to 
 
 */
 
-console.log("done")
+console.log("done");
