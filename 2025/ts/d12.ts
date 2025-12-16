@@ -1,5 +1,6 @@
 import { expect } from "bun:test";
 import { add, ass, asseq, assInt, diff, nonNull, type Vector } from "./common";
+import { string } from "zod";
 
 const testInput2 = `0:
 ###
@@ -56,32 +57,21 @@ function parseInput(input: string): Puzzle {
 
   asseq(giftsTuple.length, matchedInput.length - 1);
 
-  const giftsShit: Gifts = giftsTuple.map((giftStringWithNumber) => {
-    const giftString = nonNull(giftStringWithNumber.split(":")[1])
-      .trim()
-      .split("\n");
-
-    return giftString.map((line) => {
-      const splittedLines = line.split("");
-
-      return splittedLines.map((char) => {
-        ass(char === "#" || char === ".");
-
-        return char;
-      });
-    });
+  const gifts: Gifts = giftsTuple.map((giftStringWithNumber) => {
+    const giftString = nonNull(giftStringWithNumber.split(":")[1]);
+    return stringToGift(giftString);
   });
 
   const trees: Tree[] = nonNull(matchedInput[matchedInput.length - 1])
     .split("\n")
     .map((tree) => {
-      const [size, gifts] = tree.split(": ");
+      const [size, giftsCountString] = tree.split(": ");
       const [widthString, heightString] = nonNull(size).split("x");
 
       assInt(nonNull(widthString));
       assInt(nonNull(heightString));
 
-      const giftCounts = nonNull(gifts)
+      const giftCounts = nonNull(giftsCountString)
         .split(" ")
         .map((numString) => {
           assInt(numString);
@@ -91,12 +81,12 @@ function parseInput(input: string): Puzzle {
       const width = Number(widthString);
       const height = Number(heightString);
 
-      asseq(giftCounts.length, giftsShit.length);
+      asseq(giftCounts.length, gifts.length);
 
       return { width, height, giftCounts };
     });
 
-  return { gifts: giftsShit, trees };
+  return { gifts, trees };
 }
 
 function validateTest() {
@@ -147,12 +137,9 @@ function assmeq(stringMatrix: string[][], expected: string): void {
   ).toBe(cleanViz(expected));
 }
 
-// function map2d<T>(
-//   field: Field,
-//   callback: (cell: boolean, loc: Vector) => T
-// ): T[][] {
-//   return field.map((row, y) => row.map((cell, x) => callback(cell, { x, y })));
-// }
+function stringToGift(giftString: string): Gift {
+  return assIsGiftMatrix(stringToMatrix(giftString));
+}
 
 function assMatrix<T extends string>(
   stringMatrix: string[][],
@@ -163,6 +150,14 @@ function assMatrix<T extends string>(
   );
 
   return stringMatrix;
+}
+
+function isGiftChar(char: string) {
+  return char === "#" || char === ".";
+}
+
+function assIsGiftMatrix(stringMatrix: string[][]): Gift {
+  return assMatrix(stringMatrix, isGiftChar);
 }
 
 function testStringToMatrix() {
@@ -185,48 +180,38 @@ function testStringToMatrix() {
      ..`
   );
 
-  // shit create assMatrix which takes a validator function and turns a matrix into a more strictly typed element matrix. no interdependencies
-  const gift2: Gift = assMatrix(
-    matrix,
-    (char: unknown) => char === "#" || char === "."
-  );
+  const gift2: Gift = assIsGiftMatrix(matrix);
 
   assmeq(
     gift2,
     `##
      ..`
   );
-
-  // shit create function to validate present char
 }
 
 testStringToMatrix();
 
-function trimGift(gift: string): string {
-  let rows = gift.split("\n").map((row) => {
-    const chars = row.split("");
-    ass(chars.every((char) => char === "." || char == "#"));
-    return chars;
-  });
+function trimGiftString(giftString: string): string {
+  let gift: Gift = assIsGiftMatrix(stringToMatrix(giftString));
 
-  const trimmedGifts = trimGift2(rows);
+  const trimmedGifts = trimGift2(gift);
 
   return trimmedGifts.map((row) => row.join("")).join("\n");
 }
 
-asseq(trimGift(`#`), "#");
-asseq(trimGift(`##`), "##");
+asseq(trimGiftString(`#`), "#");
+asseq(trimGiftString(`##`), "##");
 asseq(
-  trimGift(`#
+  trimGiftString(`#
 #`),
   `#
 #`
 );
-asseq(trimGift(`.#`), "#");
-asseq(trimGift(`#.`), "#");
-asseq(trimGift(`#.#`), "#.#");
+asseq(trimGiftString(`.#`), "#");
+asseq(trimGiftString(`#.`), "#");
+asseq(trimGiftString(`#.#`), "#.#");
 asseq(
-  trimGift(
+  trimGiftString(
     `
 #.#
 #..`.trim()
@@ -235,15 +220,15 @@ asseq(
 #.#
 #..`.trim()
 );
-asseq(trimGift("..#"), "#");
+asseq(trimGiftString("..#"), "#");
 asseq(
-  trimGift(`.
+  trimGiftString(`.
 .
 #`),
   "#"
 );
 asseq(
-  trimGift(`#
+  trimGiftString(`#
 .
 .`),
   "#"
