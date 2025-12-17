@@ -318,8 +318,7 @@ function canFitString(input: string): boolean {
   const allGiftPlacements = createAllPlacements(
     gifts.map(createDedupedTransmutations),
     firstTree.giftCounts,
-    firstTree.width,
-    firstTree.height
+    firstTree
   );
 
   const validPlacements = allGiftPlacements.map(function mapAllGiftPlacements(
@@ -950,20 +949,14 @@ function toNumInt(input: Int | undefined | null): Int {
 function createAllPlacements(
   gifts: GiftsWithRotations,
   giftCounts: GiftCounts,
-  width: Int,
-  height: Int
+  board: RootRectangle
 ): PlacedGift[][] {
   asseq(gifts.length, giftCounts.length);
 
-  const placementCount = countPlacements(gifts, giftCounts, width, height);
+  const placementCount = countPlacements(gifts, giftCounts, board);
   console.log("checking " + placementCount);
 
-  const combinationsInput = createCombinationsInput(
-    gifts,
-    giftCounts,
-    width,
-    height
-  );
+  const combinationsInput = createCombinationsInput(gifts, giftCounts, board);
 
   console.log("creating combinations");
   const unmappedplacements = createCombinations(...combinationsInput);
@@ -997,26 +990,26 @@ function createAllPlacements(
 }
 
 function createCombinations(...args: Int[]) {
-  const placementCount = countCombinations(...args);
+  // const placementCount = countCombinations(...args);
 
   const allCombinations: Int[][] = [];
 
   function recurse(index: Int, accumulator: Int[]): void {
     if (index === args.length) {
       allCombinations.push([...accumulator]);
-      if (allCombinations.length % 100000 === 0) {
-        const percentage = (allCombinations.length / placementCount) * 100;
-        console.log(
-          new Date().toISOString() +
-            " " +
-            allCombinations.length +
-            " / " +
-            placementCount +
-            " (" +
-            percentage +
-            "%)"
-        );
-      }
+      // if (allCombinations.length % 100000 === 0) {
+      //   const percentage = (allCombinations.length / placementCount) * 100;
+      //   console.log(
+      //     new Date().toISOString() +
+      //       " " +
+      //       allCombinations.length +
+      //       " / " +
+      //       placementCount +
+      //       " (" +
+      //       percentage +
+      //       "%)"
+      //   );
+      // }
       // 2025-12-16T21:55:11.835Z 10700000 / 47775744000000 (0.000022396302190500684%)
       // 2025-12-16T21:55:31.810Z 88000000 / 47775744000000 (0.00018419388717421124%)
       // 142 days to go
@@ -1054,6 +1047,63 @@ function testCreateCombinations() {
   asseq(createCombinations(1).length, countCombinations(1));
   asseq(createCombinations(2).length, countCombinations(2));
   asseq(createCombinations(2, 3).length, countCombinations(2, 3));
+
+  asseq(createCombinations(2, 2, 2), [
+    [0, 0, 0],
+    [0, 0, 1],
+    [0, 1, 0],
+    [0, 1, 1],
+    [1, 0, 0],
+    [1, 0, 1],
+    [1, 1, 0],
+    [1, 1, 1],
+  ]);
+
+  const combinationsGenerator = createCombinationsGenerator(2, 2, 2);
+  asseq(combinationsGenerator(), [0, 0, 0]);
+  asseq(combinationsGenerator(), [0, 0, 1]);
+  asseq(combinationsGenerator(), [0, 1, 0]);
+  asseq(combinationsGenerator(), [0, 1, 1]);
+  asseq(combinationsGenerator(), [1, 0, 0]);
+  asseq(combinationsGenerator(), [1, 0, 1]);
+  asseq(combinationsGenerator(), [1, 1, 0]);
+  asseq(combinationsGenerator(), [1, 1, 1]);
+  asseq(combinationsGenerator(), undefined);
+}
+
+function createCombinationsGenerator(...args: Int[]): () => Int[] | undefined {
+  const acc: Int[] = Array.from({ length: args.length }).map(() => 0);
+  let done = false;
+
+  const advance = (): void => {
+    let pos = acc.length - 1;
+
+    while (true) {
+      acc[pos] = toNumInt(acc[pos]) + 1;
+
+      if (toNumInt(acc[pos]) === toNumInt(args[pos])) {
+        acc[pos] = 0;
+        pos--;
+      } else {
+        return;
+      }
+
+      if (pos === -1) {
+        done = true;
+        return;
+      }
+    }
+  };
+
+  return () => {
+    if (done) {
+      return undefined;
+    } else {
+      const prevAcc = [...acc];
+      advance();
+      return prevAcc;
+    }
+  };
 }
 
 testCreateCombinations();
@@ -1061,31 +1111,25 @@ testCreateCombinations();
 function createCombinationsInput(
   gifts: GiftsWithRotations,
   giftCounts: GiftCounts,
-  width: Int,
-  height: Int
+  board: RootRectangle
 ): Int[] {
-  const combinationsInput = giftCounts.flatMap(
-    function flatMapCombinationsInput(giftCount, index) {
-      const giftRotationCount = nonNull(gifts[index]).length;
-      return Array(giftCount).fill([giftRotationCount, width, height]).flat();
-    }
-  );
-  return combinationsInput;
+  return giftCounts.flatMap(function flatMapCombinationsInput(
+    giftCount,
+    index
+  ) {
+    const giftRotationCount = nonNull(gifts[index]).length;
+    return Array(giftCount)
+      .fill([giftRotationCount, board.width, board.height])
+      .flat();
+  });
 }
 
 function countPlacements(
   gifts: GiftsWithRotations,
   giftCounts: GiftCounts,
-  // shit use board root rectangle
-  width: Int,
-  height: Int
+  board: RootRectangle
 ) {
-  const combinationsInput = createCombinationsInput(
-    gifts,
-    giftCounts,
-    width,
-    height
-  );
+  const combinationsInput = createCombinationsInput(gifts, giftCounts, board);
 
   const combinationCount = countCombinations(...combinationsInput);
 
@@ -1094,15 +1138,17 @@ function countPlacements(
 
 function testAllPlacements() {
   asseq(
-    countPlacements([[[["#"]]]] satisfies GiftsWithRotations, [1], 1, 1),
+    countPlacements([[[["#"]]]] satisfies GiftsWithRotations, [1], {
+      width: 1,
+      height: 1,
+    }),
     1
   );
   asseq(
     countPlacements(
       [[[["#"]]], [[["#"]]]] satisfies GiftsWithRotations,
       [2, 2],
-      2,
-      2
+      { width: 2, height: 2 }
     ),
     256
   );
@@ -1110,8 +1156,7 @@ function testAllPlacements() {
     createAllPlacements(
       ([[["#"]]] satisfies Gifts).map(createDedupedTransmutations),
       [1],
-      1,
-      1
+      { width: 1, height: 1 }
     ),
     [[{ type: 0, rotation: 0, x: 0, y: 0 }]]
   );
@@ -1120,8 +1165,7 @@ function testAllPlacements() {
     createAllPlacements(
       ([[["#"]]] satisfies Gifts).map(createDedupedTransmutations),
       [1],
-      2,
-      1
+      { width: 2, height: 1 }
     )
   ).toStrictEqual([
     [{ type: 0, rotation: 0, x: 0, y: 0 }],
@@ -1132,8 +1176,7 @@ function testAllPlacements() {
     createAllPlacements(
       ([[["#"]]] satisfies Gifts).map(createDedupedTransmutations),
       [2],
-      1,
-      1
+      { width: 1, height: 1 }
     )
   ).toStrictEqual([
     [
@@ -1148,8 +1191,7 @@ function testAllPlacements() {
         createDedupedTransmutations
       ),
       [1, 1],
-      1,
-      1
+      { width: 1, height: 1 }
     )
   ).toStrictEqual([
     [
@@ -1168,8 +1210,7 @@ function testAllPlacements() {
         createDedupedTransmutations
       ),
       [1, 1],
-      2,
-      1
+      { width: 2, height: 1 }
     )
   ).toStrictEqual([
     [
@@ -1292,8 +1333,7 @@ function testAllPlacements() {
         createDedupedTransmutations
       ),
       [1, 1],
-      2,
-      2
+      { width: 2, height: 2 }
     ).length
   ).toBe(32);
 }
