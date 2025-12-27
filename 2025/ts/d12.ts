@@ -954,14 +954,11 @@ function createAllPlacements(
   asseq(gifts.length, giftCounts.length);
 
   const placementCount = countPlacements(gifts, giftCounts, board);
-  console.log("checking " + placementCount);
 
   const combinationsInput = createCombinationsInput(gifts, giftCounts, board);
 
-  console.log("creating combinations");
-  const unmappedplacements = createCombinations(...combinationsInput);
+  const unmappedplacements = createCombinations(combinationsInput);
 
-  console.log("mapping placements");
   const allPlacements: PlacedGift[][] = unmappedplacements.map(
     function mapUnmappedPlacements(placement) {
       const singleGiftPlacements: PlacedGift[] = [];
@@ -989,89 +986,32 @@ function createAllPlacements(
   return allPlacements;
 }
 
-function createCombinations(...args: Int[]) {
-  // const placementCount = countCombinations(...args);
+function createCombinations(args: Int[]): Int[][] {
+  ass(
+    args.every(
+      (radix) => typeof radix === "number" && Number.isSafeInteger(radix)
+    )
+  );
+
+  if (args.some((radix) => radix === 0)) {
+    return [];
+  }
 
   const allCombinations: Int[][] = [];
 
-  function recurse(index: Int, accumulator: Int[]): void {
-    if (index === args.length) {
-      allCombinations.push([...accumulator]);
-      // if (allCombinations.length % 100000 === 0) {
-      //   const percentage = (allCombinations.length / placementCount) * 100;
-      //   console.log(
-      //     new Date().toISOString() +
-      //       " " +
-      //       allCombinations.length +
-      //       " / " +
-      //       placementCount +
-      //       " (" +
-      //       percentage +
-      //       "%)"
-      //   );
-      // }
-      // 2025-12-16T21:55:11.835Z 10700000 / 47775744000000 (0.000022396302190500684%)
-      // 2025-12-16T21:55:31.810Z 88000000 / 47775744000000 (0.00018419388717421124%)
-      // 142 days to go
-      return;
-    }
+  const generator = createCombinationsGenerator(args);
 
-    const currentCount = toNumInt(args[index]);
+  let nextItem = generator();
 
-    for (let i = 1; i <= currentCount; i++) {
-      accumulator.push(i - 1);
-      recurse(index + 1, accumulator);
-      accumulator.pop();
-    }
+  while (nextItem !== undefined) {
+    allCombinations.push(nextItem);
+    nextItem = generator();
   }
-
-  recurse(0, []);
 
   return allCombinations;
 }
 
-function countCombinations(...args: Int[]): number {
-  return args.reduce(function reduceCombinations(prev, cur, _i, _arr) {
-    return prev * cur;
-  }, 1);
-}
-
-function testCreateCombinations() {
-  asseq(createCombinations(1, 1), [[0, 0]]);
-  asseq(createCombinations(2, 1), [
-    [0, 0],
-    [1, 0],
-  ]);
-  asseq(createCombinations(2), [[0], [1]]);
-  asseq(createCombinations(2, 2, 2).length, 8);
-  asseq(createCombinations(1).length, countCombinations(1));
-  asseq(createCombinations(2).length, countCombinations(2));
-  asseq(createCombinations(2, 3).length, countCombinations(2, 3));
-
-  asseq(createCombinations(2, 2, 2), [
-    [0, 0, 0],
-    [0, 0, 1],
-    [0, 1, 0],
-    [0, 1, 1],
-    [1, 0, 0],
-    [1, 0, 1],
-    [1, 1, 0],
-    [1, 1, 1],
-  ]);
-
-  const combinationsGenerator = createCombinationsGenerator(2, 2, 2);
-  asseq(combinationsGenerator(), [0, 0, 0]);
-  asseq(combinationsGenerator(), [0, 0, 1]);
-  asseq(combinationsGenerator(), [0, 1, 0]);
-  asseq(combinationsGenerator(), [0, 1, 1]);
-  asseq(combinationsGenerator(), [1, 0, 0]);
-  asseq(combinationsGenerator(), [1, 0, 1]);
-  asseq(combinationsGenerator(), [1, 1, 0]);
-  asseq(combinationsGenerator(), [1, 1, 1]);
-  asseq(combinationsGenerator(), undefined);
-}
-
-function createCombinationsGenerator(...args: Int[]): () => Int[] | undefined {
+function createCombinationsGenerator(args: Int[]): () => Int[] | undefined {
   const acc: Int[] = Array.from({ length: args.length }).map(() => 0);
   let done = false;
 
@@ -1106,6 +1046,47 @@ function createCombinationsGenerator(...args: Int[]): () => Int[] | undefined {
   };
 }
 
+function countCombinations(args: Int[]): number {
+  return args.reduce(function reduceCombinations(prev, cur, _i, _arr) {
+    return prev * cur;
+  }, 1);
+}
+
+function testCreateCombinations() {
+  asseq(createCombinations([1, 1]), [[0, 0]]);
+  asseq(createCombinations([2, 1]), [
+    [0, 0],
+    [1, 0],
+  ]);
+  asseq(createCombinations([2]), [[0], [1]]);
+  asseq(createCombinations([2, 2, 2]).length, 8);
+  asseq(createCombinations([1]).length, countCombinations([1]));
+  asseq(createCombinations([2]).length, countCombinations([2]));
+  asseq(createCombinations([2, 3]).length, countCombinations([2, 3]));
+
+  asseq(createCombinations([2, 2, 2]), [
+    [0, 0, 0],
+    [0, 0, 1],
+    [0, 1, 0],
+    [0, 1, 1],
+    [1, 0, 0],
+    [1, 0, 1],
+    [1, 1, 0],
+    [1, 1, 1],
+  ]);
+
+  const combinationsGenerator = createCombinationsGenerator([2, 2, 2]);
+  asseq(combinationsGenerator(), [0, 0, 0]);
+  asseq(combinationsGenerator(), [0, 0, 1]);
+  asseq(combinationsGenerator(), [0, 1, 0]);
+  asseq(combinationsGenerator(), [0, 1, 1]);
+  asseq(combinationsGenerator(), [1, 0, 0]);
+  asseq(combinationsGenerator(), [1, 0, 1]);
+  asseq(combinationsGenerator(), [1, 1, 0]);
+  asseq(combinationsGenerator(), [1, 1, 1]);
+  asseq(combinationsGenerator(), undefined);
+}
+
 testCreateCombinations();
 
 function createCombinationsInput(
@@ -1131,7 +1112,7 @@ function countPlacements(
 ) {
   const combinationsInput = createCombinationsInput(gifts, giftCounts, board);
 
-  const combinationCount = countCombinations(...combinationsInput);
+  const combinationCount = countCombinations(combinationsInput);
 
   return combinationCount;
 }
