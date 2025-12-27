@@ -957,7 +957,7 @@ function createAllPlacements(
   ass(board.width !== 0)
   ass(board.height !== 0)
 
-  const combinationsInput = giftCounts.flatMap((giftCount,
+  const combinationsInput: Int[] = giftCounts.flatMap((giftCount,
     index) => {
     const giftRotationCount = nonNull(gifts[index]).length;
     ass(giftRotationCount !== 0)
@@ -977,42 +977,41 @@ function createAllPlacements(
 
   const allCombinations: Int[][] = [];
 
-  function createCombinationsGenerator_new(args: Int[]): () => Int[] | undefined {
-    const acc: Int[] = Array.from({ length: args.length }).map(() => 0);
-    let done = false;
+  const acc: Int[] = Array.from({ length: combinationsInput.length }).map(() => 0);
+  let done = false;
 
-    const advance = (): void => {
-      let pos = acc.length - 1;
+  const advance = (): void => {
+    let pos = acc.length - 1;
 
-      while (true) {
-        acc[pos] = toNumInt(acc[pos]) + 1;
+    while (true) {
+      acc[pos] = toNumInt(acc[pos]) + 1;
 
-        if (toNumInt(acc[pos]) === toNumInt(args[pos])) {
-          acc[pos] = 0;
-          pos--;
-        } else {
-          return;
-        }
-
-        if (pos === -1) {
-          done = true;
-          return;
-        }
-      }
-    };
-
-    return () => {
-      if (done) {
-        return undefined;
+      if (toNumInt(acc[pos]) === toNumInt(combinationsInput[pos])) {
+        acc[pos] = 0;
+        pos--;
       } else {
-        const prevAcc = [...acc];
-        advance();
-        return prevAcc;
+        return;
       }
-    };
-  }
 
-  const generator = createCombinationsGenerator_new(combinationsInput);
+      if (pos === -1) {
+        done = true;
+        return;
+      }
+    }
+  };
+
+  const generator = () => {
+    if (done) {
+      return undefined;
+    } else {
+      const prevAcc = [...acc];
+
+      advance();
+      console.log(acc)
+      ass(acc.every(num => num == 0 || toNumInt(num)))
+      return prevAcc;
+    }
+  };
 
   let nextItem = generator();
 
