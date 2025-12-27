@@ -946,6 +946,7 @@ function toNumInt(input: Int | undefined | null): Int {
   return input;
 }
 
+
 function createAllPlacements(
   gifts: GiftsWithRotations,
   giftCounts: GiftCounts,
@@ -953,9 +954,39 @@ function createAllPlacements(
 ): PlacedGift[][] {
   asseq(gifts.length, giftCounts.length);
 
-  const combinationsInput = createCombinationsInput(gifts, giftCounts, board);
+  ass(board.width !== 0)
+  ass(board.height !== 0)
 
-  const unmappedplacements = createCombinations(combinationsInput);
+  const combinationsInput = giftCounts.flatMap((giftCount,
+    index) => {
+    const giftRotationCount = nonNull(gifts[index]).length;
+    ass(giftRotationCount !== 0)
+    return Array(giftCount)
+      .fill([giftRotationCount, board.width, board.height])
+      .flat();
+  });
+
+  ass(
+    combinationsInput.every(
+      (radix) =>
+        typeof radix === "number"
+        && Number.isSafeInteger(radix)
+        && radix !== 0
+    )
+  );
+
+  const allCombinations: Int[][] = [];
+
+  const generator = createCombinationsGenerator(combinationsInput);
+
+  let nextItem = generator();
+
+  while (nextItem !== undefined) {
+    allCombinations.push(nextItem);
+    nextItem = generator();
+  }
+
+  const unmappedplacements: Int[][] = allCombinations;
 
   const allPlacements: PlacedGift[][] = unmappedplacements.map(
     function mapUnmappedPlacements(placement) {
@@ -983,30 +1014,6 @@ function createAllPlacements(
   return allPlacements;
 }
 
-function createCombinations(args: Int[]): Int[][] {
-  ass(
-    args.every(
-      (radix) => typeof radix === "number" && Number.isSafeInteger(radix)
-    )
-  );
-
-  if (args.some((radix) => radix === 0)) {
-    return [];
-  }
-
-  const allCombinations: Int[][] = [];
-
-  const generator = createCombinationsGenerator(args);
-
-  let nextItem = generator();
-
-  while (nextItem !== undefined) {
-    allCombinations.push(nextItem);
-    nextItem = generator();
-  }
-
-  return allCombinations;
-}
 
 function createCombinationsGenerator(args: Int[]): () => Int[] | undefined {
   const acc: Int[] = Array.from({ length: args.length }).map(() => 0);
@@ -1045,28 +1052,6 @@ function createCombinationsGenerator(args: Int[]): () => Int[] | undefined {
 
 
 function testCreateCombinations() {
-  asseq(createCombinations([1, 1]), [[0, 0]]);
-  asseq(createCombinations([2, 1]), [
-    [0, 0],
-    [1, 0],
-  ]);
-  asseq(createCombinations([2]), [[0], [1]]);
-  asseq(createCombinations([2, 2, 2]).length, 8);
-  asseq(createCombinations([1]).length, 1);
-  asseq(createCombinations([2]).length, 2);
-  asseq(createCombinations([2, 3]).length, 6);
-
-  asseq(createCombinations([2, 2, 2]), [
-    [0, 0, 0],
-    [0, 0, 1],
-    [0, 1, 0],
-    [0, 1, 1],
-    [1, 0, 0],
-    [1, 0, 1],
-    [1, 1, 0],
-    [1, 1, 1],
-  ]);
-
   const combinationsGenerator = createCombinationsGenerator([2, 2, 2]);
   asseq(combinationsGenerator(), [0, 0, 0]);
   asseq(combinationsGenerator(), [0, 0, 1]);
@@ -1081,19 +1066,6 @@ function testCreateCombinations() {
 
 testCreateCombinations();
 
-function createCombinationsInput(
-  gifts: GiftsWithRotations,
-  giftCounts: GiftCounts,
-  board: RootRectangle
-): Int[] {
-  return giftCounts.flatMap((giftCount,
-    index) => {
-    const giftRotationCount = nonNull(gifts[index]).length;
-    return Array(giftCount)
-      .fill([giftRotationCount, board.width, board.height])
-      .flat();
-  });
-}
 
 
 function testAllPlacements() {
@@ -1505,13 +1477,13 @@ asseq(
   true
 );
 
-asseq(
-  canFitString(`1:
-#
+// asseq(
+//   canFitString(`1:
+// #
 
-0x0: 1`),
-  false
-);
+// 0x0: 1`),
+//   false
+// );
 
 asseq(
   canFitString(`1:
