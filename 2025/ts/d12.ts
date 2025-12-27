@@ -953,8 +953,6 @@ function createAllPlacements(
 ): PlacedGift[][] {
   asseq(gifts.length, giftCounts.length);
 
-  const placementCount = countPlacements(gifts, giftCounts, board);
-
   const combinationsInput = createCombinationsInput(gifts, giftCounts, board);
 
   const unmappedplacements = createCombinations(combinationsInput);
@@ -982,7 +980,6 @@ function createAllPlacements(
     }
   );
 
-  asseq(allPlacements.length, placementCount);
   return allPlacements;
 }
 
@@ -1046,11 +1043,6 @@ function createCombinationsGenerator(args: Int[]): () => Int[] | undefined {
   };
 }
 
-function countCombinations(args: Int[]): number {
-  return args.reduce(function reduceCombinations(prev, cur, _i, _arr) {
-    return prev * cur;
-  }, 1);
-}
 
 function testCreateCombinations() {
   asseq(createCombinations([1, 1]), [[0, 0]]);
@@ -1060,9 +1052,9 @@ function testCreateCombinations() {
   ]);
   asseq(createCombinations([2]), [[0], [1]]);
   asseq(createCombinations([2, 2, 2]).length, 8);
-  asseq(createCombinations([1]).length, countCombinations([1]));
-  asseq(createCombinations([2]).length, countCombinations([2]));
-  asseq(createCombinations([2, 3]).length, countCombinations([2, 3]));
+  asseq(createCombinations([1]).length, 1);
+  asseq(createCombinations([2]).length, 2);
+  asseq(createCombinations([2, 3]).length, 6);
 
   asseq(createCombinations([2, 2, 2]), [
     [0, 0, 0],
@@ -1094,10 +1086,8 @@ function createCombinationsInput(
   giftCounts: GiftCounts,
   board: RootRectangle
 ): Int[] {
-  return giftCounts.flatMap(function flatMapCombinationsInput(
-    giftCount,
-    index
-  ) {
+  return giftCounts.flatMap((giftCount,
+    index) => {
     const giftRotationCount = nonNull(gifts[index]).length;
     return Array(giftCount)
       .fill([giftRotationCount, board.width, board.height])
@@ -1105,32 +1095,21 @@ function createCombinationsInput(
   });
 }
 
-function countPlacements(
-  gifts: GiftsWithRotations,
-  giftCounts: GiftCounts,
-  board: RootRectangle
-) {
-  const combinationsInput = createCombinationsInput(gifts, giftCounts, board);
-
-  const combinationCount = countCombinations(combinationsInput);
-
-  return combinationCount;
-}
 
 function testAllPlacements() {
   asseq(
-    countPlacements([[[["#"]]]] satisfies GiftsWithRotations, [1], {
+    createAllPlacements([[[["#"]]]], [1], {
       width: 1,
       height: 1,
-    }),
+    }).length,
     1
   );
   asseq(
-    countPlacements(
-      [[[["#"]]], [[["#"]]]] satisfies GiftsWithRotations,
+    createAllPlacements(
+      [[[["#"]]], [[["#"]]]],
       [2, 2],
       { width: 2, height: 2 }
-    ),
+    ).length,
     256
   );
   asseq(
@@ -1332,11 +1311,7 @@ function flipGiftVertically<T>(gift: T[][]): T[][] {
 }
 
 function transposeGift<T>(gift: T[][]): T[][] {
-  return nonNull(gift[0]).map(function transposeGiftMapCol(_, colIndex) {
-    return gift.map(function transposeGiftMapRow(row) {
-      return nonNull(row[colIndex]);
-    });
-  });
+  return nonNull(gift[0]).map((_, colIndex) => gift.map((row) => nonNull(row[colIndex])));
 }
 
 function rotateGift90Right<T>(gift: T[][]): T[][] {
@@ -1707,7 +1682,7 @@ if (bigBoy) {
 [x] no wanted gifts
 [x] a single gift
 [x] board is too small for a single gift
-[ ] a piece which fits completely inside another piece
+[x] a piece which fits completely inside another piece
 [x] 2 pieces that need to be rotated to fit
 [x] 2 pieces that need to be flipped to fit
 
