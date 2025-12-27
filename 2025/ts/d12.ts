@@ -41,7 +41,7 @@ type Gift = ("." | "#")[][];
 type Gifts = Gift[];
 type Int = number;
 type GiftCounts = Int[];
-type Tree = { width: Int; height: Int; giftCounts: GiftCounts };
+type Tree = { giftCounts: GiftCounts } & RootRectangle;
 type Puzzle = { gifts: Gifts; trees: Tree[] };
 type GiftsWithRotations = Gifts[];
 
@@ -312,25 +312,18 @@ function canFitString(input: string): boolean {
     return wrapGift(gift);
   });
 
-  const firstTree = nonNull(parsed2.trees[0]);
+  const firstTree: Tree = nonNull(parsed2.trees[0]);
 
   console.log("creating all gift placements");
-  const allGiftPlacements = createAllPlacements(
-    gifts.map(createDedupedTransmutations),
-    firstTree.giftCounts,
-    firstTree
-  );
 
-  const validPlacements = allGiftPlacements.map(function mapAllGiftPlacements(
-    giftPlacement,
-    index
-  ) {
-    if (index % 1000 === 0) {
-      const percentage = (index / allGiftPlacements.length) * 100;
-      console.log(
-        index + " / " + allGiftPlacements.length + " (" + percentage + "%)"
-      );
-    }
+  const dedupedTransmutedGifts = gifts.map(createDedupedTransmutations);
+
+  const anyValidPlacements = (someValidPlacements(
+    dedupedTransmutedGifts,
+    firstTree
+    // firstTree.giftCounts,
+    // firstTree
+  )).some((giftPlacement) => {
     return isValidBoard(
       createBoard({
         gifts,
@@ -340,8 +333,6 @@ function canFitString(input: string): boolean {
       })
     );
   });
-
-  const anyValidPlacements = validPlacements.some(Boolean);
 
   return anyValidPlacements;
 }
@@ -947,11 +938,13 @@ function toNumInt(input: Int | undefined | null): Int {
 }
 
 
-function createAllPlacements(
+function someValidPlacements(
   gifts: GiftsWithRotations,
-  giftCounts: GiftCounts,
-  board: RootRectangle
+  tree: Tree,
 ): PlacedGift[][] {
+  const giftCounts = tree.giftCounts;
+  const board = tree;
+
   asseq(gifts.length, giftCounts.length);
 
   ass(board.width !== 0)
@@ -1050,34 +1043,33 @@ function createAllPlacements(
 
 function testAllPlacements() {
   asseq(
-    createAllPlacements([[[["#"]]]], [1], {
+    someValidPlacements([[[["#"]]]], {
       width: 1,
       height: 1,
+      giftCounts: [1]
     }).length,
     1
   );
   asseq(
-    createAllPlacements(
+    someValidPlacements(
       [[[["#"]]], [[["#"]]]],
-      [2, 2],
-      { width: 2, height: 2 }
+      { width: 2, height: 2, giftCounts: [2, 2], }
     ).length,
     256
   );
   asseq(
-    createAllPlacements(
+    someValidPlacements(
       ([[["#"]]] satisfies Gifts).map(createDedupedTransmutations),
-      [1],
-      { width: 1, height: 1 }
+      { width: 1, height: 1, giftCounts: [1], }
     ),
     [[{ type: 0, rotation: 0, x: 0, y: 0 }]]
   );
 
   expect(
-    createAllPlacements(
+    someValidPlacements(
       ([[["#"]]] satisfies Gifts).map(createDedupedTransmutations),
-      [1],
-      { width: 2, height: 1 }
+
+      { width: 2, height: 1, giftCounts: [1], }
     )
   ).toStrictEqual([
     [{ type: 0, rotation: 0, x: 0, y: 0 }],
@@ -1085,10 +1077,9 @@ function testAllPlacements() {
   ]);
 
   expect(
-    createAllPlacements(
+    someValidPlacements(
       ([[["#"]]] satisfies Gifts).map(createDedupedTransmutations),
-      [2],
-      { width: 1, height: 1 }
+      { width: 1, height: 1, giftCounts: [2], }
     )
   ).toStrictEqual([
     [
@@ -1098,12 +1089,11 @@ function testAllPlacements() {
   ]);
 
   expect(
-    createAllPlacements(
+    someValidPlacements(
       ([[["#"]], [["#", "#"]]] satisfies Gifts).map(
         createDedupedTransmutations
       ),
-      [1, 1],
-      { width: 1, height: 1 }
+      { width: 1, height: 1, giftCounts: [1, 1], }
     )
   ).toStrictEqual([
     [
@@ -1117,12 +1107,11 @@ function testAllPlacements() {
   ]);
 
   expect(
-    createAllPlacements(
+    someValidPlacements(
       ([[["#"]], [["#", "#"]]] satisfies Gifts).map(
         createDedupedTransmutations
       ),
-      [1, 1],
-      { width: 2, height: 1 }
+      { width: 2, height: 1, giftCounts: [1, 1], }
     )
   ).toStrictEqual([
     [
@@ -1240,12 +1229,11 @@ function testAllPlacements() {
   ]);
 
   expect(
-    createAllPlacements(
+    someValidPlacements(
       ([[["#"]], [["#", "#"]]] satisfies Gifts).map(
         createDedupedTransmutations
       ),
-      [1, 1],
-      { width: 2, height: 2 }
+      { width: 2, height: 2, giftCounts: [1, 1], }
     ).length
   ).toBe(32);
 }
