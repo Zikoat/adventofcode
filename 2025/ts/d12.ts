@@ -1,4 +1,4 @@
-import { expect } from "bun:test";
+import { expect, mock } from "bun:test";
 import { add, ass, asseq, assInt, diff, nonNull, type Vector } from "./common";
 
 const bigBoy = process.env.BIGBOY === "true";
@@ -312,7 +312,7 @@ function canFitString(input: string): boolean {
     return wrapGift(gift);
   });
 
-  const firstTree: Tree = nonNull(parsed2.trees[0]);
+  const tree: Tree = nonNull(parsed2.trees[0]);
 
   console.log("creating all gift placements");
 
@@ -320,19 +320,8 @@ function canFitString(input: string): boolean {
 
   const anyValidPlacements = (someValidPlacements(
     dedupedTransmutedGifts,
-    firstTree
-    // firstTree.giftCounts,
-    // firstTree
-  )).some((giftPlacement) => {
-    return isValidBoard(
-      createBoard({
-        gifts,
-        width: firstTree.width,
-        height: firstTree.height,
-        placedGifts: giftPlacement,
-      })
-    );
-  });
+    tree
+  ));
 
   return anyValidPlacements;
 }
@@ -541,6 +530,7 @@ type Board = {
   placedGifts: PlacedGift[];
 } & RootRectangle;
 
+// shit this method is probably not necessary?
 function createBoard(options: {
   gifts: Gifts;
   width: Int;
@@ -937,11 +927,12 @@ function toNumInt(input: Int | undefined | null): Int {
   return input;
 }
 
+function createAllPositionsAndRotationsForAGift() { }
 
 function someValidPlacements(
   gifts: GiftsWithRotations,
   tree: Tree,
-): PlacedGift[][] {
+): boolean {
   const giftCounts = tree.giftCounts;
   const board = tree;
 
@@ -1013,32 +1004,105 @@ function someValidPlacements(
     nextItem = generator();
   }
 
-  const unmappedplacements: Int[][] = allCombinations;
+  // shit todo ok, so we have the complete list of all permutations of all gifts. 
+  // their order is n of the first gift, then n of the second gift...
+  // each gift has 3 numbers, rotation, x and y.
+  // so it is gift_1 (rotation, x, y), gift 2 (rot, x, y), flattened to [rot, x, y, rot, x, y]
+  // a PlacedGift is {type, rotation, x, y}
+  // the type's giftcount says how many instances of this we should have before moving onto the next shape
 
-  const allPlacements: PlacedGift[][] = unmappedplacements.map(
-    function mapUnmappedPlacements(placement) {
-      const singleGiftPlacements: PlacedGift[] = [];
+  // when we have generated the 3 numbers for the current rotation and position, we should 
+  // append it to the board and check the validity of the board. if the board is valid, then we 
+  // continue the accumulator one down, and place the next rotation, x and y. 
+  // if the board is invalid, then we do not continue one down, but instead increase the current value (x).
+
+  // an abstraction we can test simply is this: we have an array of ints where we want to generate the combinations.
+  // every time we generate a new thing, we have a validation function which is run, which does the above algorithm.
+
+
+
+  const anyValidPlacements: boolean = allCombinations.some(
+    (combination): boolean => {
+      const giftPlacement: PlacedGift[] = [];
 
       let currentGiftMultiIndex = 0;
       for (const [type, giftCount] of giftCounts.entries()) {
         for (let i = 0; i < giftCount; i++) {
-          singleGiftPlacements.push({
+          giftPlacement.push({
             type,
-            rotation: toNumInt(placement[currentGiftMultiIndex * 3]),
-            x: toNumInt(placement[currentGiftMultiIndex * 3 + 1]),
-            y: toNumInt(placement[currentGiftMultiIndex * 3 + 2]),
+            rotation: toNumInt(combination[currentGiftMultiIndex * 3]),
+            x: toNumInt(combination[currentGiftMultiIndex * 3 + 1]),
+            y: toNumInt(combination[currentGiftMultiIndex * 3 + 2]),
           });
 
           currentGiftMultiIndex++;
         }
       }
 
-      asseq(currentGiftMultiIndex * 3, placement.length);
-      return singleGiftPlacements;
-    }
-  );
+      asseq(currentGiftMultiIndex * 3, combination.length);
 
-  return allPlacements;
+      const isPlacementValid = isValidBoard(
+        { ...board, placedGifts: giftPlacement, gifts }
+      );
+
+      return isPlacementValid;
+    }
+  )
+
+
+  return anyValidPlacements;
+}
+
+function combinationsWithCheck(combinationsInput: Int[], check: (combination: Int[]) => boolean): boolean {
+  return check(combinationsInput);
+
+}
+
+testCombinationsWithCheck()
+
+function testCombinationsWithCheck() {
+
+
+  // [1] generates [[0]], and runs a validation which gets [0]. this function passes and returns true.
+  // everything exhausted so return true
+  const spy1 = mock((_combination) => true)
+  asseq(combinationsWithCheck([1], spy1), true)
+  asseq(spy1.mock.calls, [[[0]]])
+  // the spied check function should be called with [0]
+
+  // const combinationsInput = [1]
+  // [1] generates [[0]], and runs a validation which gets [0]. this function fails and returns false.
+  // everything exhausted so return true
+  // asseq(combinationsWithCheck())
+
+
+  // const combinationsInput = [3]
+  // [3] generates [[0],[1],[2]], and runs a validation which gets [0], [1], then [2]
+  // asseq(combinationsWithCheck())
+
+  // const combinationsInput = [3,3]
+  //
+  /* 
+  [3,3] with validation function "nonZero" generates first [0], runs validation function, this validation 
+  function fails, so it continues to [1]. this passes validation, so it continues with [1, 1], which is 
+  also valid. all numbers in this generator are valid, so the function returns and says that [1,1] is a 
+  an example of a valid value
+  */
+  const combinationsInput = [2, 1, 2]
+
+  /*
+  validation function index 3 is invalid
+  [0] valid
+  [0,0] valid
+  [0,0,0] invalid
+  [0,0,1] invalid
+  [1] valid
+  [1,0] valid
+  [1,0,0] invalid
+  [1,0,1] invalid
+
+  all options are exhausted, function returns false
+  */
 }
 
 function testAllPlacements() {
@@ -1047,22 +1111,22 @@ function testAllPlacements() {
       width: 1,
       height: 1,
       giftCounts: [1]
-    }).length,
-    1
+    }),
+    true
   );
   asseq(
     someValidPlacements(
       [[[["#"]]], [[["#"]]]],
       { width: 2, height: 2, giftCounts: [2, 2], }
-    ).length,
-    256
+    ),
+    true
   );
   asseq(
     someValidPlacements(
       ([[["#"]]] satisfies Gifts).map(createDedupedTransmutations),
       { width: 1, height: 1, giftCounts: [1], }
     ),
-    [[{ type: 0, rotation: 0, x: 0, y: 0 }]]
+    true,
   );
 
   expect(
@@ -1071,22 +1135,14 @@ function testAllPlacements() {
 
       { width: 2, height: 1, giftCounts: [1], }
     )
-  ).toStrictEqual([
-    [{ type: 0, rotation: 0, x: 0, y: 0 }],
-    [{ type: 0, rotation: 0, x: 1, y: 0 }],
-  ]);
+  ).toStrictEqual(true);
 
   expect(
     someValidPlacements(
       ([[["#"]]] satisfies Gifts).map(createDedupedTransmutations),
       { width: 1, height: 1, giftCounts: [2], }
     )
-  ).toStrictEqual([
-    [
-      { type: 0, rotation: 0, x: 0, y: 0 },
-      { type: 0, rotation: 0, x: 0, y: 0 },
-    ],
-  ]);
+  ).toStrictEqual(false);
 
   expect(
     someValidPlacements(
@@ -1095,16 +1151,7 @@ function testAllPlacements() {
       ),
       { width: 1, height: 1, giftCounts: [1, 1], }
     )
-  ).toStrictEqual([
-    [
-      { type: 0, rotation: 0, x: 0, y: 0 },
-      { type: 1, rotation: 0, x: 0, y: 0 },
-    ],
-    [
-      { type: 0, rotation: 0, x: 0, y: 0 },
-      { type: 1, rotation: 1, x: 0, y: 0 },
-    ],
-  ]);
+  ).toStrictEqual(false);
 
   expect(
     someValidPlacements(
@@ -1113,120 +1160,7 @@ function testAllPlacements() {
       ),
       { width: 2, height: 1, giftCounts: [1, 1], }
     )
-  ).toStrictEqual([
-    [
-      {
-        rotation: 0,
-        type: 0,
-        x: 0,
-        y: 0,
-      },
-      {
-        rotation: 0,
-        type: 1,
-        x: 0,
-        y: 0,
-      },
-    ],
-    [
-      {
-        rotation: 0,
-        type: 0,
-        x: 0,
-        y: 0,
-      },
-      {
-        rotation: 0,
-        type: 1,
-        x: 1,
-        y: 0,
-      },
-    ],
-    [
-      {
-        rotation: 0,
-        type: 0,
-        x: 0,
-        y: 0,
-      },
-      {
-        rotation: 1,
-        type: 1,
-        x: 0,
-        y: 0,
-      },
-    ],
-    [
-      {
-        rotation: 0,
-        type: 0,
-        x: 0,
-        y: 0,
-      },
-      {
-        rotation: 1,
-        type: 1,
-        x: 1,
-        y: 0,
-      },
-    ],
-    [
-      {
-        rotation: 0,
-        type: 0,
-        x: 1,
-        y: 0,
-      },
-      {
-        rotation: 0,
-        type: 1,
-        x: 0,
-        y: 0,
-      },
-    ],
-    [
-      {
-        rotation: 0,
-        type: 0,
-        x: 1,
-        y: 0,
-      },
-      {
-        rotation: 0,
-        type: 1,
-        x: 1,
-        y: 0,
-      },
-    ],
-    [
-      {
-        rotation: 0,
-        type: 0,
-        x: 1,
-        y: 0,
-      },
-      {
-        rotation: 1,
-        type: 1,
-        x: 0,
-        y: 0,
-      },
-    ],
-    [
-      {
-        rotation: 0,
-        type: 0,
-        x: 1,
-        y: 0,
-      },
-      {
-        rotation: 1,
-        type: 1,
-        x: 1,
-        y: 0,
-      },
-    ],
-  ]);
+  ).toStrictEqual(false);
 
   expect(
     someValidPlacements(
@@ -1234,8 +1168,8 @@ function testAllPlacements() {
         createDedupedTransmutations
       ),
       { width: 2, height: 2, giftCounts: [1, 1], }
-    ).length
-  ).toBe(32);
+    )
+  ).toBe(true);
 }
 
 testAllPlacements();
