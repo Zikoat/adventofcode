@@ -29,7 +29,7 @@ export function negate(v: Vector): Vector {
 
 export function ass(truthy: unknown, message?: string): asserts truthy {
   if (!truthy) {
-    debugger
+    debugger;
     throw Error(message ?? "assertion failed");
   }
 }

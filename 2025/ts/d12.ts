@@ -1,5 +1,6 @@
 import { expect, mock } from "bun:test";
-import { add, ass, asseq, assInt, diff, nonNull, type Vector } from "./common";
+import { add, ass, asseq, assInt, diff, nonNull, sum, type Vector } from "./common";
+import { isValid } from "zod/v3";
 
 const bigBoy = process.env.BIGBOY === "true";
 
@@ -314,7 +315,7 @@ function canFitString(input: string): boolean {
 
   const tree: Tree = nonNull(parsed2.trees[0]);
 
-  console.log("creating all gift placements");
+  // console.log("creating all gift placements");
 
   const dedupedTransmutedGifts = gifts.map(createDedupedTransmutations);
 
@@ -451,7 +452,11 @@ function placedGiftToBoundingRectangle(
   };
 }
 
+let isValidBoardRuns = 0;
+
 function isValidBoard(board: Board): boolean {
+  isValidBoardRuns++;
+
   const placedGifts = board.placedGifts;
   const giftsWithRotations = board.gifts;
 
@@ -518,8 +523,8 @@ function isValidBoard(board: Board): boolean {
     }
   }
 
-  console.log("\nboard is valid");
-  console.log(matrixToString(boardToVizualizedBoard(board)));
+  // console.log("\nboard is valid");
+  // console.log(matrixToString(boardToVizualizedBoard(board)));
   // console.log(board);
 
   return true;
@@ -927,28 +932,9 @@ function toNumInt(input: Int | undefined | null): Int {
   return input;
 }
 
-function createAllPositionsAndRotationsForAGift() { }
 
-function someValidPlacements(
-  gifts: GiftsWithRotations,
-  tree: Tree,
-): boolean {
-  const giftCounts = tree.giftCounts;
-  const board = tree;
 
-  asseq(gifts.length, giftCounts.length);
-
-  ass(board.width !== 0)
-  ass(board.height !== 0)
-
-  const combinationsInput: Int[] = giftCounts.flatMap((giftCount,
-    index) => {
-    const giftRotationCount = nonNull(gifts[index]).length;
-    ass(giftRotationCount !== 0)
-    return Array(giftCount)
-      .fill([giftRotationCount, board.width, board.height])
-      .flat();
-  });
+function combinationsWithCheck_old(combinationsInput: Int[], check: CombinationChecker): boolean {
 
   ass(
     combinationsInput.every(
@@ -984,14 +970,14 @@ function someValidPlacements(
     }
   };
 
-  const generator = () => {
+  const generator: Generator = () => {
     if (done) {
       return undefined;
     } else {
       const prevAcc = [...acc];
 
       advance();
-      console.log(acc)
+
       ass(acc.every(num => num == 0 || toNumInt(num)))
       return prevAcc;
     }
@@ -1019,42 +1005,176 @@ function someValidPlacements(
   // an abstraction we can test simply is this: we have an array of ints where we want to generate the combinations.
   // every time we generate a new thing, we have a validation function which is run, which does the above algorithm.
 
-
-
-  const anyValidPlacements: boolean = allCombinations.some(
-    (combination): boolean => {
-      const giftPlacement: PlacedGift[] = [];
-
-      let currentGiftMultiIndex = 0;
-      for (const [type, giftCount] of giftCounts.entries()) {
-        for (let i = 0; i < giftCount; i++) {
-          giftPlacement.push({
-            type,
-            rotation: toNumInt(combination[currentGiftMultiIndex * 3]),
-            x: toNumInt(combination[currentGiftMultiIndex * 3 + 1]),
-            y: toNumInt(combination[currentGiftMultiIndex * 3 + 2]),
-          });
-
-          currentGiftMultiIndex++;
-        }
-      }
-
-      asseq(currentGiftMultiIndex * 3, combination.length);
-
-      const isPlacementValid = isValidBoard(
-        { ...board, placedGifts: giftPlacement, gifts }
-      );
-
-      return isPlacementValid;
-    }
+  const anyValidPlacements: boolean = allCombinations.some((combination) =>
+    check(combination)
   )
+  return anyValidPlacements;
+}
 
+function someValidPlacements(
+  gifts: GiftsWithRotations,
+  tree: Tree,
+): boolean {
+  const giftCounts = tree.giftCounts;
+  const board = tree;
+
+  asseq(gifts.length, giftCounts.length);
+
+  ass(board.width !== 0)
+  ass(board.height !== 0)
+
+  const combinationsInput: Int[] = giftCounts.flatMap((giftCount,
+    index) => {
+    const giftRotationCount = nonNull(gifts[index]).length;
+    ass(giftRotationCount !== 0)
+    return Array(giftCount)
+      .fill([giftRotationCount, board.width, board.height])
+      .flat();
+  });
+
+  const combinationToGiftPlacement = (combination: Int[]): PlacedGift[] => {
+    asseq(combination.length % 3, 0)
+    const giftPlacement: PlacedGift[] = [];
+
+    let currentGiftMultiIndex = 0;
+    for (const [type, giftCount] of giftCounts.entries()) {
+      for (let i = 0; i < giftCount; i++) {
+        const newLocal = combination[currentGiftMultiIndex * 3];
+        if (newLocal === undefined) {
+          return giftPlacement;
+        }
+        giftPlacement.push({
+          type,
+          rotation: toNumInt(newLocal),
+          x: toNumInt(combination[currentGiftMultiIndex * 3 + 1]),
+          y: toNumInt(combination[currentGiftMultiIndex * 3 + 2]),
+        });
+
+        currentGiftMultiIndex++;
+      }
+    }
+
+    asseq(currentGiftMultiIndex * 3, combination.length);
+    return giftPlacement;
+  }
+
+  const anyValidPlacements = combinationsWithCheck(combinationsInput, (combination: Int[]): boolean => {
+    console.log("checking", combination)
+    if (combination.length % 3 !== 0) return true;
+    // const placementLengthMax = sum(giftCounts);
+    // ass(combination.length === placementLengthMax * 3, `${combination.length} ${placementLengthMax} ${JSON.stringify(giftCounts)}`)
+
+    const giftPlacement = combinationToGiftPlacement(combination)
+
+    const isPlacementValid = isValidBoard(
+      { ...board, placedGifts: giftPlacement, gifts }
+    );
+
+    return isPlacementValid;
+  })
 
   return anyValidPlacements;
 }
 
-function combinationsWithCheck(combinationsInput: Int[], check: (combination: Int[]) => boolean): boolean {
-  return check(combinationsInput);
+
+type Generator = () => Int[] | undefined;
+
+type CombinationChecker = (c: Int[]) => boolean;
+
+// shit this is probably unused
+function validateCombinationWithNeg(combination: Int[]) {
+  ass(
+    combination.every(
+      (radix) => typeof radix === "number" && Number.isSafeInteger(radix)
+    )
+  );
+
+  const posFirstIndex = combination.findIndex(radix => radix !== -1)
+  if (posFirstIndex === -1) return;
+
+  const negFirstIndex = combination.findIndex(radix => radix === -1)
+  if (negFirstIndex === -1) return;
+  const posLastIndex = combination.findLastIndex(radix => radix !== -1)
+  const negLastIndex = combination.findLastIndex(radix => radix === -1)
+
+  ass(posFirstIndex === 0)
+  ass(posLastIndex <= negFirstIndex)
+  ass(negLastIndex === combination.length - 1)
+}
+
+testValidateCombinationWithNeg()
+
+function testValidateCombinationWithNeg() {
+  validateCombinationWithNeg([])
+  validateCombinationWithNeg([0])
+  validateCombinationWithNeg([-1])
+  validateCombinationWithNeg([0, -1])
+  validateCombinationWithNeg([0, 0])
+  try {
+
+    validateCombinationWithNeg([-1, 0])
+  } catch (
+  err
+  ) {
+    ass(err)
+    ass(err !== null)
+    ass(typeof err === "object")
+    ass("message" in err)
+    asseq(err.message, "assertion failed")
+  }
+}
+
+
+function combinationsWithCheck(combinationsInput: Int[], check: CombinationChecker): boolean {
+
+  ass(
+    combinationsInput.every(
+      (radix) => typeof radix === "number" && Number.isSafeInteger(radix) && radix !== 0
+    ), "invalid inputs found: " + combinationsInput.join()
+  );
+
+  console.log("starting recurse")
+  const recurse = (combination: Int[]): boolean => {
+    const isValid = check(combination)
+    console.log("combination", combination)
+
+    if (combination.length === combinationsInput.length) {
+      if (isValid) {
+        console.log("valid solution found")
+        return true;
+      }
+    }
+
+    if (isValid) {
+      return recurse([...combination, 0])
+    }
+    else if (combination.length > 0) {
+      const acc = [...combination]
+      while (true) {
+        console.log("acc", acc, combinationsInput)
+
+        if (acc.length === 0) break;
+        acc[acc.length - 1] = toNumInt(acc[acc.length - 1]) + 1;
+
+
+        // the current number flows over, increase upwards
+        if (toNumInt(acc[acc.length - 1]) >= toNumInt(combinationsInput[acc.length - 1])) {
+          toNumInt(acc.pop())
+        } else {
+          break;
+        }
+      }
+
+      if (acc.length === 0) return false;
+      
+      return recurse(acc)
+    }
+
+    return false
+  }
+
+
+  return recurse([0])
 
 }
 
@@ -1062,23 +1182,23 @@ testCombinationsWithCheck()
 
 function testCombinationsWithCheck() {
 
+  const spy1 = mock<CombinationChecker>((_combination) => true)
 
-  // [1] generates [[0]], and runs a validation which gets [0]. this function passes and returns true.
-  // everything exhausted so return true
-  const spy1 = mock((_combination) => true)
   asseq(combinationsWithCheck([1], spy1), true)
   asseq(spy1.mock.calls, [[[0]]])
-  // the spied check function should be called with [0]
 
-  // const combinationsInput = [1]
   // [1] generates [[0]], and runs a validation which gets [0]. this function fails and returns false.
   // everything exhausted so return true
-  // asseq(combinationsWithCheck())
+  const spy2 = mock<CombinationChecker>((_combination) => false)
+  asseq(combinationsWithCheck([1], spy2), false)
 
-
-  // const combinationsInput = [3]
   // [3] generates [[0],[1],[2]], and runs a validation which gets [0], [1], then [2]
-  // asseq(combinationsWithCheck())
+  // the validation function returns true when the first entry in the array is 1
+  // it should never be run on [2]. THIS IS THE MAIN PERFORMANCE OPTIMIZATION
+  const spy3 = mock<CombinationChecker>((combination) => (combination[0]) === 1)
+  debugger;
+  asseq(combinationsWithCheck([3], spy3), true)
+  asseq(spy3.mock.calls, [[[0]], [[1]]])
 
   // const combinationsInput = [3,3]
   //
@@ -1088,7 +1208,13 @@ function testCombinationsWithCheck() {
   also valid. all numbers in this generator are valid, so the function returns and says that [1,1] is a 
   an example of a valid value
   */
+  const spy4 = mock<CombinationChecker>((combination) => (combination).every(shit => shit !== 0))
+  asseq(combinationsWithCheck([3, 3], spy4), true)
+  asseq(spy4.mock.calls, [[[0]], [[1]], [[1, 0]], [[1, 1]]])
+
+
   const combinationsInput = [2, 1, 2]
+
 
   /*
   validation function index 3 is invalid
@@ -1585,3 +1711,4 @@ if (bigBoy) {
 */
 
 console.log("done");
+console.log({ isValidBoardRuns })
