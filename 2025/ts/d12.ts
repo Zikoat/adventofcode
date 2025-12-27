@@ -148,8 +148,8 @@ function assmeq(stringMatrix: string[][], expected: string): void {
   expect(
     cleanViz(visualizedBoard),
     "the visualized matrix is not correct. it is \n---\n" +
-      visualizedBoard +
-      "\n---"
+    visualizedBoard +
+    "\n---"
   ).toBe(cleanViz(expected));
 }
 
@@ -1334,8 +1334,7 @@ function flipGiftVertically<T>(gift: T[][]): T[][] {
 function transposeGift<T>(gift: T[][]): T[][] {
   return nonNull(gift[0]).map(function transposeGiftMapCol(_, colIndex) {
     return gift.map(function transposeGiftMapRow(row) {
-      // shit we have an as here. our ground trembles.
-      return nonNull(row[colIndex] as NonNullable<T> | undefined);
+      return nonNull(row[colIndex]);
     });
   });
 }
@@ -1439,16 +1438,16 @@ function testRotation() {
   expect(createAllTransmutations(initialGift)).toStrictEqual(
     // prettier-ignore
     [
-        [["1","2"],["4","3"]],
-        [["4","1"],["3","2"]],
-        [["3","4"],["2","1"]],
-        [["2","3"],["1","4"]],
-        [["4","3"],["1","2"]],
-        [["3","2"],["4","1"]],
-        [["2","1"],["3","4"]],
-        [["1","4"],["2","3"]],
-        
-      ]
+      [["1", "2"], ["4", "3"]],
+      [["4", "1"], ["3", "2"]],
+      [["3", "4"], ["2", "1"]],
+      [["2", "3"], ["1", "4"]],
+      [["4", "3"], ["1", "2"]],
+      [["3", "2"], ["4", "1"]],
+      [["2", "1"], ["3", "4"]],
+      [["1", "4"], ["2", "3"]],
+
+    ]
   );
 
   expect(createAllTransmutations([["#"]])).toStrictEqual([
@@ -1597,7 +1596,6 @@ asseq(
 );
 
 console.log("\n--- rotation test");
-// SIGURD TODO TO JUMP BACK IN, create some smaller tests for rotations. and then flipping. and then to do multiple rotation and flipping moves. then a method to dedupe permutated gifts.
 asseq(
   canFitString(`1:
 ##
