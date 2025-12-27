@@ -977,7 +977,42 @@ function createAllPlacements(
 
   const allCombinations: Int[][] = [];
 
-  const generator = createCombinationsGenerator(combinationsInput);
+  function createCombinationsGenerator_new(args: Int[]): () => Int[] | undefined {
+    const acc: Int[] = Array.from({ length: args.length }).map(() => 0);
+    let done = false;
+
+    const advance = (): void => {
+      let pos = acc.length - 1;
+
+      while (true) {
+        acc[pos] = toNumInt(acc[pos]) + 1;
+
+        if (toNumInt(acc[pos]) === toNumInt(args[pos])) {
+          acc[pos] = 0;
+          pos--;
+        } else {
+          return;
+        }
+
+        if (pos === -1) {
+          done = true;
+          return;
+        }
+      }
+    };
+
+    return () => {
+      if (done) {
+        return undefined;
+      } else {
+        const prevAcc = [...acc];
+        advance();
+        return prevAcc;
+      }
+    };
+  }
+
+  const generator = createCombinationsGenerator_new(combinationsInput);
 
   let nextItem = generator();
 
@@ -1013,60 +1048,6 @@ function createAllPlacements(
 
   return allPlacements;
 }
-
-
-function createCombinationsGenerator(args: Int[]): () => Int[] | undefined {
-  const acc: Int[] = Array.from({ length: args.length }).map(() => 0);
-  let done = false;
-
-  const advance = (): void => {
-    let pos = acc.length - 1;
-
-    while (true) {
-      acc[pos] = toNumInt(acc[pos]) + 1;
-
-      if (toNumInt(acc[pos]) === toNumInt(args[pos])) {
-        acc[pos] = 0;
-        pos--;
-      } else {
-        return;
-      }
-
-      if (pos === -1) {
-        done = true;
-        return;
-      }
-    }
-  };
-
-  return () => {
-    if (done) {
-      return undefined;
-    } else {
-      const prevAcc = [...acc];
-      advance();
-      return prevAcc;
-    }
-  };
-}
-
-
-function testCreateCombinations() {
-  const combinationsGenerator = createCombinationsGenerator([2, 2, 2]);
-  asseq(combinationsGenerator(), [0, 0, 0]);
-  asseq(combinationsGenerator(), [0, 0, 1]);
-  asseq(combinationsGenerator(), [0, 1, 0]);
-  asseq(combinationsGenerator(), [0, 1, 1]);
-  asseq(combinationsGenerator(), [1, 0, 0]);
-  asseq(combinationsGenerator(), [1, 0, 1]);
-  asseq(combinationsGenerator(), [1, 1, 0]);
-  asseq(combinationsGenerator(), [1, 1, 1]);
-  asseq(combinationsGenerator(), undefined);
-}
-
-testCreateCombinations();
-
-
 
 function testAllPlacements() {
   asseq(
