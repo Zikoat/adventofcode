@@ -110,7 +110,7 @@ function validateTest() {
 
 validateTest();
 
-function stringToMatrix(input: string): string[][] {
+export function stringToMatrix(input: string): string[][] {
 	const matrix = input
 		.trim()
 		.split("\n")
@@ -136,7 +136,7 @@ function matrixToString(stringMatrix: string[][]): string {
 		.join("\n");
 }
 
-function assmeq(stringMatrix: string[][], expected: string): void {
+export function assmeq(stringMatrix: string[][], expected: string): void {
 	const visualizedBoard = matrixToString(stringMatrix);
 
 	const cleanViz = function cleanViz(input: string): string {
@@ -151,7 +151,7 @@ function assmeq(stringMatrix: string[][], expected: string): void {
 	).toBe(cleanViz(expected));
 }
 
-function stringToGift(giftString: string): Gift {
+export function stringToGift(giftString: string): Gift {
 	return assIsGiftMatrix(stringToMatrix(giftString));
 }
 
@@ -174,15 +174,15 @@ function isGiftChar(char: unknown): char is "#" | "." {
 	return char === "#" || char === ".";
 }
 
-function assIsGiftMatrix(stringMatrix: string[][]): Gift {
+export function assIsGiftMatrix(stringMatrix: string[][]): Gift {
 	return assMatrix<"#" | ".">(stringMatrix, isGiftChar);
 }
 
-function wrapGiftString(giftString: string): Gift {
+export function wrapGiftString(giftString: string): Gift {
 	return wrapGift(stringToGift(giftString));
 }
 
-function wrapGift(input: Gift): Gift {
+export function wrapGift(input: Gift): Gift {
 	let rows = [...input];
 	while (
 		rows.every(function checkRowsEveryFirstChar(row) {
@@ -260,7 +260,7 @@ function assRootRectangle(
 	ass(rootRectangle.height > 0);
 }
 
-function isInBounds(vector: Vector, rectangle: RootRectangle): boolean {
+export function isInBounds(vector: Vector, rectangle: RootRectangle): boolean {
 	assVector(vector);
 	assRootRectangle(rectangle);
 
@@ -278,7 +278,7 @@ type PlacedGift = {
 } & Vector;
 
 /** hint: place multiple gifts on a board by using createBoard with an array of placedGifts */
-function placeGift(board: Board, placement: PlacedGift): Board {
+export function placeGift(board: Board, placement: PlacedGift): Board {
 	return {
 		...board,
 		placedGifts: [...board.placedGifts, placement],
@@ -336,7 +336,7 @@ function placedGiftToBoundingRectangle(
 
 let isValidBoardRuns = 0;
 
-function isValidBoard(board: Board): boolean {
+export function isValidBoard(board: Board): boolean {
 	isValidBoardRuns++;
 
 	const placedGifts = board.placedGifts;
@@ -409,7 +409,7 @@ type Board = {
 } & RootRectangle;
 
 // shit this method is probably not necessary?
-function createBoard(options: {
+export function createBoard(options: {
 	gifts: Gifts;
 	width: Int;
 	height: Int;
@@ -480,7 +480,7 @@ function boardToVizualizedBoard(board: Board): VisualizedBoard {
 	return boardMatrix;
 }
 
-function visualizeBoard(board: Board, expected: string) {
+export function visualizeBoard(board: Board, expected: string) {
 	assmeq(boardToVizualizedBoard(board), expected);
 }
 
@@ -554,7 +554,10 @@ function combinationsWithCheck_old(
 	return anyValidPlacements;
 }
 
-function someValidPlacements(gifts: GiftsWithRotations, tree: Tree): boolean {
+export function someValidPlacements(
+	gifts: GiftsWithRotations,
+	tree: Tree,
+): boolean {
 	const giftCounts = tree.giftCounts;
 	const board = tree;
 
@@ -623,7 +626,7 @@ type Generator = () => Int[] | undefined;
 
 type CombinationChecker = (c: Int[]) => boolean;
 
-function combinationsWithCheck(
+export function combinationsWithCheck(
 	combinationsInput: Int[],
 	check: CombinationChecker,
 ): boolean {
@@ -675,21 +678,21 @@ function combinationsWithCheck(
 	return recurse([0]);
 }
 
-function flipGiftVertically<T>(gift: T[][]): T[][] {
+export function flipGiftVertically<T>(gift: T[][]): T[][] {
 	return gift.toReversed();
 }
 
-function transposeGift<T>(gift: T[][]): T[][] {
+export function transposeGift<T>(gift: T[][]): T[][] {
 	return nonNull(gift[0]).map((_, colIndex) =>
 		gift.map((row) => nonNull(row[colIndex])),
 	);
 }
 
-function rotateGift90Right<T>(gift: T[][]): T[][] {
+export function rotateGift90Right<T>(gift: T[][]): T[][] {
 	return transposeGift(flipGiftVertically(gift));
 }
 
-function createAllTransmutations<T>(gift: T[][]): T[][][] {
+export function createAllTransmutations<T>(gift: T[][]): T[][][] {
 	return [
 		gift,
 		rotateGift90Right(gift),
@@ -704,7 +707,7 @@ function createAllTransmutations<T>(gift: T[][]): T[][][] {
 	];
 }
 
-function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
+export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
 	const uniqueTransmutations = new Set<string>();
 
 	return createAllTransmutations(gift).filter(
