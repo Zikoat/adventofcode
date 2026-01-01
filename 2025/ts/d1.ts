@@ -4596,7 +4596,7 @@ if (testZeroCount !== 6) {
 }
 
 const inputZeroCount = getZeroCount(input);
-if (inputZeroCount != 6623) {
+if (inputZeroCount !== 6623) {
 	throw new Error(`Input zero count is incorrect: ${inputZeroCount}`);
 }
 

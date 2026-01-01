@@ -1,5 +1,5 @@
-import { describe, expect, it, mock, test } from "bun:test";
-import { asseq } from "./common";
+import { afterAll, describe, expect, it, mock, test } from "bun:test";
+import { ass, asseq, nonNull } from "./common";
 import {
 	assIsGiftMatrix,
 	assmeq,
@@ -8,22 +8,23 @@ import {
 	canFitString,
 	combinationsWithCheck,
 	createAllTransmutations,
-	createBoard,
 	createDedupedTransmutations,
 	flipGiftVertically,
 	type Gift,
 	type Gifts,
+	type Int,
 	isInBounds,
 	isValidBoard,
-	placeGift,
+	isValidBoardRuns,
+	matrixToString,
+	type PlacedGift,
+	placedGiftToGift,
 	rotateGift90Right,
 	someValidPlacements,
 	stringToGift,
 	stringToMatrix,
 	transposeGift,
-	visualizeBoard,
 	wrapGift,
-	wrapGiftString,
 } from "./d12";
 
 describe(wrapGift, () => {
@@ -1008,5 +1009,108 @@ describe(someValidPlacements, () => {
 			),
 			true,
 		);
+	});
+});
+
+function visualizeBoard(board: Board, expected: string) {
+	assmeq(boardToVizualizedBoard(board), expected);
+}
+
+/** hint: place multiple gifts on a board by using createBoard with an array of placedGifts */
+function placeGift(board: Board, placement: PlacedGift): Board {
+	return {
+		...board,
+		placedGifts: [...board.placedGifts, placement],
+	};
+}
+
+// shit this method is probably not necessary?
+function createBoard(options: {
+	gifts: Gifts;
+	width: Int;
+	height: Int;
+	placedGifts?: PlacedGift[];
+}): Board {
+	return {
+		gifts: options.gifts.map(createDedupedTransmutations),
+		width: options.width,
+		height: options.height,
+		placedGifts: options.placedGifts ?? [],
+	};
+}
+
+function boardToVizualizedBoard(board: Board): VisualizedBoard {
+	let warning = "";
+
+	const boardMatrix: string[][] = Array(board.height)
+		.fill([] as string[])
+		.map(function fillBoardMatrix() {
+			return Array(board.width).fill(".");
+		});
+
+	for (const [placedGiftIndex, placedGift] of board.placedGifts.entries()) {
+		const letter = nonNull("ABCDEFGHIJKLMNOPQRSTUVWYZ"[placedGiftIndex]);
+		const giftShape = placedGiftToGift(board.gifts, placedGift);
+
+		// shit use helper to loop through 2d array
+
+		giftShape.forEach((row, localY2): void => {
+			row.forEach((char, localX2): void => {
+				if (char === "#") {
+					const globalX = placedGift.x + localX2;
+					const globalY = placedGift.y + localY2;
+
+					const row = boardMatrix[globalY];
+					// shit create helper to set a single value in a 2d char matrix
+					const char = row?.[globalX];
+					if (char === undefined) {
+						warning =
+							"---piece is outside of board:" +
+							globalX +
+							"," +
+							globalY +
+							"\n" +
+							matrixToString(giftShape) +
+							"\n---";
+					} else if (char === "X") {
+						// nothing
+					} else if (char === ".") {
+						ass(row);
+						row[globalX] = letter;
+					} else {
+						ass(row);
+						row[globalX] = "X";
+					}
+				}
+			});
+		});
+	}
+
+	if (warning) {
+		console.log(warning);
+	}
+
+	return boardMatrix;
+}
+
+type VisualizedBoard = string[][];
+
+function wrapGiftString(giftString: string): Gift {
+	return wrapGift(stringToGift(giftString));
+}
+
+afterAll(() => {
+	console.log("\ndone. The amount of validation checks done during all tests");
+	c(() => isValidBoardRuns);
+});
+
+function c(f: () => unknown): void {
+	console.log(`${nonNull(/^\(\) => (.*)$/.exec(`${f}`))[1]}:`, f());
+}
+
+describe(c, () => {
+	test("should log the variable name and the content", () => {
+		var foo = "bar";
+		c(() => foo);
 	});
 });

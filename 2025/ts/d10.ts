@@ -1,5 +1,3 @@
-import { expect } from "bun:test";
-import type { map } from "zod";
 import { ass, asseq, assInt } from "./common";
 
 const testInput = (
@@ -67,7 +65,7 @@ function assStateEqual(a: boolean[], b: boolean[]): boolean {
 	return Bun.deepEquals(a, b);
 }
 
-function printState(lights: boolean[]) {
+function printState(_lights: boolean[]) {
 	console.log(state.map((light) => (light ? "#" : ".")).join(""));
 }
 

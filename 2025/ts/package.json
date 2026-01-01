@@ -1,17 +1,16 @@
 {
 	"dependencies": {
 		"@types/bun": "^1.3.3",
-		"zod": "^4.1.13"
+		"typescript": "^5.9.3",
+		"zod": "^4.1.13",
+		"@biomejs/biome": "2.3.10"
 	},
 	"scripts": {
 		"debug": "bun --inspect-brk d12",
-		"type": "bunx tsc --noEmit --watch",
+		"type": "tsc --noEmit --watch",
 		"test": "bun --watch test",
-		"format": "bunx biome check --write d12.ts d12.test.ts",
-		"validate": "bunx tsc --noEmit && bun test && bun run format",
+		"format": "biome check --write",
+		"validate": "tsc --noEmit && bun test && bun run format",
 		"bigboy": "bun run validate && bun run d12-bigboy"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "2.3.10"
 	}
 }

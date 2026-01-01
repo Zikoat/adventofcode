@@ -20,7 +20,6 @@ console.log(symbols);
 ass(numbers.every((numberLine) => numberLine.length === symbols.length));
 ass(symbols.every((char) => char === "*" || char === "+" || char === " "));
 
-type SymbolOrSpace = MySymbol | " ";
 type MySymbol = "*" | "+";
 
 let columnSymbol: MySymbol;
@@ -28,7 +27,6 @@ let currentColumnm = 0;
 console.log("starting loop");
 
 const currentMathThing = [];
-const currentColumnMath = [];
 
 for (const [index, symbolOrSpace] of symbols.entries()) {
 	// console.log("loop number ", index)
@@ -82,9 +80,6 @@ function parseInput(input: string): {
 	return { numberLines, symbolLine };
 }
 
-// console.log(numberLines)
-// console.log(symbolLine)
-
 function getLineResult(input: string): number {
 	const { symbolLine, numberLines } = parseInput(input);
 
@@ -101,14 +96,13 @@ function getLineResult(input: string): number {
 
 		if (symbol === "+") {
 			const sumLine = sum(numberLine);
-			// console.log(sumLine)
 			lineResult.push(sumLine);
 		} else if (symbol === "*") {
 			const productLine = numberLine.reduce(
 				(prev, cur, _i, _arr) => prev * cur,
 				1,
 			);
-			// console.log(productLine)
+
 			lineResult.push(productLine);
 		} else {
 			throw Error("symbol not recognized");

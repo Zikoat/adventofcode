@@ -267,7 +267,7 @@ function getLargestJoltage12(bank: Bank): number {
 	// first digit should be the first instance of the largest of the digits from 0 to len-12
 	const n1_digitsFrom0toLen12 = bank.toSpliced(bank.length - 12, Infinity);
 	const n1_maxDigit = Math.max(...n1_digitsFrom0toLen12);
-	const n1_maxIndex = n1_digitsFrom0toLen12.findIndex((i) => i === n1_maxDigit);
+	const n1_maxIndex = n1_digitsFrom0toLen12.indexOf(n1_maxDigit);
 	console.log(n1_digitsFrom0toLen12, n1_maxDigit, n1_maxIndex);
 	// second digit should be the first instance of the largest digits from (index first) to len - 11
 
@@ -275,9 +275,7 @@ function getLargestJoltage12(bank: Bank): number {
 		.toSpliced(bank.length - 11, Infinity)
 		.toSpliced(0, n1_maxIndex + 1);
 	const n2_maxDigit = Math.max(...n2_digitsFromN1MaxIndextoLen11);
-	const n2_maxIndex = n2_digitsFromN1MaxIndextoLen11.findIndex(
-		(i) => i === n2_maxDigit,
-	);
+	const n2_maxIndex = n2_digitsFromN1MaxIndextoLen11.indexOf(n2_maxDigit);
 
 	console.log(n2_digitsFromN1MaxIndextoLen11, n2_maxDigit, n2_maxIndex);
 
@@ -285,9 +283,7 @@ function getLargestJoltage12(bank: Bank): number {
 		.toSpliced(bank.length - 10, Infinity)
 		.toSpliced(0, n2_maxIndex + 2);
 	const n3_maxDigit = Math.max(...n3_digitsFromN1MaxIndextoLen11);
-	const n3_maxIndex = n3_digitsFromN1MaxIndextoLen11.findIndex(
-		(i) => i === n3_maxDigit,
-	);
+	const n3_maxIndex = n3_digitsFromN1MaxIndextoLen11.indexOf(n3_maxDigit);
 
 	console.log(n3_digitsFromN1MaxIndextoLen11, n3_maxDigit, n3_maxIndex);
 
@@ -295,9 +291,7 @@ function getLargestJoltage12(bank: Bank): number {
 		.toSpliced(bank.length - 9, Infinity)
 		.toSpliced(0, n3_maxIndex + 3);
 	const n4_maxDigit = Math.max(...n4_digitsFromN1MaxIndextoLen11);
-	const n4_maxIndex = n4_digitsFromN1MaxIndextoLen11.findIndex(
-		(i) => i === n4_maxDigit,
-	);
+	const n4_maxIndex = n4_digitsFromN1MaxIndextoLen11.indexOf(n4_maxDigit);
 
 	console.log(n4_digitsFromN1MaxIndextoLen11, n4_maxDigit, n4_maxIndex);
 
@@ -305,9 +299,7 @@ function getLargestJoltage12(bank: Bank): number {
 		.toSpliced(bank.length - 8, Infinity)
 		.toSpliced(0, n4_maxIndex + 4);
 	const n5_maxDigit = Math.max(...n5_digitsFromN1MaxIndextoLen11);
-	const n5_maxIndex = n5_digitsFromN1MaxIndextoLen11.findIndex(
-		(i) => i === n5_maxDigit,
-	);
+	const n5_maxIndex = n5_digitsFromN1MaxIndextoLen11.indexOf(n5_maxDigit);
 
 	console.log(n5_digitsFromN1MaxIndextoLen11, n5_maxDigit, n5_maxIndex);
 
@@ -315,9 +307,7 @@ function getLargestJoltage12(bank: Bank): number {
 		.toSpliced(bank.length - 7, Infinity)
 		.toSpliced(0, n5_maxIndex + 5);
 	const n6_maxDigit = Math.max(...n6_digitsFromN1MaxIndextoLen11);
-	const n6_maxIndex = n6_digitsFromN1MaxIndextoLen11.findIndex(
-		(i) => i === n6_maxDigit,
-	);
+	const n6_maxIndex = n6_digitsFromN1MaxIndextoLen11.indexOf(n6_maxDigit);
 
 	console.log(n6_digitsFromN1MaxIndextoLen11, n6_maxDigit, n6_maxIndex);
 
@@ -325,9 +315,7 @@ function getLargestJoltage12(bank: Bank): number {
 		.toSpliced(bank.length - 6, Infinity)
 		.toSpliced(0, n5_maxIndex + 6);
 	const n7_maxDigit = Math.max(...n7_digitsFromN1MaxIndextoLen11);
-	const n7_maxIndex = n7_digitsFromN1MaxIndextoLen11.findIndex(
-		(i) => i === n7_maxDigit,
-	);
+	const n7_maxIndex = n7_digitsFromN1MaxIndextoLen11.indexOf(n7_maxDigit);
 
 	console.log(n7_digitsFromN1MaxIndextoLen11, n7_maxDigit, n7_maxIndex);
 
@@ -335,9 +323,7 @@ function getLargestJoltage12(bank: Bank): number {
 		.toSpliced(bank.length - 5, Infinity)
 		.toSpliced(0, n5_maxIndex + 7);
 	const n8_maxDigit = Math.max(...n8_digitsFromN1MaxIndextoLen11);
-	const n8_maxIndex = n8_digitsFromN1MaxIndextoLen11.findIndex(
-		(i) => i === n8_maxDigit,
-	);
+	const n8_maxIndex = n8_digitsFromN1MaxIndextoLen11.indexOf(n8_maxDigit);
 
 	console.log(n8_digitsFromN1MaxIndextoLen11, n8_maxDigit, n8_maxIndex);
 
@@ -345,9 +331,7 @@ function getLargestJoltage12(bank: Bank): number {
 		.toSpliced(bank.length - 4, Infinity)
 		.toSpliced(0, n5_maxIndex + 8);
 	const n9_maxDigit = Math.max(...n9_digitsFromN1MaxIndextoLen11);
-	const n9_maxIndex = n9_digitsFromN1MaxIndextoLen11.findIndex(
-		(i) => i === n9_maxDigit,
-	);
+	const n9_maxIndex = n9_digitsFromN1MaxIndextoLen11.indexOf(n9_maxDigit);
 
 	console.log(n9_digitsFromN1MaxIndextoLen11, n9_maxDigit, n9_maxIndex);
 
@@ -355,9 +339,7 @@ function getLargestJoltage12(bank: Bank): number {
 		.toSpliced(bank.length - 3, Infinity)
 		.toSpliced(0, n5_maxIndex + 9);
 	const n10_maxDigit = Math.max(...n10_digitsFromN1MaxIndextoLen11);
-	const n10_maxIndex = n10_digitsFromN1MaxIndextoLen11.findIndex(
-		(i) => i === n10_maxDigit,
-	);
+	const n10_maxIndex = n10_digitsFromN1MaxIndextoLen11.indexOf(n10_maxDigit);
 
 	console.log(n10_digitsFromN1MaxIndextoLen11, n10_maxDigit, n10_maxIndex);
 
@@ -365,9 +347,7 @@ function getLargestJoltage12(bank: Bank): number {
 		.toSpliced(bank.length - 2, Infinity)
 		.toSpliced(0, n5_maxIndex + 10);
 	const n11_maxDigit = Math.max(...n11_digitsFromN1MaxIndextoLen11);
-	const n11_maxIndex = n11_digitsFromN1MaxIndextoLen11.findIndex(
-		(i) => i === n11_maxDigit,
-	);
+	const n11_maxIndex = n11_digitsFromN1MaxIndextoLen11.indexOf(n11_maxDigit);
 
 	console.log(n11_digitsFromN1MaxIndextoLen11, n11_maxDigit, n11_maxIndex);
 
@@ -375,9 +355,7 @@ function getLargestJoltage12(bank: Bank): number {
 		.toSpliced(bank.length - 1, Infinity)
 		.toSpliced(0, n5_maxIndex + 11);
 	const n12_maxDigit = Math.max(...n12_digitsFromN1MaxIndextoLen11);
-	const n12_maxIndex = n12_digitsFromN1MaxIndextoLen11.findIndex(
-		(i) => i === n12_maxDigit,
-	);
+	const n12_maxIndex = n12_digitsFromN1MaxIndextoLen11.indexOf(n12_maxDigit);
 
 	console.log(n12_digitsFromN1MaxIndextoLen11, n12_maxDigit, n12_maxIndex);
 

@@ -180,7 +180,7 @@ type Field = boolean[][];
 
 function getCell({ x, y }: Vector, field: Field): boolean {
 	const row = field[y];
-	ass(Array.isArray(row), "couldn't get row at y = " + y);
+	ass(Array.isArray(row), `couldn't get row at y = ${y}`);
 	const cell = row[x];
 	ass(typeof cell === "boolean");
 	return cell;
@@ -306,7 +306,7 @@ const markAccessibleCell = (
 const { markedField, accessibleCount } = getAccessibleField(rawTestInput);
 
 asseq(
-	"\n" + markedField,
+	`\n${markedField}`,
 	`
 ..xx.xx@x.
 x@@.@.@.@@
