@@ -1,6 +1,12 @@
 import { expect } from "bun:test";
 import { add, ass, asseq, assInt, diff, nonNull, type Vector } from "./common";
 
+const opts = {
+	validateGifts: false, // true is safer
+	checkInsideOnlyLast: true, // false is safer
+	checkEveryGiftOverlaps: false, // true is safer
+};
+
 export type Gift = ("." | "#")[][];
 export type Gifts = Gift[];
 export type Int = number;
@@ -321,70 +327,109 @@ function placedGiftToBoundingRectangle(
 }
 
 export let isValidBoardRuns = 0;
+const startTime = performance.now();
+const perfLog = 1_000_000;
 
-export function isValidBoard(board: Board): boolean {
+export function isValidBoard(
+	board: Board,
+	combination?: Int[],
+	lastCombination?: Int[],
+): boolean {
 	isValidBoardRuns++;
+
+	if (isValidBoardRuns % perfLog === 0) {
+		const now = performance.now();
+		console.log(
+			`${isValidBoardRuns.toString().padEnd(10, " ")} avg ${((isValidBoardRuns / (now - startTime)) * 1000).toFixed(0)}/sec ${combination?.map((num) => `${num}`.padStart(2, " "))}\n                          ${lastCombination?.map((num) => `${num}`.padStart(2, " "))}`,
+		);
+	}
 
 	const placedGifts = board.placedGifts;
 	const giftsWithRotations = board.gifts;
 
-	giftsWithRotations.forEach((giftWithRotations): void => {
-		giftWithRotations.forEach((gift) => {
-			assMatrixSquare(gift);
-			asseq(wrapGift(gift), gift);
+	if (opts.validateGifts) {
+		giftsWithRotations.forEach((giftWithRotations): void => {
+			giftWithRotations.forEach((gift) => {
+				assMatrixSquare(gift);
+				asseq(wrapGift(gift), gift);
+			});
 		});
-	});
+	}
 
-	for (const placedGift of placedGifts) {
+	const giftInside = (placedGift: PlacedGift): boolean => {
 		const giftRectangle = placedGiftToBoundingRectangle(
 			giftsWithRotations,
 			placedGift,
 		);
 
-		if (!rectangleIsInside(giftRectangle, board)) return false;
-	}
+		const isRectangleInside = rectangleIsInside(giftRectangle, board);
 
-	for (const [
-		placedMultiGift1Index,
-		placedMultiGift1,
-	] of placedGifts.entries()) {
-		for (const [
-			placedMultiGift2Index,
-			placedMultiGift2,
-		] of placedGifts.entries()) {
-			if (placedMultiGift1Index === placedMultiGift2Index) continue;
+		// ass(isRectangleInside)
+		return isRectangleInside;
+	};
 
-			const gift1 = placedGiftToGift(giftsWithRotations, placedMultiGift1);
-
-			for (const [gift1LocalY, gift1Row] of gift1.entries()) {
-				for (const [gift1LocalX, gift1Cell] of gift1Row.entries())
-					if (gift1Cell === "#") {
-						const globalPos = add(
-							{ y: placedMultiGift1.y, x: placedMultiGift1.x },
-							{ x: gift1LocalX, y: gift1LocalY },
-						);
-
-						const gift2Local = diff(globalPos, {
-							x: placedMultiGift2.x,
-							y: placedMultiGift2.y,
-						});
-
-						const gift2 = placedGiftToGift(
-							giftsWithRotations,
-							placedMultiGift2,
-						);
-
-						const gift2Cell = gift2?.[gift2Local.y]?.[gift2Local.x];
-
-						if (gift2Cell === "#") {
-							return false;
-						}
-					}
-			}
+	if (opts.checkInsideOnlyLast) {
+		const lastGift: PlacedGift = nonNull(placedGifts[placedGifts.length - 1]);
+		if (!giftInside(lastGift)) return false;
+	} else {
+		for (const placedGift of placedGifts) {
+			if (!giftInside(placedGift)) return false;
 		}
 	}
 
+	const placedMultiGift1Index = placedGifts.length - 1;
+	const placedMultiGift1 = nonNull(placedGifts[placedGifts.length - 1]);
+
+	const gift1 = placedGiftToGift(giftsWithRotations, placedMultiGift1);
+
+	for (const [
+		placedMultiGift2Index,
+		placedMultiGift2,
+	] of placedGifts.entries()) {
+		if (placedMultiGift1Index === placedMultiGift2Index) continue;
+
+		const gift2 = placedGiftToGift(giftsWithRotations, placedMultiGift2);
+
+		if (giftsOverlap(gift1, gift2, placedMultiGift1, placedMultiGift2))
+			return false;
+	}
+
 	return true;
+}
+
+export let giftsOverlapCount = 0;
+
+function giftsOverlap(
+	gift1: Gift,
+	gift2: Gift,
+	placedMultiGift1: PlacedGift,
+	placedMultiGift2: PlacedGift,
+): boolean {
+	giftsOverlapCount++;
+
+	// c(() => placedMultiGift1);
+	// c(() => placedMultiGift2);
+	for (const [gift1LocalY, gift1Row] of gift1.entries()) {
+		for (const [gift1LocalX, gift1Cell] of gift1Row.entries())
+			if (gift1Cell === "#") {
+				const globalPos = add(
+					{ y: placedMultiGift1.y, x: placedMultiGift1.x },
+					{ x: gift1LocalX, y: gift1LocalY },
+				);
+
+				const gift2Local = diff(globalPos, {
+					x: placedMultiGift2.x,
+					y: placedMultiGift2.y,
+				});
+
+				const gift2Cell = gift2?.[gift2Local.y]?.[gift2Local.x];
+
+				if (gift2Cell === "#") {
+					return true;
+				}
+			}
+	}
+	return false;
 }
 
 export type Board = {
@@ -412,9 +457,16 @@ export function someValidPlacements(
 
 	const combinationsInput: Int[] = giftCounts.flatMap((giftCount, index) => {
 		const giftRotationCount = nonNull(gifts[index]).length;
+
+		const minGiftSize = Math.min(
+			...nonNull(gifts[index]).map((gift) => nonNull(gift[0]).length),
+		);
+
 		ass(giftRotationCount !== 0);
+		const validXPos = board.width - minGiftSize + 1;
+		const validYPos = board.height - minGiftSize + 1;
 		return Array(giftCount)
-			.fill([giftRotationCount, board.width, board.height])
+			.fill([giftRotationCount, validXPos, validYPos])
 			.flat();
 	});
 
@@ -453,11 +505,15 @@ export function someValidPlacements(
 
 			const giftPlacement = combinationToGiftPlacement(combination);
 
-			const isPlacementValid = isValidBoard({
-				...board,
-				placedGifts: giftPlacement,
-				gifts,
-			});
+			const isPlacementValid = isValidBoard(
+				{
+					...board,
+					placedGifts: giftPlacement,
+					gifts,
+				},
+				combination,
+				combinationsInput,
+			);
 
 			return isPlacementValid;
 		},
@@ -566,14 +622,22 @@ export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
 	);
 }
 
+export function c(f: () => unknown): void {
+	console.log(`${nonNull(/^\(\) => (.*)$/.exec(`${f}`))[1]}:`, f());
+}
+
 /**
 # performance optimizations
-[ ] when the first correct placement is found for a tree, then stop that.
+
+
 [ ] we can dedupe work between trees by reusing the same placement for multiple trees
+  pseudo: if we place a next piece, then only place it if it would cause the bounding box to be inside another AND it would not cause 
+
+
 [ ] we can also cache gift placements, although we should probably try to avoid using multiple gift placements
 [ ] if not done already, then we should not make a distinction between 2 different gifts of the same shape
 [ ] instead of placing the gifts randomly, then we can place them only directly beside the previous gift
-[ ] we can use multiple cores.
+[ ] we can use multiple cores
 [ ] maybe we can cache 2-and-2 placements of directly near each other gifts, so we have some simple shapes we can put beside each other?
 [ ] maybe when we try to place the next gift, then we only check the gifts that potentially overlap this gift.
 [ ] we should probably check on memory usage, to make sure that we don't overload the cpu and cause thrashing and stuff.
@@ -590,7 +654,7 @@ export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
 [ ] use a matrix when placing and un-placing gifts
 [ ] create a set and then make a placement deterministic, and then check if the placement has already been checked.
 [] use the set to check rotational symmetries
-[] start at the middle and whenever you place something then expand the area. maybe start at the middle? 
+[] start at the middle and whenever you place something then expand the area. maybe start at the middle?
   that means that we have to change the order of when we place tiles
   we also have to move things closer to the center
   we also have to keep track of the bounding border
@@ -607,3 +671,4 @@ export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
 [] create a type for a "validated board", and then we have to pass validated boards to each other?
 
 */
+// notes: 419000000 is the total amount of is valid board runs for all the test outputs
