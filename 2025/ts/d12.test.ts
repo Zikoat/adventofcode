@@ -1,8 +1,6 @@
-import { expect, mock } from "bun:test";
+import { test, expect } from "bun:test"
+import { mock } from "bun:test";
 import { add, ass, asseq, assInt, diff, nonNull, type Vector } from "./common";
-
-
-const bigBoy = process.env.BIGBOY === "true";
 
 const testInput2 = `0:
 ###
@@ -305,7 +303,7 @@ assmeq(
   "#"
 );
 
-export function canFitString(input: string): boolean {
+function canFitString(input: string): boolean {
   const parsed2: Puzzle = parseInput(input);
   asseq(parsed2.trees.length, 1);
 
@@ -1629,14 +1627,6 @@ asseq(
   true
 );
 
-if (bigBoy) {
-
-  console.log("start 2")
-
-  
-  console.log("done 2")
-}
-
 /**
 # simple and correct algorithm, in small steps
 [ ] create a "progress bar" which gives the total count, and how far we have gotten, with this naive implementation
@@ -1703,3 +1693,7 @@ if (bigBoy) {
 
 console.log("done");
 console.log({ isValidBoardRuns })
+
+test("should fail", () => {
+  expect(1).toBe(1)
+})

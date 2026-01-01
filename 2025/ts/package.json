@@ -6,6 +6,8 @@
   "scripts": {
     "debug":"bun --inspect-brk d12",
     "type": "bunx tsc --noEmit --watch",
-    "start": "clear && bun --watch d12.ts"
+    "start": "clear && bun --watch d12.ts",
+    "bigboy": "bun run d12-bigboy",
+    "test":"bun --watch test"
   }
 }
