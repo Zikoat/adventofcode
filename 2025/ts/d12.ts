@@ -1059,13 +1059,14 @@ function someValidPlacements(
   }
 
   const anyValidPlacements = combinationsWithCheck(combinationsInput, (combination: Int[]): boolean => {
-    console.log("checking", combination)
+    // console.log("checking", combination)
     if (combination.length % 3 !== 0) return true;
     // const placementLengthMax = sum(giftCounts);
     // ass(combination.length === placementLengthMax * 3, `${combination.length} ${placementLengthMax} ${JSON.stringify(giftCounts)}`)
 
     const giftPlacement = combinationToGiftPlacement(combination)
 
+    console.log(combination.join(", "))
     const isPlacementValid = isValidBoard(
       { ...board, placedGifts: giftPlacement, gifts }
     );
@@ -1136,7 +1137,7 @@ function combinationsWithCheck(combinationsInput: Int[], check: CombinationCheck
   console.log("starting recurse")
   const recurse = (combination: Int[]): boolean => {
     const isValid = check(combination)
-    console.log("combination", combination)
+    // console.log("combination", combination)
 
     if (combination.length === combinationsInput.length) {
       if (isValid) {
@@ -1151,7 +1152,7 @@ function combinationsWithCheck(combinationsInput: Int[], check: CombinationCheck
     else if (combination.length > 0) {
       const acc = [...combination]
       while (true) {
-        console.log("acc", acc, combinationsInput)
+        // console.log("acc", acc, combinationsInput)
 
         if (acc.length === 0) break;
         acc[acc.length - 1] = toNumInt(acc[acc.length - 1]) + 1;
@@ -1668,6 +1669,45 @@ if (bigBoy) {
 12x5: 1 0 1 0 2 2`),
     true
   );
+
+  console.log("start 2")
+
+  asseq(
+    canFitString(`
+0:
+###
+##.
+##.
+
+1:
+###
+##.
+.##
+
+2:
+.##
+###
+##.
+
+3:
+##.
+###
+##.
+
+4:
+###
+#..
+###
+
+5:
+###
+.#.
+###
+
+12x5: 1 0 1 0 3 2`),
+    false
+  );
+  console.log("done 2")
 }
 
 /**
