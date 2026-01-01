@@ -36,8 +36,8 @@ const testInput2 = `0:
 12x5: 1 0 1 0 2 2
 12x5: 1 0 1 0 3 2` as const;
 
-export type Gift = ("." | "#")[][];
-export type Gifts = Gift[];
+type Gift = ("." | "#")[][];
+type Gifts = Gift[];
 type Int = number;
 type GiftCounts = Int[];
 type Tree = { giftCounts: GiftCounts } & RootRectangle;
@@ -111,7 +111,7 @@ function validateTest() {
 
 validateTest();
 
-export function stringToMatrix(input: string): string[][] {
+function stringToMatrix(input: string): string[][] {
   const matrix = input
     .trim()
     .split("\n")
@@ -137,7 +137,7 @@ function matrixToString(stringMatrix: string[][]): string {
     .join("\n");
 }
 
-export function assmeq(stringMatrix: string[][], expected: string): void {
+function assmeq(stringMatrix: string[][], expected: string): void {
   const visualizedBoard = matrixToString(stringMatrix);
 
   const cleanViz = function cleanViz(input: string): string {
@@ -152,7 +152,7 @@ export function assmeq(stringMatrix: string[][], expected: string): void {
   ).toBe(cleanViz(expected));
 }
 
-export function stringToGift(giftString: string): Gift {
+function stringToGift(giftString: string): Gift {
   return assIsGiftMatrix(stringToMatrix(giftString));
 }
 
@@ -175,15 +175,15 @@ function isGiftChar(char: unknown): char is "#" | "." {
   return char === "#" || char === ".";
 }
 
-export function assIsGiftMatrix(stringMatrix: string[][]): Gift {
+function assIsGiftMatrix(stringMatrix: string[][]): Gift {
   return assMatrix<"#" | ".">(stringMatrix, isGiftChar);
 }
 
-export function wrapGiftString(giftString: string): Gift {
+function wrapGiftString(giftString: string): Gift {
   return wrapGift(stringToGift(giftString));
 }
 
-export function wrapGift(input: Gift): Gift {
+function wrapGift(input: Gift): Gift {
   let rows = [...input];
   while (
     rows.every(function checkRowsEveryFirstChar(row) {
@@ -266,7 +266,7 @@ function assRootRectangle(
   ass(rootRectangle.height > 0);
 }
 
-export function isInBounds(vector: Vector, rectangle: RootRectangle): boolean {
+function isInBounds(vector: Vector, rectangle: RootRectangle): boolean {
   assVector(vector);
   assRootRectangle(rectangle);
 
@@ -284,7 +284,7 @@ type PlacedGift = {
 } & Vector;
 
 /** hint: place multiple gifts on a board by using createBoard with an array of placedGifts */
-export function placeGift(board: Board, placement: PlacedGift): Board {
+function placeGift(board: Board, placement: PlacedGift): Board {
   return {
     ...board,
     placedGifts: [...board.placedGifts, placement],
@@ -343,7 +343,7 @@ function placedGiftToBoundingRectangle(
 
 let isValidBoardRuns = 0;
 
-export function isValidBoard(board: Board): boolean {
+function isValidBoard(board: Board): boolean {
   isValidBoardRuns++;
 
   const placedGifts = board.placedGifts;
@@ -410,13 +410,13 @@ export function isValidBoard(board: Board): boolean {
   return true;
 }
 
-export type Board = {
+type Board = {
   gifts: GiftsWithRotations;
   placedGifts: PlacedGift[];
 } & RootRectangle;
 
 // shit this method is probably not necessary?
-export function createBoard(options: {
+function createBoard(options: {
   gifts: Gifts;
   width: Int;
   height: Int;
@@ -487,7 +487,7 @@ function boardToVizualizedBoard(board: Board): VisualizedBoard {
   return boardMatrix;
 }
 
-export function visualizeBoard(board: Board, expected: string) {
+function visualizeBoard(board: Board, expected: string) {
   assmeq(boardToVizualizedBoard(board), expected);
 }
 
@@ -563,7 +563,7 @@ function combinationsWithCheck_old(combinationsInput: Int[], check: CombinationC
   return anyValidPlacements;
 }
 
-export function someValidPlacements(
+function someValidPlacements(
   gifts: GiftsWithRotations,
   tree: Tree,
 ): boolean {
@@ -631,9 +631,9 @@ export function someValidPlacements(
 
 type Generator = () => Int[] | undefined;
 
-export type CombinationChecker = (c: Int[]) => boolean;
+type CombinationChecker = (c: Int[]) => boolean;
 
-export function combinationsWithCheck(combinationsInput: Int[], check: CombinationChecker): boolean {
+function combinationsWithCheck(combinationsInput: Int[], check: CombinationChecker): boolean {
   ass(
     combinationsInput.every(
       (radix) => typeof radix === "number" && Number.isSafeInteger(radix) && radix !== 0
@@ -686,19 +686,19 @@ export function combinationsWithCheck(combinationsInput: Int[], check: Combinati
 
 
 
-export function flipGiftVertically<T>(gift: T[][]): T[][] {
+function flipGiftVertically<T>(gift: T[][]): T[][] {
   return gift.toReversed();
 }
 
-export function transposeGift<T>(gift: T[][]): T[][] {
+function transposeGift<T>(gift: T[][]): T[][] {
   return nonNull(gift[0]).map((_, colIndex) => gift.map((row) => nonNull(row[colIndex])));
 }
 
-export function rotateGift90Right<T>(gift: T[][]): T[][] {
+function rotateGift90Right<T>(gift: T[][]): T[][] {
   return transposeGift(flipGiftVertically(gift));
 }
 
-export function createAllTransmutations<T>(gift: T[][]): T[][][] {
+function createAllTransmutations<T>(gift: T[][]): T[][][] {
   return [
     gift,
     rotateGift90Right(gift),
@@ -713,7 +713,7 @@ export function createAllTransmutations<T>(gift: T[][]): T[][][] {
   ];
 }
 
-export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
+function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
   const uniqueTransmutations = new Set<string>();
 
   return createAllTransmutations(gift).filter(
