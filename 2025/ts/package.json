@@ -4,10 +4,13 @@
     "zod": "^4.1.13"
   },
   "scripts": {
-    "debug":"bun --inspect-brk d12",
+    "debug": "bun --inspect-brk d12",
     "type": "bunx tsc --noEmit --watch",
     "start": "clear && bun --watch d12.ts",
     "bigboy": "bun run d12-bigboy",
-    "test":"bun --watch test"
+    "test": "bun --watch test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.10"
   }
 }
