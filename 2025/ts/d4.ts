@@ -152,38 +152,38 @@ const rawTestInput = `..@@.@@@@.
 @.@.@@@.@.`;
 
 function parseInput(input: string): Field {
-  return input.split("\n").map((line) =>
-    line.split("").map((tile) => {
-      if (tile === "@") {
-        return true;
-      } else if (tile === ".") {
-        return false;
-      } else throw Error("invalid char");
-    })
-  );
+	return input.split("\n").map((line) =>
+		line.split("").map((tile) => {
+			if (tile === "@") {
+				return true;
+			} else if (tile === ".") {
+				return false;
+			} else throw Error("invalid char");
+		}),
+	);
 }
 
 const testInput2: Field = parseInput(rawTestInput);
 
 const neighbors = [
-  { x: -1, y: -1 },
-  { x: 0, y: -1 },
-  { x: 1, y: -1 },
-  { x: -1, y: 0 },
-  { x: 1, y: 0 },
-  { x: -1, y: 1 },
-  { x: 0, y: 1 },
-  { x: 1, y: 1 },
+	{ x: -1, y: -1 },
+	{ x: 0, y: -1 },
+	{ x: 1, y: -1 },
+	{ x: -1, y: 0 },
+	{ x: 1, y: 0 },
+	{ x: -1, y: 1 },
+	{ x: 0, y: 1 },
+	{ x: 1, y: 1 },
 ] satisfies Vector[];
 
 type Field = boolean[][];
 
 function getCell({ x, y }: Vector, field: Field): boolean {
-  const row = field[y];
-  ass(Array.isArray(row), "couldn't get row at y = " + y);
-  const cell = row[x];
-  ass(typeof cell === "boolean");
-  return cell;
+	const row = field[y];
+	ass(Array.isArray(row), "couldn't get row at y = " + y);
+	const cell = row[x];
+	ass(typeof cell === "boolean");
+	return cell;
 }
 
 asseq(getCell({ x: 0, y: 0 }, testInput2), false);
@@ -195,28 +195,28 @@ ass(shit instanceof Error);
 asseq(shit.message, "assertion failed");
 
 function tryreturn<T>(callback: () => T): T | Error {
-  try {
-    return callback();
-  } catch (err) {
-    ass(err instanceof Error);
-    return err;
-  }
+	try {
+		return callback();
+	} catch (err) {
+		ass(err instanceof Error);
+		return err;
+	}
 }
 
 function isInside(loc: Vector, field: Field) {
-  if (loc.y > field.length - 1) return false;
-  if (loc.y < 0) return false;
+	if (loc.y > field.length - 1) return false;
+	if (loc.y < 0) return false;
 
-  const firstRow = field[0];
-  ass(firstRow);
-  ass(
-    field.every((row) => row.length === firstRow.length),
-    "all rows should have the same length"
-  );
+	const firstRow = field[0];
+	ass(firstRow);
+	ass(
+		field.every((row) => row.length === firstRow.length),
+		"all rows should have the same length",
+	);
 
-  if (loc.x > firstRow.length - 1) return false;
-  if (loc.x < 0) return false;
-  return true;
+	if (loc.x > firstRow.length - 1) return false;
+	if (loc.x < 0) return false;
+	return true;
 }
 
 asseq(isInside({ x: 0, y: 0 }, testInput2), true);
@@ -227,41 +227,41 @@ asseq(isInside({ x: 10, y: 9 }, testInput2), false);
 asseq(isInside({ x: 9, y: 10 }, testInput2), false);
 
 function isAccessible(loc: Vector, field: Field) {
-  asseq(neighbors.length, 8);
-  const currentLoc = loc;
-  const activeNeighbors = getActiveNeighborCount(currentLoc, field);
+	asseq(neighbors.length, 8);
+	const currentLoc = loc;
+	const activeNeighbors = getActiveNeighborCount(currentLoc, field);
 
-  const isAccessible = activeNeighbors < 4;
-  return isAccessible;
+	const isAccessible = activeNeighbors < 4;
+	return isAccessible;
 }
 
 function getActiveNeighborCount(
-  currentLoc: { x: number; y: number },
-  field: Field
+	currentLoc: { x: number; y: number },
+	field: Field,
 ) {
-  return neighbors.filter((neigh) => {
-    const neighLoc = add(neigh, currentLoc);
+	return neighbors.filter((neigh) => {
+		const neighLoc = add(neigh, currentLoc);
 
-    const isNeighInside = isInside(neighLoc, field);
-    // console.log("neigh", JSON.stringify(neighLoc), "inside:", isNeighInside);
-    if (isNeighInside) {
-      const isNeighActive = getCell(neighLoc, field);
-      // console.log("active: ", isNeighActive);
-      return isNeighActive;
-    }
-    return false;
-  }).length;
+		const isNeighInside = isInside(neighLoc, field);
+		// console.log("neigh", JSON.stringify(neighLoc), "inside:", isNeighInside);
+		if (isNeighInside) {
+			const isNeighActive = getCell(neighLoc, field);
+			// console.log("active: ", isNeighActive);
+			return isNeighActive;
+		}
+		return false;
+	}).length;
 }
 
 function map2d<T>(
-  field: Field,
-  callback: (cell: boolean, loc: Vector) => T
+	field: Field,
+	callback: (cell: boolean, loc: Vector) => T,
 ): T[][] {
-  return field.map((row, y) => row.map((cell, x) => callback(cell, { x, y })));
+	return field.map((row, y) => row.map((cell, x) => callback(cell, { x, y })));
 }
 
 function drawField(field: string[][]): string {
-  return field.map((line) => line.join("")).join("\n");
+	return field.map((line) => line.join("")).join("\n");
 }
 
 const drawCell = (cell: boolean): "@" | "." => (cell ? "@" : ".");
@@ -270,44 +270,44 @@ const recreatedField = drawField(map2d(testInput2, drawCell));
 asseq(recreatedField, rawTestInput, "field should be reconstructed");
 
 function getAccessibleFieldParsed(field: Field): {
-  markedField: string;
-  accessibleCount: number;
+	markedField: string;
+	accessibleCount: number;
 } {
-  const markedField = drawField(
-    map2d(field, (cell, loc) => markAccessibleCell(cell, loc, field))
-  );
+	const markedField = drawField(
+		map2d(field, (cell, loc) => markAccessibleCell(cell, loc, field)),
+	);
 
-  const regex = new RegExp(/x/g);
-  const accessibleCount = markedField.matchAll(regex).toArray().length;
-  return { markedField, accessibleCount };
+	const regex = new RegExp(/x/g);
+	const accessibleCount = markedField.matchAll(regex).toArray().length;
+	return { markedField, accessibleCount };
 }
 
 function getAccessibleField(inputString: string): {
-  markedField: string;
-  accessibleCount: number;
+	markedField: string;
+	accessibleCount: number;
 } {
-  const field = parseInput(inputString);
-  return getAccessibleFieldParsed(field);
+	const field = parseInput(inputString);
+	return getAccessibleFieldParsed(field);
 }
 
 const markAccessibleCell = (
-  cell: boolean,
-  loc: Vector,
-  field: Field
+	cell: boolean,
+	loc: Vector,
+	field: Field,
 ): "@" | "." | "x" => {
-  if (!cell) {
-    return ".";
-  }
-  if (isAccessible(loc, field)) {
-    return "x";
-  } else return "@";
+	if (!cell) {
+		return ".";
+	}
+	if (isAccessible(loc, field)) {
+		return "x";
+	} else return "@";
 };
 
 const { markedField, accessibleCount } = getAccessibleField(rawTestInput);
 
 asseq(
-  "\n" + markedField,
-  `
+	"\n" + markedField,
+	`
 ..xx.xx@x.
 x@@.@.@.@@
 @@@@@.x.@@
@@ -317,7 +317,7 @@ x@.@@@@.@x
 .@.@.@.@@@
 x.@@@.@@@@
 .@@@@@@@@.
-x.x.@@@.x.`
+x.x.@@@.x.`,
 );
 
 asseq(accessibleCount, 13);
@@ -327,10 +327,10 @@ asseq(getAccessibleField(rawInput).accessibleCount, 1537);
 // const initialState = testInput2;
 
 function printState(field: Field): void {
-  const newState = getAccessibleFieldParsed(field);
-  console.log();
-  console.log("Removed", newState.accessibleCount, "rolls of paper");
-  console.log(newState.markedField);
+	const newState = getAccessibleFieldParsed(field);
+	console.log();
+	console.log("Removed", newState.accessibleCount, "rolls of paper");
+	console.log(newState.markedField);
 }
 // printState(initialState);
 
@@ -338,36 +338,36 @@ function printState(field: Field): void {
 // printState(state2);
 
 function getNextState(field: Field): Field {
-  return map2d(field, (cell, loc) => {
-    if (!cell) return false;
-    if (isAccessible(loc, field)) {
-      return false;
-    }
-    return true;
-  });
+	return map2d(field, (cell, loc) => {
+		if (!cell) return false;
+		if (isAccessible(loc, field)) {
+			return false;
+		}
+		return true;
+	});
 }
 
 function countRolls(field: Field) {
-  return field.flat().filter(Boolean).length;
+	return field.flat().filter(Boolean).length;
 }
 
 function getRemovableRolls(input: string): number {
-  const initialState = parseInput(input);
-  let currentState = initialState;
+	const initialState = parseInput(input);
+	let currentState = initialState;
 
-  while (!(getAccessibleFieldParsed(currentState).accessibleCount === 0)) {
-    printState(currentState);
-    currentState = getNextState(currentState);
-  }
+	while (!(getAccessibleFieldParsed(currentState).accessibleCount === 0)) {
+		printState(currentState);
+		currentState = getNextState(currentState);
+	}
 
-  console.log(getAccessibleFieldParsed(currentState).accessibleCount);
+	console.log(getAccessibleFieldParsed(currentState).accessibleCount);
 
-  const initialRolls = countRolls(initialState);
-  const endRolls = countRolls(currentState);
-  const removed = initialRolls - endRolls;
-  console.log({ initialRolls, endRolls, removed: removed });
+	const initialRolls = countRolls(initialState);
+	const endRolls = countRolls(currentState);
+	const removed = initialRolls - endRolls;
+	console.log({ initialRolls, endRolls, removed: removed });
 
-  return removed;
+	return removed;
 }
 
 asseq(getRemovableRolls(rawTestInput), 43);

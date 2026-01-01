@@ -1,7 +1,6 @@
 import { expect, mock } from "bun:test";
 import { add, ass, asseq, assInt, diff, nonNull, type Vector } from "./common";
 
-
 const testInput2 = `0:
 ###
 ##.
@@ -45,691 +44,683 @@ type Puzzle = { gifts: Gifts; trees: Tree[] };
 type GiftsWithRotations = Gifts[];
 
 function shape(matrix: unknown[][]): [number, number] {
-  const firstRow = nonNull(matrix[0]);
-  assMatrixSquare(matrix);
+	const firstRow = nonNull(matrix[0]);
+	assMatrixSquare(matrix);
 
-  return [matrix.length, firstRow.length];
+	return [matrix.length, firstRow.length];
 }
 
 function parseInput(input: string): Puzzle {
-  const matchedInput = input.trim().split("\n\n");
+	const matchedInput = input.trim().split("\n\n");
 
-  const giftsTuple = matchedInput.toSpliced(matchedInput.length - 1);
+	const giftsTuple = matchedInput.toSpliced(matchedInput.length - 1);
 
-  asseq(giftsTuple.length, matchedInput.length - 1);
+	asseq(giftsTuple.length, matchedInput.length - 1);
 
-  const gifts: Gifts = giftsTuple.map(function mapGiftsTuple(
-    giftStringWithNumber
-  ) {
-    const giftString = nonNull(giftStringWithNumber.split(":")[1]);
-    return stringToGift(giftString);
-  });
+	const gifts: Gifts = giftsTuple.map(
+		function mapGiftsTuple(giftStringWithNumber) {
+			const giftString = nonNull(giftStringWithNumber.split(":")[1]);
+			return stringToGift(giftString);
+		},
+	);
 
-  const trees: Tree[] = nonNull(matchedInput[matchedInput.length - 1])
-    .split("\n")
-    .map(function mapTree(tree) {
-      const [size, giftsCountString] = tree.split(": ");
-      const [widthString, heightString] = nonNull(size).split("x");
+	const trees: Tree[] = nonNull(matchedInput[matchedInput.length - 1])
+		.split("\n")
+		.map(function mapTree(tree) {
+			const [size, giftsCountString] = tree.split(": ");
+			const [widthString, heightString] = nonNull(size).split("x");
 
-      assInt(nonNull(widthString));
-      assInt(nonNull(heightString));
+			assInt(nonNull(widthString));
+			assInt(nonNull(heightString));
 
-      const giftCounts = nonNull(giftsCountString)
-        .split(" ")
-        .map(function mapGiftCounts(numString) {
-          assInt(numString);
-          return Number(numString);
-        });
+			const giftCounts = nonNull(giftsCountString)
+				.split(" ")
+				.map(function mapGiftCounts(numString) {
+					assInt(numString);
+					return Number(numString);
+				});
 
-      const width = Number(widthString);
-      const height = Number(heightString);
+			const width = Number(widthString);
+			const height = Number(heightString);
 
-      asseq(giftCounts.length, gifts.length);
+			asseq(giftCounts.length, gifts.length);
 
-      return { width, height, giftCounts };
-    });
+			return { width, height, giftCounts };
+		});
 
-  return { gifts, trees };
+	return { gifts, trees };
 }
 
 function validateTest() {
-  const parsedInput = parseInput(testInput2);
-  const gifts = parsedInput.gifts;
-  const first_gift: Gift = nonNull(gifts[0]);
+	const parsedInput = parseInput(testInput2);
+	const gifts = parsedInput.gifts;
+	const first_gift: Gift = nonNull(gifts[0]);
 
-  assmeq(
-    first_gift,
-    `###
+	assmeq(
+		first_gift,
+		`###
      ##.
-     ##.`
-  );
+     ##.`,
+	);
 
-  gifts.forEach(function forEachGifts(gift) {
-    asseq(shape(gift), [3, 3]);
-  });
+	gifts.forEach(function forEachGifts(gift) {
+		asseq(shape(gift), [3, 3]);
+	});
 }
 
 validateTest();
 
 function stringToMatrix(input: string): string[][] {
-  const matrix = input
-    .trim()
-    .split("\n")
-    .map(function splitStringToMatrixMapRow(row) {
-      return row.trim().split("");
-    });
-  const firstRow = nonNull(matrix[0]);
+	const matrix = input
+		.trim()
+		.split("\n")
+		.map(function splitStringToMatrixMapRow(row) {
+			return row.trim().split("");
+		});
+	const firstRow = nonNull(matrix[0]);
 
-  ass(
-    matrix.every(function checkMatrixEveryRowLength(row) {
-      return row.length === firstRow.length;
-    })
-  );
+	ass(
+		matrix.every(function checkMatrixEveryRowLength(row) {
+			return row.length === firstRow.length;
+		}),
+	);
 
-  return matrix;
+	return matrix;
 }
 
 function matrixToString(stringMatrix: string[][]): string {
-  return stringMatrix
-    .map(function matrixToStringMapRow(row) {
-      return row.join("");
-    })
-    .join("\n");
+	return stringMatrix
+		.map(function matrixToStringMapRow(row) {
+			return row.join("");
+		})
+		.join("\n");
 }
 
 function assmeq(stringMatrix: string[][], expected: string): void {
-  const visualizedBoard = matrixToString(stringMatrix);
+	const visualizedBoard = matrixToString(stringMatrix);
 
-  const cleanViz = function cleanViz(input: string): string {
-    return input.trim().replaceAll(/\s+/g, "\n");
-  };
+	const cleanViz = function cleanViz(input: string): string {
+		return input.trim().replaceAll(/\s+/g, "\n");
+	};
 
-  expect(
-    cleanViz(visualizedBoard),
-    "the visualized matrix is not correct. it is \n---\n" +
-    visualizedBoard +
-    "\n---"
-  ).toBe(cleanViz(expected));
+	expect(
+		cleanViz(visualizedBoard),
+		"the visualized matrix is not correct. it is \n---\n" +
+			visualizedBoard +
+			"\n---",
+	).toBe(cleanViz(expected));
 }
 
 function stringToGift(giftString: string): Gift {
-  return assIsGiftMatrix(stringToMatrix(giftString));
+	return assIsGiftMatrix(stringToMatrix(giftString));
 }
 
 function assMatrix<T extends string>(
-  stringMatrix: unknown[][],
-  assertionCallback: (input: unknown) => input is T
+	stringMatrix: unknown[][],
+	assertionCallback: (input: unknown) => input is T,
 ): T[][] {
-  ass(
-    stringMatrix.every(function checkMatrixEveryRow(row) {
-      return row.every(function checkMatrixEveryChar(char) {
-        return assertionCallback(char);
-      });
-    })
-  );
+	ass(
+		stringMatrix.every(function checkMatrixEveryRow(row) {
+			return row.every(function checkMatrixEveryChar(char) {
+				return assertionCallback(char);
+			});
+		}),
+	);
 
-  return stringMatrix;
+	return stringMatrix;
 }
 
 function isGiftChar(char: unknown): char is "#" | "." {
-  return char === "#" || char === ".";
+	return char === "#" || char === ".";
 }
 
 function assIsGiftMatrix(stringMatrix: string[][]): Gift {
-  return assMatrix<"#" | ".">(stringMatrix, isGiftChar);
+	return assMatrix<"#" | ".">(stringMatrix, isGiftChar);
 }
 
 function wrapGiftString(giftString: string): Gift {
-  return wrapGift(stringToGift(giftString));
+	return wrapGift(stringToGift(giftString));
 }
 
 function wrapGift(input: Gift): Gift {
-  let rows = [...input];
-  while (
-    rows.every(function checkRowsEveryFirstChar(row) {
-      return row[0] === ".";
-    })
-  ) {
-    rows = rows.map(function mapRowsToSpliced(row) {
-      return row.toSpliced(0, 1);
-    });
-  }
+	let rows = [...input];
+	while (
+		rows.every(function checkRowsEveryFirstChar(row) {
+			return row[0] === ".";
+		})
+	) {
+		rows = rows.map(function mapRowsToSpliced(row) {
+			return row.toSpliced(0, 1);
+		});
+	}
 
-  while (
-    rows.every(function checkRowsEveryLastChar(row) {
-      return row[row.length - 1] === ".";
-    })
-  ) {
-    rows = rows.map(function mapRowsToSpliced(row) {
-      return row.toSpliced(row.length - 1, 1);
-    });
-  }
+	while (
+		rows.every(function checkRowsEveryLastChar(row) {
+			return row[row.length - 1] === ".";
+		})
+	) {
+		rows = rows.map(function mapRowsToSpliced(row) {
+			return row.toSpliced(row.length - 1, 1);
+		});
+	}
 
-  while (
-    nonNull(rows[0]).every(function checkRowsEveryFirstChar(char) {
-      return char === ".";
-    })
-  ) {
-    rows = rows.toSpliced(0, 1);
-  }
+	while (
+		nonNull(rows[0]).every(function checkRowsEveryFirstChar(char) {
+			return char === ".";
+		})
+	) {
+		rows = rows.toSpliced(0, 1);
+	}
 
-  while (
-    nonNull(rows[rows.length - 1]).every(function checkRowsEveryLastChar(char) {
-      return char === ".";
-    })
-  ) {
-    rows = rows.toSpliced(rows.length - 1, 1);
-  }
-  return rows;
+	while (
+		nonNull(rows[rows.length - 1]).every(function checkRowsEveryLastChar(char) {
+			return char === ".";
+		})
+	) {
+		rows = rows.toSpliced(rows.length - 1, 1);
+	}
+	return rows;
 }
 
-
 export function canFitString(input: string): boolean {
-  const parsed2: Puzzle = parseInput(input);
-  asseq(parsed2.trees.length, 1);
+	const parsed2: Puzzle = parseInput(input);
+	asseq(parsed2.trees.length, 1);
 
-  const gifts = parsed2.gifts.map(function mapGifts(gift) {
-    return wrapGift(gift);
-  });
+	const gifts = parsed2.gifts.map(function mapGifts(gift) {
+		return wrapGift(gift);
+	});
 
-  const tree: Tree = nonNull(parsed2.trees[0]);
+	const tree: Tree = nonNull(parsed2.trees[0]);
 
+	const dedupedTransmutedGifts = gifts.map(createDedupedTransmutations);
 
-  const dedupedTransmutedGifts = gifts.map(createDedupedTransmutations);
+	const anyValidPlacements = someValidPlacements(dedupedTransmutedGifts, tree);
 
-  const anyValidPlacements = (someValidPlacements(
-    dedupedTransmutedGifts,
-    tree
-  ));
-
-  return anyValidPlacements;
+	return anyValidPlacements;
 }
 
 type RootRectangle = { width: Int; height: Int };
 type Rectangle = Vector & RootRectangle;
 
 function assVector(
-  vector: Vector | undefined | null
+	vector: Vector | undefined | null,
 ): asserts vector is Vector {
-  ass(vector);
-  toNumInt(vector.x);
-  toNumInt(vector.y);
+	ass(vector);
+	toNumInt(vector.x);
+	toNumInt(vector.y);
 }
 
 function assRootRectangle(
-  rootRectangle: RootRectangle | null | undefined
+	rootRectangle: RootRectangle | null | undefined,
 ): asserts rootRectangle is RootRectangle {
-  ass(rootRectangle);
-  toNumInt(rootRectangle.width);
-  toNumInt(rootRectangle.height);
-  ass(rootRectangle.width > 0);
-  ass(rootRectangle.height > 0);
+	ass(rootRectangle);
+	toNumInt(rootRectangle.width);
+	toNumInt(rootRectangle.height);
+	ass(rootRectangle.width > 0);
+	ass(rootRectangle.height > 0);
 }
 
 function isInBounds(vector: Vector, rectangle: RootRectangle): boolean {
-  assVector(vector);
-  assRootRectangle(rectangle);
+	assVector(vector);
+	assRootRectangle(rectangle);
 
-  return !(
-    vector.x < 0 ||
-    vector.y < 0 ||
-    vector.x > rectangle.width - 1 ||
-    vector.y > rectangle.height - 1
-  );
+	return !(
+		vector.x < 0 ||
+		vector.y < 0 ||
+		vector.x > rectangle.width - 1 ||
+		vector.y > rectangle.height - 1
+	);
 }
 
 type PlacedGift = {
-  type: Int;
-  rotation: Int;
+	type: Int;
+	rotation: Int;
 } & Vector;
 
 /** hint: place multiple gifts on a board by using createBoard with an array of placedGifts */
 function placeGift(board: Board, placement: PlacedGift): Board {
-  return {
-    ...board,
-    placedGifts: [...board.placedGifts, placement],
-  };
+	return {
+		...board,
+		placedGifts: [...board.placedGifts, placement],
+	};
 }
 
-
 function assMatrixSquare(matrix: unknown[][]): void {
-  ass(
-    matrix.every(function checkMatrixEveryRowLength(row) {
-      return row.length === nonNull(matrix[0]).length;
-    })
-  );
+	ass(
+		matrix.every(function checkMatrixEveryRowLength(row) {
+			return row.length === nonNull(matrix[0]).length;
+		}),
+	);
 }
 
 function matrixToRootRectangle(matrix: unknown[][]): RootRectangle {
-  assMatrixSquare(matrix);
-  return { width: nonNull(matrix[0]).length, height: matrix.length };
+	assMatrixSquare(matrix);
+	return { width: nonNull(matrix[0]).length, height: matrix.length };
 }
 
 function rectangleIsInside(inner: Rectangle, outer: RootRectangle): boolean {
-  return (
-    isInBounds(inner, outer) &&
-    isInBounds(
-      add(
-        {
-          x: inner.width - 1,
-          y: inner.height - 1,
-        },
-        { x: inner.x, y: inner.y }
-      ),
-      outer
-    )
-  );
+	return (
+		isInBounds(inner, outer) &&
+		isInBounds(
+			add(
+				{
+					x: inner.width - 1,
+					y: inner.height - 1,
+				},
+				{ x: inner.x, y: inner.y },
+			),
+			outer,
+		)
+	);
 }
 
 function placedGiftToGift(
-  giftsWithRotations: GiftsWithRotations,
-  placedGift: PlacedGift
+	giftsWithRotations: GiftsWithRotations,
+	placedGift: PlacedGift,
 ) {
-  return nonNull(giftsWithRotations[placedGift.type]?.[placedGift.rotation]);
+	return nonNull(giftsWithRotations[placedGift.type]?.[placedGift.rotation]);
 }
 
 function placedGiftToBoundingRectangle(
-  giftsWithRotations: GiftsWithRotations,
-  placedGift: PlacedGift
+	giftsWithRotations: GiftsWithRotations,
+	placedGift: PlacedGift,
 ): Rectangle {
-  const gift = placedGiftToGift(giftsWithRotations, placedGift);
-  const giftRootRectangle = matrixToRootRectangle(gift);
+	const gift = placedGiftToGift(giftsWithRotations, placedGift);
+	const giftRootRectangle = matrixToRootRectangle(gift);
 
-  return {
-    ...placedGift,
-    ...giftRootRectangle,
-  };
+	return {
+		...placedGift,
+		...giftRootRectangle,
+	};
 }
 
 let isValidBoardRuns = 0;
 
 function isValidBoard(board: Board): boolean {
-  isValidBoardRuns++;
+	isValidBoardRuns++;
 
-  const placedGifts = board.placedGifts;
-  const giftsWithRotations = board.gifts;
+	const placedGifts = board.placedGifts;
+	const giftsWithRotations = board.gifts;
 
-  giftsWithRotations.forEach(function forEachGiftsWithRotations(
-    giftWithRotations
-  ) {
-    return giftWithRotations.forEach(function forEachGiftWithRotations(gift) {
-      assMatrixSquare(gift);
-      asseq(wrapGift(gift), gift);
-    });
-  });
+	giftsWithRotations.forEach(
+		function forEachGiftsWithRotations(giftWithRotations) {
+			return giftWithRotations.forEach(function forEachGiftWithRotations(gift) {
+				assMatrixSquare(gift);
+				asseq(wrapGift(gift), gift);
+			});
+		},
+	);
 
-  for (const placedGift of placedGifts) {
-    const giftRectangle = placedGiftToBoundingRectangle(
-      giftsWithRotations,
-      placedGift
-    );
+	for (const placedGift of placedGifts) {
+		const giftRectangle = placedGiftToBoundingRectangle(
+			giftsWithRotations,
+			placedGift,
+		);
 
-    if (!rectangleIsInside(giftRectangle, board)) return false;
-  }
+		if (!rectangleIsInside(giftRectangle, board)) return false;
+	}
 
-  for (const [
-    placedMultiGift1Index,
-    placedMultiGift1,
-  ] of placedGifts.entries()) {
-    for (const [
-      placedMultiGift2Index,
-      placedMultiGift2,
-    ] of placedGifts.entries()) {
-      if (placedMultiGift1Index === placedMultiGift2Index) continue;
+	for (const [
+		placedMultiGift1Index,
+		placedMultiGift1,
+	] of placedGifts.entries()) {
+		for (const [
+			placedMultiGift2Index,
+			placedMultiGift2,
+		] of placedGifts.entries()) {
+			if (placedMultiGift1Index === placedMultiGift2Index) continue;
 
-      const gift1 = placedGiftToGift(giftsWithRotations, placedMultiGift1);
+			const gift1 = placedGiftToGift(giftsWithRotations, placedMultiGift1);
 
-      for (const [gift1LocalY, gift1Row] of gift1.entries()) {
-        for (const [gift1LocalX, gift1Cell] of gift1Row.entries())
-          if (gift1Cell === "#") {
-            const globalPos = add(
-              { y: placedMultiGift1.y, x: placedMultiGift1.x },
-              { x: gift1LocalX, y: gift1LocalY }
-            );
+			for (const [gift1LocalY, gift1Row] of gift1.entries()) {
+				for (const [gift1LocalX, gift1Cell] of gift1Row.entries())
+					if (gift1Cell === "#") {
+						const globalPos = add(
+							{ y: placedMultiGift1.y, x: placedMultiGift1.x },
+							{ x: gift1LocalX, y: gift1LocalY },
+						);
 
-            const gift2Local = diff(globalPos, {
-              x: placedMultiGift2.x,
-              y: placedMultiGift2.y,
-            });
+						const gift2Local = diff(globalPos, {
+							x: placedMultiGift2.x,
+							y: placedMultiGift2.y,
+						});
 
-            const gift2 = placedGiftToGift(
-              giftsWithRotations,
-              placedMultiGift2
-            );
+						const gift2 = placedGiftToGift(
+							giftsWithRotations,
+							placedMultiGift2,
+						);
 
-            const gift2Cell = gift2?.[gift2Local.y]?.[gift2Local.x];
+						const gift2Cell = gift2?.[gift2Local.y]?.[gift2Local.x];
 
-            if (gift2Cell === "#") {
-              return false;
-            }
-          }
-      }
-    }
-  }
+						if (gift2Cell === "#") {
+							return false;
+						}
+					}
+			}
+		}
+	}
 
-  return true;
+	return true;
 }
 
 type Board = {
-  gifts: GiftsWithRotations;
-  placedGifts: PlacedGift[];
+	gifts: GiftsWithRotations;
+	placedGifts: PlacedGift[];
 } & RootRectangle;
 
 // shit this method is probably not necessary?
 function createBoard(options: {
-  gifts: Gifts;
-  width: Int;
-  height: Int;
-  placedGifts?: PlacedGift[];
+	gifts: Gifts;
+	width: Int;
+	height: Int;
+	placedGifts?: PlacedGift[];
 }): Board {
-  return {
-    gifts: options.gifts.map(createDedupedTransmutations),
-    width: options.width,
-    height: options.height,
-    placedGifts: options.placedGifts ?? [],
-  };
+	return {
+		gifts: options.gifts.map(createDedupedTransmutations),
+		width: options.width,
+		height: options.height,
+		placedGifts: options.placedGifts ?? [],
+	};
 }
 
 type VisualizedBoard = string[][];
 
 function boardToVizualizedBoard(board: Board): VisualizedBoard {
-  let warning = "";
+	let warning = "";
 
-  const boardMatrix: string[][] = Array(board.height)
-    .fill([] as string[])
-    .map(function fillBoardMatrix() {
-      return Array(board.width).fill(".");
-    });
+	const boardMatrix: string[][] = Array(board.height)
+		.fill([] as string[])
+		.map(function fillBoardMatrix() {
+			return Array(board.width).fill(".");
+		});
 
-  for (const [placedGiftIndex, placedGift] of board.placedGifts.entries()) {
-    const letter = nonNull("ABCDEFGHIJKLMNOPQRSTUVWYZ"[placedGiftIndex]);
-    const giftShape = placedGiftToGift(board.gifts, placedGift);
+	for (const [placedGiftIndex, placedGift] of board.placedGifts.entries()) {
+		const letter = nonNull("ABCDEFGHIJKLMNOPQRSTUVWYZ"[placedGiftIndex]);
+		const giftShape = placedGiftToGift(board.gifts, placedGift);
 
-    // shit use helper to loop through 2d array
+		// shit use helper to loop through 2d array
 
-    giftShape.map(function giftShapeMapRow(row, localY2) {
-      row.map(function giftShapeMapCol(char, localX2) {
-        if (char === "#") {
-          const globalX = placedGift.x + localX2;
-          const globalY = placedGift.y + localY2;
+		giftShape.map(function giftShapeMapRow(row, localY2) {
+			row.map(function giftShapeMapCol(char, localX2) {
+				if (char === "#") {
+					const globalX = placedGift.x + localX2;
+					const globalY = placedGift.y + localY2;
 
-          const row = boardMatrix[globalY];
-          // shit create helper to set a single value in a 2d char matrix
+					const row = boardMatrix[globalY];
+					// shit create helper to set a single value in a 2d char matrix
 
-          const char = row?.[globalX];
-          if (char === undefined) {
-            warning =
-              "---piece is outside of board:" +
-              globalX +
-              "," +
-              globalY +
-              "\n" +
-              matrixToString(giftShape) +
-              "\n---";
-          } else if (char === "X") {
-            // nothing
-          } else if (char === ".") {
-            ass(row);
-            row[globalX] = letter;
-          } else {
-            ass(row);
-            row[globalX] = "X";
-          }
-        }
-      });
-    });
-  }
+					const char = row?.[globalX];
+					if (char === undefined) {
+						warning =
+							"---piece is outside of board:" +
+							globalX +
+							"," +
+							globalY +
+							"\n" +
+							matrixToString(giftShape) +
+							"\n---";
+					} else if (char === "X") {
+						// nothing
+					} else if (char === ".") {
+						ass(row);
+						row[globalX] = letter;
+					} else {
+						ass(row);
+						row[globalX] = "X";
+					}
+				}
+			});
+		});
+	}
 
-  if (warning) {
-    console.log(warning);
-  }
+	if (warning) {
+		console.log(warning);
+	}
 
-  return boardMatrix;
+	return boardMatrix;
 }
 
 function visualizeBoard(board: Board, expected: string) {
-  assmeq(boardToVizualizedBoard(board), expected);
+	assmeq(boardToVizualizedBoard(board), expected);
 }
-
 
 function toNumInt(input: Int | undefined | null): Int {
-  ass(typeof input === "number");
-  ass(Math.abs(input) % 1 === 0);
-  return input;
+	ass(typeof input === "number");
+	ass(Math.abs(input) % 1 === 0);
+	return input;
 }
 
-
-
-function combinationsWithCheck_old(combinationsInput: Int[], check: CombinationChecker): boolean {
-
-  ass(
-    combinationsInput.every(
-      (radix) =>
-        typeof radix === "number"
-        && Number.isSafeInteger(radix)
-        && radix !== 0
-    )
-  );
-
-  const allCombinations: Int[][] = [];
-
-  const acc: Int[] = Array.from({ length: combinationsInput.length }).map(() => 0);
-  let done = false;
-
-  const advance = (): void => {
-    let pos = acc.length - 1;
-
-    while (true) {
-      acc[pos] = toNumInt(acc[pos]) + 1;
-
-      if (toNumInt(acc[pos]) === toNumInt(combinationsInput[pos])) {
-        acc[pos] = 0;
-        pos--;
-      } else {
-        return;
-      }
-
-      if (pos === -1) {
-        done = true;
-        return;
-      }
-    }
-  };
-
-  const generator: Generator = () => {
-    if (done) {
-      return undefined;
-    } else {
-      const prevAcc = [...acc];
-
-      advance();
-
-      ass(acc.every(num => num == 0 || toNumInt(num)))
-      return prevAcc;
-    }
-  };
-
-  let nextItem = generator();
-
-  while (nextItem !== undefined) {
-    allCombinations.push(nextItem);
-    nextItem = generator();
-  }
-
-
-  const anyValidPlacements: boolean = allCombinations.some((combination) =>
-    check(combination)
-  )
-  return anyValidPlacements;
-}
-
-function someValidPlacements(
-  gifts: GiftsWithRotations,
-  tree: Tree,
+function combinationsWithCheck_old(
+	combinationsInput: Int[],
+	check: CombinationChecker,
 ): boolean {
-  const giftCounts = tree.giftCounts;
-  const board = tree;
+	ass(
+		combinationsInput.every(
+			(radix) =>
+				typeof radix === "number" && Number.isSafeInteger(radix) && radix !== 0,
+		),
+	);
 
-  asseq(gifts.length, giftCounts.length);
+	const allCombinations: Int[][] = [];
 
-  ass(board.width !== 0)
-  ass(board.height !== 0)
+	const acc: Int[] = Array.from({ length: combinationsInput.length }).map(
+		() => 0,
+	);
+	let done = false;
 
-  const combinationsInput: Int[] = giftCounts.flatMap((giftCount,
-    index) => {
-    const giftRotationCount = nonNull(gifts[index]).length;
-    ass(giftRotationCount !== 0)
-    return Array(giftCount)
-      .fill([giftRotationCount, board.width, board.height])
-      .flat();
-  });
+	const advance = (): void => {
+		let pos = acc.length - 1;
 
-  const combinationToGiftPlacement = (combination: Int[]): PlacedGift[] => {
-    asseq(combination.length % 3, 0)
-    const giftPlacement: PlacedGift[] = [];
+		while (true) {
+			acc[pos] = toNumInt(acc[pos]) + 1;
 
-    let currentGiftMultiIndex = 0;
-    for (const [type, giftCount] of giftCounts.entries()) {
-      for (let i = 0; i < giftCount; i++) {
-        const newLocal = combination[currentGiftMultiIndex * 3];
-        if (newLocal === undefined) {
-          return giftPlacement;
-        }
-        giftPlacement.push({
-          type,
-          rotation: toNumInt(newLocal),
-          x: toNumInt(combination[currentGiftMultiIndex * 3 + 1]),
-          y: toNumInt(combination[currentGiftMultiIndex * 3 + 2]),
-        });
+			if (toNumInt(acc[pos]) === toNumInt(combinationsInput[pos])) {
+				acc[pos] = 0;
+				pos--;
+			} else {
+				return;
+			}
 
-        currentGiftMultiIndex++;
-      }
-    }
+			if (pos === -1) {
+				done = true;
+				return;
+			}
+		}
+	};
 
-    asseq(currentGiftMultiIndex * 3, combination.length);
-    return giftPlacement;
-  }
+	const generator: Generator = () => {
+		if (done) {
+			return undefined;
+		} else {
+			const prevAcc = [...acc];
 
-  const anyValidPlacements = combinationsWithCheck(combinationsInput, (combination: Int[]): boolean => {
+			advance();
 
-    if (combination.length % 3 !== 0) return true;
+			ass(acc.every((num) => num == 0 || toNumInt(num)));
+			return prevAcc;
+		}
+	};
 
-    console.log(combination.join(", "))
+	let nextItem = generator();
 
-    const giftPlacement = combinationToGiftPlacement(combination)
+	while (nextItem !== undefined) {
+		allCombinations.push(nextItem);
+		nextItem = generator();
+	}
 
-    const isPlacementValid = isValidBoard(
-      { ...board, placedGifts: giftPlacement, gifts }
-    );
-
-    return isPlacementValid;
-  })
-
-  return anyValidPlacements;
+	const anyValidPlacements: boolean = allCombinations.some((combination) =>
+		check(combination),
+	);
+	return anyValidPlacements;
 }
 
+function someValidPlacements(gifts: GiftsWithRotations, tree: Tree): boolean {
+	const giftCounts = tree.giftCounts;
+	const board = tree;
+
+	asseq(gifts.length, giftCounts.length);
+
+	ass(board.width !== 0);
+	ass(board.height !== 0);
+
+	const combinationsInput: Int[] = giftCounts.flatMap((giftCount, index) => {
+		const giftRotationCount = nonNull(gifts[index]).length;
+		ass(giftRotationCount !== 0);
+		return Array(giftCount)
+			.fill([giftRotationCount, board.width, board.height])
+			.flat();
+	});
+
+	const combinationToGiftPlacement = (combination: Int[]): PlacedGift[] => {
+		asseq(combination.length % 3, 0);
+		const giftPlacement: PlacedGift[] = [];
+
+		let currentGiftMultiIndex = 0;
+		for (const [type, giftCount] of giftCounts.entries()) {
+			for (let i = 0; i < giftCount; i++) {
+				const newLocal = combination[currentGiftMultiIndex * 3];
+				if (newLocal === undefined) {
+					return giftPlacement;
+				}
+				giftPlacement.push({
+					type,
+					rotation: toNumInt(newLocal),
+					x: toNumInt(combination[currentGiftMultiIndex * 3 + 1]),
+					y: toNumInt(combination[currentGiftMultiIndex * 3 + 2]),
+				});
+
+				currentGiftMultiIndex++;
+			}
+		}
+
+		asseq(currentGiftMultiIndex * 3, combination.length);
+		return giftPlacement;
+	};
+
+	const anyValidPlacements = combinationsWithCheck(
+		combinationsInput,
+		(combination: Int[]): boolean => {
+			if (combination.length % 3 !== 0) return true;
+
+			console.log(combination.join(", "));
+
+			const giftPlacement = combinationToGiftPlacement(combination);
+
+			const isPlacementValid = isValidBoard({
+				...board,
+				placedGifts: giftPlacement,
+				gifts,
+			});
+
+			return isPlacementValid;
+		},
+	);
+
+	return anyValidPlacements;
+}
 
 type Generator = () => Int[] | undefined;
 
 type CombinationChecker = (c: Int[]) => boolean;
 
-function combinationsWithCheck(combinationsInput: Int[], check: CombinationChecker): boolean {
-  ass(
-    combinationsInput.every(
-      (radix) => typeof radix === "number" && Number.isSafeInteger(radix) && radix !== 0
-    ), "invalid inputs found: " + combinationsInput.join()
-  );
+function combinationsWithCheck(
+	combinationsInput: Int[],
+	check: CombinationChecker,
+): boolean {
+	ass(
+		combinationsInput.every(
+			(radix) =>
+				typeof radix === "number" && Number.isSafeInteger(radix) && radix !== 0,
+		),
+		"invalid inputs found: " + combinationsInput.join(),
+	);
 
-  console.log("starting recurse")
-  const recurse = (combination: Int[]): boolean => {
-    const isValid = check(combination)
+	console.log("starting recurse");
+	const recurse = (combination: Int[]): boolean => {
+		const isValid = check(combination);
 
+		if (combination.length === combinationsInput.length) {
+			if (isValid) {
+				console.log("valid solution found");
+				return true;
+			}
+		}
 
-    if (combination.length === combinationsInput.length) {
-      if (isValid) {
-        console.log("valid solution found")
-        return true;
-      }
-    }
+		if (isValid) {
+			return recurse([...combination, 0]);
+		} else if (combination.length > 0) {
+			const acc = [...combination];
+			while (true) {
+				if (acc.length === 0) break;
+				acc[acc.length - 1] = toNumInt(acc[acc.length - 1]) + 1;
 
-    if (isValid) {
-      return recurse([...combination, 0])
-    }
-    else if (combination.length > 0) {
-      const acc = [...combination]
-      while (true) {
+				if (
+					toNumInt(acc[acc.length - 1]) >=
+					toNumInt(combinationsInput[acc.length - 1])
+				) {
+					toNumInt(acc.pop());
+				} else {
+					break;
+				}
+			}
 
-        if (acc.length === 0) break;
-        acc[acc.length - 1] = toNumInt(acc[acc.length - 1]) + 1;
+			if (acc.length === 0) return false;
 
+			return recurse(acc);
+		}
 
+		return false;
+	};
 
-        if (toNumInt(acc[acc.length - 1]) >= toNumInt(combinationsInput[acc.length - 1])) {
-          toNumInt(acc.pop())
-        } else {
-          break;
-        }
-      }
-
-      if (acc.length === 0) return false;
-
-      return recurse(acc)
-    }
-
-    return false
-  }
-
-
-  return recurse([0])
-
+	return recurse([0]);
 }
 
-
-
 function flipGiftVertically<T>(gift: T[][]): T[][] {
-  return gift.toReversed();
+	return gift.toReversed();
 }
 
 function transposeGift<T>(gift: T[][]): T[][] {
-  return nonNull(gift[0]).map((_, colIndex) => gift.map((row) => nonNull(row[colIndex])));
+	return nonNull(gift[0]).map((_, colIndex) =>
+		gift.map((row) => nonNull(row[colIndex])),
+	);
 }
 
 function rotateGift90Right<T>(gift: T[][]): T[][] {
-  return transposeGift(flipGiftVertically(gift));
+	return transposeGift(flipGiftVertically(gift));
 }
 
 function createAllTransmutations<T>(gift: T[][]): T[][][] {
-  return [
-    gift,
-    rotateGift90Right(gift),
-    rotateGift90Right(rotateGift90Right(gift)),
-    rotateGift90Right(rotateGift90Right(rotateGift90Right(gift))),
-    flipGiftVertically(gift),
-    flipGiftVertically(rotateGift90Right(gift)),
-    flipGiftVertically(rotateGift90Right(rotateGift90Right(gift))),
-    flipGiftVertically(
-      rotateGift90Right(rotateGift90Right(rotateGift90Right(gift)))
-    ),
-  ];
+	return [
+		gift,
+		rotateGift90Right(gift),
+		rotateGift90Right(rotateGift90Right(gift)),
+		rotateGift90Right(rotateGift90Right(rotateGift90Right(gift))),
+		flipGiftVertically(gift),
+		flipGiftVertically(rotateGift90Right(gift)),
+		flipGiftVertically(rotateGift90Right(rotateGift90Right(gift))),
+		flipGiftVertically(
+			rotateGift90Right(rotateGift90Right(rotateGift90Right(gift))),
+		),
+	];
 }
 
 function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
-  const uniqueTransmutations = new Set<string>();
+	const uniqueTransmutations = new Set<string>();
 
-  return createAllTransmutations(gift).filter(
-    function filterDedupedTransmutations(transmutation) {
-      const stringTransmutation = matrixToString(
-        assMatrix(transmutation, isGiftChar)
-      );
+	return createAllTransmutations(gift).filter(
+		function filterDedupedTransmutations(transmutation) {
+			const stringTransmutation = matrixToString(
+				assMatrix(transmutation, isGiftChar),
+			);
 
-      if (uniqueTransmutations.has(stringTransmutation)) {
-        return false;
-      } else {
-        uniqueTransmutations.add(stringTransmutation);
-        return true;
-      }
-    }
-  );
+			if (uniqueTransmutations.has(stringTransmutation)) {
+				return false;
+			} else {
+				uniqueTransmutations.add(stringTransmutation);
+				return true;
+			}
+		},
+	);
 }
 
 /**
@@ -798,4 +789,4 @@ function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
 */
 
 console.log("done");
-console.log({ isValidBoardRuns })
+console.log({ isValidBoardRuns });

@@ -1,9 +1,8 @@
-
 import { asseq } from "./common";
 import { canFitString } from "./d12";
 
 asseq(
-  canFitString(`
+	canFitString(`
 0:
 ###
 ##.
@@ -35,5 +34,5 @@ asseq(
 ###
 
 12x5: 1 0 1 0 3 2`),
-  false
+	false,
 );
