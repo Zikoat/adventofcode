@@ -6,9 +6,10 @@
 	"scripts": {
 		"debug": "bun --inspect-brk d12",
 		"type": "bunx tsc --noEmit --watch",
-		"start": "clear && bun --watch d12.ts",
-		"bigboy": "bun run d12-bigboy",
-		"test": "bun --watch test"
+		"test": "bun --watch test",
+		"format": "bunx biome check --write d12.ts d12.test.ts",
+		"validate": "bunx tsc --noEmit && bun test && bun run format",
+		"bigboy": "bun run validate && bun run d12-bigboy"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.10"
