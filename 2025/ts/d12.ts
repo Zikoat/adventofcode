@@ -2,8 +2,6 @@ import { expect, mock } from "bun:test";
 import { add, ass, asseq, assInt, diff, nonNull, type Vector } from "./common";
 
 
-const bigBoy = process.env.BIGBOY === "true";
-
 const testInput2 = `0:
 ###
 ##.
@@ -38,8 +36,8 @@ const testInput2 = `0:
 12x5: 1 0 1 0 2 2
 12x5: 1 0 1 0 3 2` as const;
 
-type Gift = ("." | "#")[][];
-type Gifts = Gift[];
+export type Gift = ("." | "#")[][];
+export type Gifts = Gift[];
 type Int = number;
 type GiftCounts = Int[];
 type Tree = { giftCounts: GiftCounts } & RootRectangle;
@@ -113,7 +111,7 @@ function validateTest() {
 
 validateTest();
 
-function stringToMatrix(input: string): string[][] {
+export function stringToMatrix(input: string): string[][] {
   const matrix = input
     .trim()
     .split("\n")
@@ -139,7 +137,7 @@ function matrixToString(stringMatrix: string[][]): string {
     .join("\n");
 }
 
-function assmeq(stringMatrix: string[][], expected: string): void {
+export function assmeq(stringMatrix: string[][], expected: string): void {
   const visualizedBoard = matrixToString(stringMatrix);
 
   const cleanViz = function cleanViz(input: string): string {
@@ -154,7 +152,7 @@ function assmeq(stringMatrix: string[][], expected: string): void {
   ).toBe(cleanViz(expected));
 }
 
-function stringToGift(giftString: string): Gift {
+export function stringToGift(giftString: string): Gift {
   return assIsGiftMatrix(stringToMatrix(giftString));
 }
 
@@ -177,47 +175,15 @@ function isGiftChar(char: unknown): char is "#" | "." {
   return char === "#" || char === ".";
 }
 
-function assIsGiftMatrix(stringMatrix: string[][]): Gift {
-  const newLocal: Gift = assMatrix<"#" | ".">(stringMatrix, isGiftChar);
-  return newLocal;
+export function assIsGiftMatrix(stringMatrix: string[][]): Gift {
+  return assMatrix<"#" | ".">(stringMatrix, isGiftChar);
 }
 
-function testStringToMatrix() {
-  const giftString = `##
-                      ..`;
-
-  const matrix = stringToMatrix(giftString);
-
-  // @ts-expect-error
-  const gift: Gift = matrix;
-
-  asseq(gift, [
-    ["#", "#"],
-    [".", "."],
-  ]);
-
-  assmeq(
-    gift,
-    `##
-     ..`
-  );
-
-  const gift2: Gift = assIsGiftMatrix(matrix);
-
-  assmeq(
-    gift2,
-    `##
-     ..`
-  );
-}
-
-testStringToMatrix();
-
-function wrapGiftString(giftString: string): Gift {
+export function wrapGiftString(giftString: string): Gift {
   return wrapGift(stringToGift(giftString));
 }
 
-function wrapGift(input: Gift): Gift {
+export function wrapGift(input: Gift): Gift {
   let rows = [...input];
   while (
     rows.every(function checkRowsEveryFirstChar(row) {
@@ -257,53 +223,6 @@ function wrapGift(input: Gift): Gift {
   return rows;
 }
 
-assmeq(wrapGiftString(`#`), "#");
-assmeq(wrapGiftString(`##`), "##");
-assmeq(
-  wrapGiftString(
-    `#
-     #`
-  ),
-  `#
-   #`
-);
-assmeq(wrapGiftString(`.#`), "#");
-assmeq(wrapGiftString(`#.`), "#");
-assmeq(wrapGiftString(`#.#`), "#.#");
-assmeq(
-  wrapGiftString(
-    `#.#
-     #..`
-  ),
-  `#.#
-   #..`
-);
-assmeq(wrapGiftString("..#"), "#");
-assmeq(
-  wrapGiftString(
-    `.
-     .
-     #`
-  ),
-  "#"
-);
-assmeq(
-  wrapGiftString(
-    `#
-     .
-     .`
-  ),
-  "#"
-);
-
-assmeq(
-  wrapGift([
-    [".", ".", "."],
-    [".", "#", "."],
-    [".", ".", "."],
-  ]),
-  "#"
-);
 
 export function canFitString(input: string): boolean {
   const parsed2: Puzzle = parseInput(input);
@@ -347,7 +266,7 @@ function assRootRectangle(
   ass(rootRectangle.height > 0);
 }
 
-function isInBounds(vector: Vector, rectangle: RootRectangle): boolean {
+export function isInBounds(vector: Vector, rectangle: RootRectangle): boolean {
   assVector(vector);
   assRootRectangle(rectangle);
 
@@ -359,48 +278,19 @@ function isInBounds(vector: Vector, rectangle: RootRectangle): boolean {
   );
 }
 
-asseq(isInBounds({ x: 0, y: 0 }, { width: 1, height: 1 }), true);
-asseq(isInBounds({ x: -1, y: 0 }, { width: 1, height: 1 }), false);
-asseq(isInBounds({ x: 0, y: -1 }, { width: 1, height: 1 }), false);
-asseq(isInBounds({ x: 1, y: 0 }, { width: 1, height: 1 }), false);
-asseq(isInBounds({ x: 0, y: 1 }, { width: 1, height: 1 }), false);
-asseq(isInBounds({ x: 2, y: 0 }, { width: 3, height: 1 }), true);
-asseq(isInBounds({ x: 3, y: 0 }, { width: 3, height: 1 }), false);
-
 type PlacedGift = {
   type: Int;
   rotation: Int;
 } & Vector;
 
 /** hint: place multiple gifts on a board by using createBoard with an array of placedGifts */
-function placeGift(board: Board, placement: PlacedGift): Board {
+export function placeGift(board: Board, placement: PlacedGift): Board {
   return {
     ...board,
     placedGifts: [...board.placedGifts, placement],
   };
 }
 
-function testPlaceGift() {
-  const board = createBoard({ gifts: [[["#"]]], width: 1, height: 1 });
-  asseq(placeGift(board, { type: 0, rotation: 0, x: 0, y: 0 }).placedGifts, [
-    { type: 0, rotation: 0, x: 0, y: 0 },
-  ]);
-
-  asseq(
-    placeGift(placeGift(board, { type: 0, rotation: 0, x: 1, y: 0 }), {
-      type: 0,
-      rotation: 0,
-      x: 0,
-      y: 0,
-    }).placedGifts,
-    [
-      { type: 0, rotation: 0, x: 1, y: 0 },
-      { type: 0, rotation: 0, x: 0, y: 0 },
-    ]
-  );
-}
-
-testPlaceGift();
 
 function assMatrixSquare(matrix: unknown[][]): void {
   ass(
@@ -453,7 +343,7 @@ function placedGiftToBoundingRectangle(
 
 let isValidBoardRuns = 0;
 
-function isValidBoard(board: Board): boolean {
+export function isValidBoard(board: Board): boolean {
   isValidBoardRuns++;
 
   const placedGifts = board.placedGifts;
@@ -517,20 +407,16 @@ function isValidBoard(board: Board): boolean {
     }
   }
 
-  // console.log("\nboard is valid");
-  // console.log(matrixToString(boardToVizualizedBoard(board)));
-  // console.log(board);
-
   return true;
 }
 
-type Board = {
+export type Board = {
   gifts: GiftsWithRotations;
   placedGifts: PlacedGift[];
 } & RootRectangle;
 
 // shit this method is probably not necessary?
-function createBoard(options: {
+export function createBoard(options: {
   gifts: Gifts;
   width: Int;
   height: Int;
@@ -548,9 +434,6 @@ type VisualizedBoard = string[][];
 
 function boardToVizualizedBoard(board: Board): VisualizedBoard {
   let warning = "";
-
-  // create a 2d array of the board
-  // for each placed gift, set the corresponding cells which are # to #
 
   const boardMatrix: string[][] = Array(board.height)
     .fill([] as string[])
@@ -604,321 +487,10 @@ function boardToVizualizedBoard(board: Board): VisualizedBoard {
   return boardMatrix;
 }
 
-function visualizeBoard(board: Board, expected: string) {
+export function visualizeBoard(board: Board, expected: string) {
   assmeq(boardToVizualizedBoard(board), expected);
 }
 
-function testIsValidPlacement() {
-  const gifts = [[["#"]]] satisfies Gifts;
-  const boardWidth = 1;
-  const boardHeight = 1;
-
-  const board = createBoard({ gifts, width: boardWidth, height: boardHeight });
-
-  asseq(
-    isValidBoard(placeGift(board, { type: 0, rotation: 0, x: 0, y: 0 })),
-    true
-  );
-  asseq(
-    isValidBoard(
-      placeGift(
-        createBoard({ gifts, width: boardWidth, height: boardHeight }),
-        { type: 0, rotation: 0, x: 1, y: 0 }
-      )
-    ),
-    false
-  );
-  asseq(
-    isValidBoard(
-      placeGift(
-        createBoard({
-          gifts: [[["#", "#"]]],
-          width: boardWidth,
-          height: boardHeight,
-        }),
-
-        { type: 0, rotation: 0, x: 0, y: 0 }
-      )
-    ),
-    false
-  );
-
-  // shit create a type for a "validated board", and then we have to pass validated boards to each other?
-
-  asseq(
-    isValidBoard(
-      createBoard({
-        gifts: [[["#"]]],
-        width: boardWidth,
-        height: boardHeight,
-        placedGifts: [
-          { type: 0, rotation: 0, x: 0, y: 0 },
-          { type: 0, rotation: 0, x: 0, y: 0 },
-        ],
-      })
-    ),
-    false,
-    "overlapping pieces "
-  );
-  asseq(
-    isValidBoard(createBoard({ gifts: [[["#"]]], width: 0, height: 0 })),
-    true
-  );
-
-  asseq(
-    isValidBoard(
-      createBoard({
-        gifts: [[["#"]]],
-        width: 2,
-        height: 1,
-        placedGifts: [
-          { type: 0, rotation: 0, x: 0, y: 0 },
-          { type: 0, rotation: 0, x: 1, y: 0 },
-        ],
-      })
-    ),
-    true
-  );
-
-  let boardState = createBoard({
-    gifts: [[["#", "#"]]],
-    width: 2,
-    height: 2,
-  });
-
-  expect(boardState).toStrictEqual({
-    gifts: [
-      // types
-      [
-        // rotations
-        [["#", "#"]], // shape
-        [["#"], ["#"]], // shape
-      ],
-    ],
-    width: 2,
-    height: 2,
-    placedGifts: [],
-  });
-
-  visualizeBoard(
-    boardState,
-    `..
-     ..`
-  );
-
-  boardState = placeGift(boardState, { type: 0, rotation: 1, x: 0, y: 0 });
-
-  visualizeBoard(
-    boardState,
-    `A.
-     A.`
-  );
-
-  boardState = placeGift(boardState, { type: 0, rotation: 0, x: 0, y: 0 });
-
-  visualizeBoard(
-    boardState,
-    `XB
-     A.`
-  );
-
-  visualizeBoard(
-    createBoard({
-      gifts: [[["#"]]] satisfies Gifts,
-      height: 2,
-      width: 2,
-      placedGifts: [{ type: 0, rotation: 0, x: 1, y: 1 }],
-    }),
-    `..
-     .A`
-  );
-
-  asseq(isValidBoard(boardState), false);
-
-  const test1Board: Board = {
-    gifts: [
-      [
-        [
-          ["#", "#", "#"],
-          ["#", "#", "."],
-          ["#", "#", "."],
-        ],
-        [
-          ["#", "#", "#"],
-          ["#", "#", "#"],
-          [".", ".", "#"],
-        ],
-        [
-          [".", "#", "#"],
-          [".", "#", "#"],
-          ["#", "#", "#"],
-        ],
-        [
-          ["#", ".", "."],
-          ["#", "#", "#"],
-          ["#", "#", "#"],
-        ],
-        [
-          ["#", "#", "."],
-          ["#", "#", "."],
-          ["#", "#", "#"],
-        ],
-        [
-          [".", ".", "#"],
-          ["#", "#", "#"],
-          ["#", "#", "#"],
-        ],
-        [
-          ["#", "#", "#"],
-          [".", "#", "#"],
-          [".", "#", "#"],
-        ],
-        [
-          ["#", "#", "#"],
-          ["#", "#", "#"],
-          ["#", ".", "."],
-        ],
-      ],
-      [
-        [
-          ["#", "#", "#"],
-          ["#", "#", "."],
-          [".", "#", "#"],
-        ],
-        [
-          [".", "#", "#"],
-          ["#", "#", "#"],
-          ["#", ".", "#"],
-        ],
-        [
-          ["#", "#", "."],
-          [".", "#", "#"],
-          ["#", "#", "#"],
-        ],
-        [
-          ["#", ".", "#"],
-          ["#", "#", "#"],
-          ["#", "#", "."],
-        ],
-        [
-          [".", "#", "#"],
-          ["#", "#", "."],
-          ["#", "#", "#"],
-        ],
-        [
-          ["#", ".", "#"],
-          ["#", "#", "#"],
-          [".", "#", "#"],
-        ],
-        [
-          ["#", "#", "#"],
-          [".", "#", "#"],
-          ["#", "#", "."],
-        ],
-        [
-          ["#", "#", "."],
-          ["#", "#", "#"],
-          ["#", ".", "#"],
-        ],
-      ],
-      [
-        [
-          [".", "#", "#"],
-          ["#", "#", "#"],
-          ["#", "#", "."],
-        ],
-        [
-          ["#", "#", "."],
-          ["#", "#", "#"],
-          [".", "#", "#"],
-        ],
-      ],
-      [
-        [
-          ["#", "#", "."],
-          ["#", "#", "#"],
-          ["#", "#", "."],
-        ],
-        [
-          ["#", "#", "#"],
-          ["#", "#", "#"],
-          [".", "#", "."],
-        ],
-        [
-          [".", "#", "#"],
-          ["#", "#", "#"],
-          [".", "#", "#"],
-        ],
-        [
-          [".", "#", "."],
-          ["#", "#", "#"],
-          ["#", "#", "#"],
-        ],
-      ],
-      [
-        [
-          ["#", "#", "#"],
-          ["#", ".", "."],
-          ["#", "#", "#"],
-        ],
-        [
-          ["#", "#", "#"],
-          ["#", ".", "#"],
-          ["#", ".", "#"],
-        ],
-        [
-          ["#", "#", "#"],
-          [".", ".", "#"],
-          ["#", "#", "#"],
-        ],
-        [
-          ["#", ".", "#"],
-          ["#", ".", "#"],
-          ["#", "#", "#"],
-        ],
-      ],
-      [
-        [
-          ["#", "#", "#"],
-          [".", "#", "."],
-          ["#", "#", "#"],
-        ],
-        [
-          ["#", ".", "#"],
-          ["#", "#", "#"],
-          ["#", ".", "#"],
-        ],
-      ],
-    ],
-    width: 4,
-    height: 4,
-    placedGifts: [
-      {
-        type: 4,
-        rotation: 3,
-        x: 1,
-        y: 1,
-      },
-      {
-        type: 4,
-        rotation: 3,
-        x: 0,
-        y: 1,
-      },
-    ],
-  };
-
-  visualizeBoard(
-    test1Board,
-    `....
-     BABA
-     BABA
-     BXXA`
-  );
-  asseq(isValidBoard(test1Board), false);
-}
-
-testIsValidPlacement();
 
 function toNumInt(input: Int | undefined | null): Int {
   ass(typeof input === "number");
@@ -991,7 +563,7 @@ function combinationsWithCheck_old(combinationsInput: Int[], check: CombinationC
   return anyValidPlacements;
 }
 
-function someValidPlacements(
+export function someValidPlacements(
   gifts: GiftsWithRotations,
   tree: Tree,
 ): boolean {
@@ -1059,54 +631,9 @@ function someValidPlacements(
 
 type Generator = () => Int[] | undefined;
 
-type CombinationChecker = (c: Int[]) => boolean;
+export type CombinationChecker = (c: Int[]) => boolean;
 
-// shit this is probably unused
-function validateCombinationWithNeg(combination: Int[]) {
-  ass(
-    combination.every(
-      (radix) => typeof radix === "number" && Number.isSafeInteger(radix)
-    )
-  );
-
-  const posFirstIndex = combination.findIndex(radix => radix !== -1)
-  if (posFirstIndex === -1) return;
-
-  const negFirstIndex = combination.findIndex(radix => radix === -1)
-  if (negFirstIndex === -1) return;
-  const posLastIndex = combination.findLastIndex(radix => radix !== -1)
-  const negLastIndex = combination.findLastIndex(radix => radix === -1)
-
-  ass(posFirstIndex === 0)
-  ass(posLastIndex <= negFirstIndex)
-  ass(negLastIndex === combination.length - 1)
-}
-
-testValidateCombinationWithNeg()
-
-function testValidateCombinationWithNeg() {
-  validateCombinationWithNeg([])
-  validateCombinationWithNeg([0])
-  validateCombinationWithNeg([-1])
-  validateCombinationWithNeg([0, -1])
-  validateCombinationWithNeg([0, 0])
-  try {
-
-    validateCombinationWithNeg([-1, 0])
-  } catch (
-  err
-  ) {
-    ass(err)
-    ass(err !== null)
-    ass(typeof err === "object")
-    ass("message" in err)
-    asseq(err.message, "assertion failed")
-  }
-}
-
-
-function combinationsWithCheck(combinationsInput: Int[], check: CombinationChecker): boolean {
-
+export function combinationsWithCheck(combinationsInput: Int[], check: CombinationChecker): boolean {
   ass(
     combinationsInput.every(
       (radix) => typeof radix === "number" && Number.isSafeInteger(radix) && radix !== 0
@@ -1157,129 +684,21 @@ function combinationsWithCheck(combinationsInput: Int[], check: CombinationCheck
 
 }
 
-testCombinationsWithCheck()
 
-function testCombinationsWithCheck() {
 
-  const spy1 = mock<CombinationChecker>((_combination) => true)
-  asseq(combinationsWithCheck([1], spy1), true)
-  asseq(spy1.mock.calls, [[[0]]])
-
-  const spy2 = mock<CombinationChecker>((_combination) => false)
-  asseq(combinationsWithCheck([1], spy2), false)
-  asseq(spy1.mock.calls, [[[0]]])
-
-  const spy3 = mock<CombinationChecker>((combination) => (combination[0]) === 1)
-  asseq(combinationsWithCheck([3], spy3), true)
-  asseq(spy3.mock.calls, [[[0]], [[1]]])
-
-  const spy4 = mock<CombinationChecker>((combination) => (combination).every(shit => shit !== 0))
-  asseq(combinationsWithCheck([3, 3], spy4), true)
-  asseq(spy4.mock.calls, [[[0]], [[1]], [[1, 0]], [[1, 1]]])
-
-  const spy5 = mock<CombinationChecker>((combination) => combination[2] === undefined)
-  asseq(combinationsWithCheck([2, 1, 2], spy5), false)
-  asseq(spy5.mock.calls, [
-    [[0]], // true
-    [[0, 0]], // true
-    [[0, 0, 0]], // false
-    [[0, 0, 1]], // false
-    [[1]], // true
-    [[1, 0]], // true
-    [[1, 0, 0]], // false
-    [[1, 0, 1]] // false
-  ])
-
-}
-
-function testAllPlacements() {
-  asseq(
-    someValidPlacements([[[["#"]]]], {
-      width: 1,
-      height: 1,
-      giftCounts: [1]
-    }),
-    true
-  );
-  asseq(
-    someValidPlacements(
-      [[[["#"]]], [[["#"]]]],
-      { width: 2, height: 2, giftCounts: [2, 2], }
-    ),
-    true
-  );
-  asseq(
-    someValidPlacements(
-      ([[["#"]]] satisfies Gifts).map(createDedupedTransmutations),
-      { width: 1, height: 1, giftCounts: [1], }
-    ),
-    true,
-  );
-
-  expect(
-    someValidPlacements(
-      ([[["#"]]] satisfies Gifts).map(createDedupedTransmutations),
-
-      { width: 2, height: 1, giftCounts: [1], }
-    )
-  ).toStrictEqual(true);
-
-  expect(
-    someValidPlacements(
-      ([[["#"]]] satisfies Gifts).map(createDedupedTransmutations),
-      { width: 1, height: 1, giftCounts: [2], }
-    )
-  ).toStrictEqual(false);
-
-  expect(
-    someValidPlacements(
-      ([[["#"]], [["#", "#"]]] satisfies Gifts).map(
-        createDedupedTransmutations
-      ),
-      { width: 1, height: 1, giftCounts: [1, 1], }
-    )
-  ).toStrictEqual(false);
-
-  expect(
-    someValidPlacements(
-      ([[["#"]], [["#", "#"]]] satisfies Gifts).map(
-        createDedupedTransmutations
-      ),
-      { width: 2, height: 1, giftCounts: [1, 1], }
-    )
-  ).toStrictEqual(false);
-
-  expect(
-    someValidPlacements(
-      ([[["#"]], [["#", "#"]]] satisfies Gifts).map(
-        createDedupedTransmutations
-      ),
-      { width: 2, height: 2, giftCounts: [1, 1], }
-    )
-  ).toBe(true);
-}
-
-testAllPlacements();
-
-function flipGiftHorizontally<T>(gift: T[][]): T[][] {
-  return gift.map(function flipGiftHorizontallyMapRow(row) {
-    return row.toReversed();
-  });
-}
-
-function flipGiftVertically<T>(gift: T[][]): T[][] {
+export function flipGiftVertically<T>(gift: T[][]): T[][] {
   return gift.toReversed();
 }
 
-function transposeGift<T>(gift: T[][]): T[][] {
+export function transposeGift<T>(gift: T[][]): T[][] {
   return nonNull(gift[0]).map((_, colIndex) => gift.map((row) => nonNull(row[colIndex])));
 }
 
-function rotateGift90Right<T>(gift: T[][]): T[][] {
+export function rotateGift90Right<T>(gift: T[][]): T[][] {
   return transposeGift(flipGiftVertically(gift));
 }
 
-function createAllTransmutations<T>(gift: T[][]): T[][][] {
+export function createAllTransmutations<T>(gift: T[][]): T[][][] {
   return [
     gift,
     rotateGift90Right(gift),
@@ -1294,7 +713,7 @@ function createAllTransmutations<T>(gift: T[][]): T[][][] {
   ];
 }
 
-function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
+export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
   const uniqueTransmutations = new Set<string>();
 
   return createAllTransmutations(gift).filter(
@@ -1311,330 +730,6 @@ function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
       }
     }
   );
-}
-
-function testRotation() {
-  assmeq(
-    transposeGift(
-      stringToMatrix(
-        `#..
-         ###`
-      )
-    ),
-    `##
-     .#
-     .#`
-  );
-
-  assmeq(
-    flipGiftHorizontally(
-      stringToMatrix(
-        `#..
-      ###`
-      )
-    ),
-    `..#
-     ###`
-  );
-
-  assmeq(
-    flipGiftVertically(
-      stringToMatrix(
-        `#..
-      ###`
-      )
-    ),
-    `###
-     #..`
-  );
-
-  asseq(rotateGift90Right([["#"]]), [["#"]]);
-  asseq(rotateGift90Right([["#", "#"]]), [["#"], ["#"]]);
-  assmeq(
-    rotateGift90Right(
-      stringToGift(
-        `#.
-         ..`
-      )
-    ),
-    `.#
-    ..`
-  );
-
-  const initialGift = `12
-43`
-    .split("\n")
-    .map(function splitInitialGiftMapRow(row) {
-      return row.split("");
-    });
-  asseq(initialGift, [
-    ["1", "2"],
-    ["4", "3"],
-  ]);
-  expect(createAllTransmutations(initialGift)).toStrictEqual(
-    // prettier-ignore
-    [
-      [["1", "2"], ["4", "3"]],
-      [["4", "1"], ["3", "2"]],
-      [["3", "4"], ["2", "1"]],
-      [["2", "3"], ["1", "4"]],
-      [["4", "3"], ["1", "2"]],
-      [["3", "2"], ["4", "1"]],
-      [["2", "1"], ["3", "4"]],
-      [["1", "4"], ["2", "3"]],
-
-    ]
-  );
-
-  expect(createAllTransmutations([["#"]])).toStrictEqual([
-    [["#"]],
-    [["#"]],
-    [["#"]],
-    [["#"]],
-    [["#"]],
-    [["#"]],
-    [["#"]],
-    [["#"]],
-  ]);
-
-  expect(createAllTransmutations([["#", "#"]])).toStrictEqual([
-    [["#", "#"]],
-    [["#"], ["#"]],
-    [["#", "#"]],
-    [["#"], ["#"]],
-    [["#", "#"]],
-    [["#"], ["#"]],
-    [["#", "#"]],
-    [["#"], ["#"]],
-  ]);
-
-  asseq(
-    createDedupedTransmutations([
-      ["#", ".", "."],
-      ["#", "#", "#"],
-    ]),
-    [
-      [
-        ["#", ".", "."],
-        ["#", "#", "#"],
-      ],
-      [
-        ["#", "#"],
-        ["#", "."],
-        ["#", "."],
-      ],
-      [
-        ["#", "#", "#"],
-        [".", ".", "#"],
-      ],
-      [
-        [".", "#"],
-        [".", "#"],
-        ["#", "#"],
-      ],
-      [
-        ["#", "#", "#"],
-        ["#", ".", "."],
-      ],
-      [
-        ["#", "."],
-        ["#", "."],
-        ["#", "#"],
-      ],
-      [
-        [".", ".", "#"],
-        ["#", "#", "#"],
-      ],
-      [
-        ["#", "#"],
-        [".", "#"],
-        [".", "#"],
-      ],
-    ]
-  );
-
-  expect(createDedupedTransmutations([["#"]])).toStrictEqual([[["#"]]]);
-}
-
-testRotation();
-
-asseq(
-  canFitString(`1:
-#
-
-1x1: 1`),
-  true
-);
-
-// asseq(
-//   canFitString(`1:
-// #
-
-// 0x0: 1`),
-//   false
-// );
-
-asseq(
-  canFitString(`1:
-#
-
-1x1: 2`),
-  false
-);
-
-asseq(
-  canFitString(`1:
-#
-
-2x1: 2`),
-  true
-);
-
-asseq(
-  canFitString(`1:
-##
-##
-
-2x1: 1`),
-  false
-);
-
-asseq(
-  canFitString(`1:
-#.#
-
-2x2: 1`),
-  false
-);
-
-asseq(
-  canFitString(`1:
-.#
-
-1x1: 1`),
-  true
-);
-
-asseq(
-  canFitString(`1:
-##
-
-2x2: 2`),
-  true
-);
-
-asseq(
-  canFitString(`1:
-##
-
-2x2: 3`),
-  false
-);
-
-console.log("\n--- rotation test");
-asseq(
-  canFitString(`1:
-##
-
-1x2: 1`),
-  true,
-  "with rotations "
-);
-
-asseq(
-  canFitString(`1:
-#.
-##
-#.
-
-2:
-#.
-..
-#.
-
-2x3: 1 1
-`),
-  true,
-  "with flipping"
-);
-
-asseq(
-  canFitString(`0:
-###
-##.
-##.
-
-1:
-###
-##.
-.##
-
-2:
-.##
-###
-##.
-
-3:
-##.
-###
-##.
-
-4:
-###
-#..
-###
-
-5:
-###
-.#.
-###
-
-4x4: 0 0 0 0 2 0`),
-  true
-);
-
-asseq(
-  canFitString(`
-0:
-###
-##.
-##.
-
-1:
-###
-##.
-.##
-
-2:
-.##
-###
-##.
-
-3:
-##.
-###
-##.
-
-4:
-###
-#..
-###
-
-5:
-###
-.#.
-###
-
-12x5: 1 0 1 0 2 2`),
-  true
-);
-
-if (bigBoy) {
-
-  console.log("start 2")
-
-  
-  console.log("done 2")
 }
 
 /**
@@ -1690,10 +785,11 @@ if (bigBoy) {
 [ ] print the board when it is finished
 [ ] log the amount of check calls per second
 [ ] debug check call speed
+[] create a type for a "validated board", and then we have to pass validated boards to each other?
 
 # DX
-[ ] proper test suite
-[ ] no comments
+[x] proper test suite
+[x] no comments (current comments are ok)
 [ ] remove tests and check usages
 [ ] formatting, after type check and test?
 [ ] 
