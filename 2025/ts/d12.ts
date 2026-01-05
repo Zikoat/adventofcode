@@ -2,8 +2,8 @@ import { expect } from "bun:test";
 import { add, ass, asseq, assInt, diff, nonNull, type Vector } from "./common";
 
 const opts = {
-  validateGifts: true, // true is safer
-  validateEveryGiftCellInside: true, // true is safer
+  validateGifts: false,
+  validateEveryGiftCellInside: false,
 };
 
 export type Gift = ("." | "#")[][];
@@ -369,7 +369,24 @@ export function isValidBoard(
 
     const isRectangleInside = rectangleIsInside(giftRectangle, board);
 
-    // ass(isRectangleInside)
+    if (
+      giftRectangle.width <= board.width &&
+      giftRectangle.height <= board.height
+    ) {
+      ass(
+        isRectangleInside,
+        `gift was placed outside of the board. placed gift ${JSON.stringify(
+          giftRectangle,
+        )} should be inside of ${JSON.stringify({
+          width: board.width,
+          height: board.height,
+        })}. gift shape:
+---
+${matrixToString(placedGiftToGift(giftsWithRotations, placedGift))}
+---`,
+      );
+    }
+
     return isRectangleInside;
   };
 
