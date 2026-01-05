@@ -13,6 +13,7 @@ import {
   flipGiftVertically,
   type Gift,
   type Gifts,
+  type GiftsWithRotations,
   giftsOverlap,
   giftsOverlapCount,
   type Int,
@@ -157,7 +158,12 @@ describe(isInBounds, () => {
 
 describe(placeGift, () => {
   test("should not mutate the original board instance and return a new board", () => {
-    const board = createBoard({ gifts: [[["#"]]], width: 1, height: 1 });
+    const board = {
+      gifts: toGiftsWithRotations(`#`),
+      width: 1,
+      height: 1,
+      placedGifts: [],
+    };
     asseq(placeGift(board, { type: 0, rotation: 0, x: 0, y: 0 }).placedGifts, [
       { type: 0, rotation: 0, x: 0, y: 0 },
     ]);
@@ -179,15 +185,12 @@ describe(placeGift, () => {
 
 describe(isValidBoard, () => {
   test("single space board with 1 placed gift of 1 tile", () => {
-    const gifts = [[["#"]]].map(assIsGiftMatrix);
-    const boardWidth = 1;
-    const boardHeight = 1;
-
-    const board = createBoard({
-      gifts,
-      width: boardWidth,
-      height: boardHeight,
-    });
+    const board = {
+      gifts: toGiftsWithRotations(`#`),
+      width: 1,
+      height: 1,
+      placedGifts: [],
+    };
 
     asseq(
       isValidBoard(placeGift(board, { type: 0, rotation: 0, x: 0, y: 0 })),
@@ -197,14 +200,19 @@ describe(isValidBoard, () => {
 
   test("placed x position outside of board should be invalid", () => {
     expect(() =>
-      isValidBoard(
-        placeGift(createBoard({ gifts: [[["#"]]], width: 1, height: 1 }), {
-          type: 0,
-          rotation: 0,
-          x: 1,
-          y: 0,
-        }),
-      ),
+      isValidBoard({
+        gifts: toGiftsWithRotations(`#`),
+        width: 1,
+        height: 1,
+        placedGifts: [
+          {
+            type: 0,
+            rotation: 0,
+            x: 1,
+            y: 0,
+          },
+        ],
+      }),
     ).toThrowErrorMatchingInlineSnapshot(`
       "gift was placed outside of the board. placed gift {"type":0,"rotation":0,"x":1,"y":0,"width":1,"height":1} should be inside of {"width":1,"height":1}. gift shape:
       ---
@@ -214,27 +222,26 @@ describe(isValidBoard, () => {
   });
 
   test("placed gift which has piece outside of board should be invalid", () => {
-    asseq(
-      isValidBoard(
-        placeGift(
-          createBoard({
-            gifts: [[["#", "#"]]],
-            width: 1,
-            height: 1,
-          }),
+    expect(() =>
+      isValidBoard({
+        gifts: toGiftsWithRotations(`##`),
+        width: 1,
+        height: 1,
+        placedGifts: [{ type: 0, rotation: 0, x: 0, y: 0 }],
+      }),
+    ).toThrowErrorMatchingInlineSnapshot(`
+      "gift is larger than the board. board: 1x1. gift: 
 
-          { type: 0, rotation: 0, x: 0, y: 0 },
-        ),
-      ),
-      false,
-    );
+      ##
+      "
+    `);
   });
 
   test("pieces that have a tile at the same position should be invalid", () => {
     asseq(
       isValidBoard(
         createBoard({
-          gifts: [[["#"]]],
+          gifts: toGiftsWithRotations(`#`),
           width: 1,
           height: 1,
           placedGifts: [
@@ -252,7 +259,7 @@ describe(isValidBoard, () => {
     asseq(
       isValidBoard(
         createBoard({
-          gifts: [[["#"]]],
+          gifts: toGiftsWithRotations(`#`),
           width: 2,
           height: 1,
           placedGifts: [
@@ -267,9 +274,10 @@ describe(isValidBoard, () => {
 
   test("visualizing board after multiple placements should show X at positions which are wrong", () => {
     let boardState = createBoard({
-      gifts: [[["#", "#"]]],
+      gifts: toGiftsWithRotations(`##`),
       width: 2,
       height: 2,
+      placedGifts: [],
     });
 
     expect(boardState).toStrictEqual({
@@ -314,7 +322,7 @@ describe(isValidBoard, () => {
   test("visualizing board with a placed gift in the bottom right corner", () => {
     visualizeBoard(
       createBoard({
-        gifts: [[["#"]]] satisfies Gifts,
+        gifts: toGiftsWithRotations(`#`),
         height: 2,
         width: 2,
         placedGifts: [{ type: 0, rotation: 0, x: 1, y: 1 }],
@@ -787,13 +795,17 @@ describe(canFitString, () => {
   });
 
   test("#.# shape doesnt fit on 2x2 board", () => {
-    asseq(
+    expect(() =>
       canFitString(`1:
 #.#
 
 2x2: 1`),
-      false,
-    );
+    ).toThrowErrorMatchingInlineSnapshot(`
+      "gift is larger than the board. board: 2x2. gift: 
+
+      #.#
+      "
+    `);
   });
 
   test(".# piece should fit on 1x1 board", () => {
@@ -986,15 +998,19 @@ describe(someValidPlacements, () => {
   });
 
   test("# and ## should not fit 1x1", () => {
-    asseq(
+    expect(() =>
       someValidPlacements(
         [assIsGiftMatrix([["#"]]), assIsGiftMatrix([["#", "#"]])].map(
           createDedupedTransmutations,
         ),
         { width: 1, height: 1, giftCounts: [1, 1] },
       ),
-      false,
-    );
+    ).toThrowErrorMatchingInlineSnapshot(`
+      "gift is larger than the board. board: 1x1. gift: 
+
+      ##
+      "
+    `);
   });
 
   test.skip("# and ## should not fit 2x1", () => {
@@ -1036,16 +1052,16 @@ function placeGift(board: Board, placement: PlacedGift): Board {
 
 // shit this method is probably not necessary?
 function createBoard(options: {
-  gifts: Gifts;
+  gifts: GiftsWithRotations;
   width: Int;
   height: Int;
-  placedGifts?: PlacedGift[];
+  placedGifts: PlacedGift[];
 }): Board {
   return {
-    gifts: options.gifts.map(createDedupedTransmutations),
+    gifts: options.gifts,
     width: options.width,
     height: options.height,
-    placedGifts: options.placedGifts ?? [],
+    placedGifts: options.placedGifts,
   };
 }
 
@@ -1136,11 +1152,6 @@ describe(giftsOverlap, () => {
   });
 
   test("should return false when the gifts do not overlap with a single #", () => {
-    const toGiftsWithRotations = (...gifts: string[]) =>
-      gifts
-        .map((stringGift) => assIsGiftMatrix(stringToGift(stringGift)))
-        .map(createDedupedTransmutations);
-
     asseq(
       giftsOverlap(
         toGiftsWithRotations(`#`),
@@ -1165,3 +1176,8 @@ describe(giftsOverlap, () => {
     );
   });
 });
+
+const toGiftsWithRotations = (...gifts: string[]) =>
+  gifts
+    .map((stringGift) => assIsGiftMatrix(stringToGift(stringGift)))
+    .map(createDedupedTransmutations);

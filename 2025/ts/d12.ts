@@ -4,6 +4,7 @@ import { add, ass, asseq, assInt, diff, nonNull, type Vector } from "./common";
 const opts = {
   validateGifts: false,
   validateEveryGiftCellInside: false,
+  validateLastGiftCellInside: true,
 };
 
 export type Gift = ("." | "#")[][];
@@ -12,7 +13,7 @@ export type Int = number;
 type GiftCounts = Int[];
 type Tree = { giftCounts: GiftCounts } & RootRectangle;
 type Puzzle = { gifts: Gifts; trees: Tree[] };
-type GiftsWithRotations = Gifts[];
+export type GiftsWithRotations = Gifts[];
 
 export function bigBoy() {
   const testInput2 = `0:
@@ -334,6 +335,8 @@ export function isValidBoard(
   combination?: Int[],
   lastCombination?: Int[],
 ): boolean {
+  assertNotTooLargeGifts(board.gifts, board);
+
   isValidBoardRuns++;
 
   if (isValidBoardRuns % perfLog === 0) {
@@ -394,7 +397,7 @@ ${matrixToString(placedGiftToGift(giftsWithRotations, placedGift))}
     for (const placedGift of placedGifts) {
       if (!giftInside(placedGift)) return false;
     }
-  } else {
+  } else if (opts.validateLastGiftCellInside) {
     const lastGift: PlacedGift = nonNull(placedGifts[placedGifts.length - 1]);
     if (!giftInside(lastGift)) return false;
   }
@@ -425,7 +428,6 @@ export function giftsOverlap(
   giftsOverlapCount++;
 
   const gift1 = placedGiftToGift(giftsWithRotations, placedMultiGift1);
-
   const gift2 = placedGiftToGift(giftsWithRotations, placedMultiGift2);
 
   for (const [gift1LocalY, gift1Row] of gift1.entries()) {
@@ -463,22 +465,26 @@ function toNumInt(input: Int | undefined | null): Int {
 }
 
 export function someValidPlacements(
-  gifts: GiftsWithRotations,
+  giftsWithRotations: GiftsWithRotations,
   tree: Tree,
 ): boolean {
   const giftCounts = tree.giftCounts;
   const board = tree;
 
-  asseq(gifts.length, giftCounts.length);
+  asseq(giftsWithRotations.length, giftCounts.length);
 
   ass(board.width !== 0);
   ass(board.height !== 0);
 
+  assertNotTooLargeGifts(giftsWithRotations, board);
+
   const combinationsInput: Int[] = giftCounts.flatMap((giftCount, index) => {
-    const giftRotationCount = nonNull(gifts[index]).length;
+    const giftRotationCount = nonNull(giftsWithRotations[index]).length;
 
     const minGiftSize = Math.min(
-      ...nonNull(gifts[index]).map((gift) => nonNull(gift[0]).length),
+      ...nonNull(giftsWithRotations[index]).map(
+        (gift) => nonNull(gift[0]).length,
+      ),
     );
 
     ass(giftRotationCount !== 0);
@@ -528,7 +534,7 @@ export function someValidPlacements(
         {
           ...board,
           placedGifts: giftPlacement,
-          gifts,
+          gifts: giftsWithRotations,
         },
         combination,
         combinationsInput,
@@ -539,6 +545,26 @@ export function someValidPlacements(
   );
 
   return anyValidPlacements;
+}
+
+function assertNotTooLargeGifts(
+  giftsWithRotations: GiftsWithRotations,
+  board: RootRectangle,
+) {
+  for (const giftWithRotations of giftsWithRotations) {
+    for (const gift of giftWithRotations) {
+      ass(
+        rectangleIsInside(
+          { ...matrixToRootRectangle(gift), x: 0, y: 0 },
+          board,
+        ),
+        `gift is larger than the board. board: ${board.width}x${board.height}. gift: 
+
+${matrixToString(gift)}
+`,
+      );
+    }
+  }
 }
 
 export type CombinationChecker = (c: Int[]) => boolean;
