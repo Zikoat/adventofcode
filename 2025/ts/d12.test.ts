@@ -12,7 +12,6 @@ import {
   createDedupedTransmutations,
   flipGiftVertically,
   type Gift,
-  type Gifts,
   type GiftsWithRotations,
   giftsOverlap,
   giftsOverlapCount,
