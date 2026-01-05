@@ -2,9 +2,8 @@ import { expect } from "bun:test";
 import { add, ass, asseq, assInt, diff, nonNull, type Vector } from "./common";
 
 const opts = {
-	validateGifts: false, // true is safer
-	checkInsideOnlyLast: true, // false is safer
-	checkEveryGiftOverlaps: false, // true is safer
+	validateGifts: true, // true is safer
+	validateEveryGiftCellInside: true, // true is safer
 };
 
 export type Gift = ("." | "#")[][];
@@ -15,7 +14,7 @@ type Tree = { giftCounts: GiftCounts } & RootRectangle;
 type Puzzle = { gifts: Gifts; trees: Tree[] };
 type GiftsWithRotations = Gifts[];
 
-export function validateTest() {
+export function bigBoy() {
 	const testInput2 = `0:
 ###
 ##.
@@ -340,7 +339,13 @@ export function isValidBoard(
 	if (isValidBoardRuns % perfLog === 0) {
 		const now = performance.now();
 		console.log(
-			`${isValidBoardRuns.toString().padEnd(10, " ")} avg ${((isValidBoardRuns / (now - startTime)) * 1000).toFixed(0)}/sec ${combination?.map((num) => `${num}`.padStart(2, " "))}\n                          ${lastCombination?.map((num) => `${num}`.padStart(2, " "))}`,
+			`${isValidBoardRuns.toString().padEnd(10, " ")} avg ${(
+				(isValidBoardRuns / (now - startTime)) * 1000
+			).toFixed(0)}/sec ${combination?.map((num) =>
+				`${num}`.padStart(2, " "),
+			)}\n                          ${lastCombination?.map((num) =>
+				`${num}`.padStart(2, " "),
+			)}`,
 		);
 	}
 
@@ -368,13 +373,13 @@ export function isValidBoard(
 		return isRectangleInside;
 	};
 
-	if (opts.checkInsideOnlyLast) {
-		const lastGift: PlacedGift = nonNull(placedGifts[placedGifts.length - 1]);
-		if (!giftInside(lastGift)) return false;
-	} else {
+	if (opts.validateEveryGiftCellInside) {
 		for (const placedGift of placedGifts) {
 			if (!giftInside(placedGift)) return false;
 		}
+	} else {
+		const lastGift: PlacedGift = nonNull(placedGifts[placedGifts.length - 1]);
+		if (!giftInside(lastGift)) return false;
 	}
 
 	const placedMultiGift1Index = placedGifts.length - 1;
@@ -566,9 +571,9 @@ export function combinationsWithCheck(
 			if (acc.length === 0) return false;
 
 			return recurse(acc);
+		} else {
+			ass(false);
 		}
-
-		return false;
 	};
 
 	return recurse([0]);

@@ -552,47 +552,49 @@ describe(combinationsWithCheck, () => {
 
 describe("Rotations", () => {
 	describe(transposeGift, () => {
-		test("", () => {
+		test("transpose should work", () => {
 			assmeq(
 				transposeGift(
 					stringToMatrix(
 						`#..
-             ###`,
+                         ###`,
 					),
 				),
 				`##
-         .#
-         .#`,
+                 .#
+                 .#`,
 			);
 		});
 	});
 
 	describe(flipGiftVertically, () => {
-		assmeq(
-			flipGiftVertically(
-				stringToMatrix(
-					`#..
-        ###`,
+		test("flip vertically should work", () => {
+			assmeq(
+				flipGiftVertically(
+					stringToMatrix(
+						`#..
+                         ###`,
+					),
 				),
-			),
-			`###
-       #..`,
-		);
+				`###
+                 #..`,
+			);
+		});
 	});
 
 	describe(rotateGift90Right, () => {
-		test("", () => {
+		test("rotate 90 degrees right should work", () => {
 			asseq(rotateGift90Right([["#"]]), [["#"]]);
 			asseq(rotateGift90Right([["#", "#"]]), [["#"], ["#"]]);
 			assmeq(
 				rotateGift90Right(
 					stringToGift(
 						`#.
-             ..`,
+                         ..`,
 					),
 				),
 				`.#
-         ..`,
+                 ..`,
 			);
 		});
 	});
@@ -1108,10 +1110,8 @@ afterAll(() => {
 });
 
 describe(c, () => {
-	test.skip("should log the variable name and the content", () => {
+	test("should log the variable name and the content", () => {
 		var foo = "bar";
 		c(() => foo);
 	});
 });
-
-describe.todo("giftsOverlap", () => {});

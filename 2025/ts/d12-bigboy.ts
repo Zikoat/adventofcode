@@ -1,5 +1,5 @@
 import { asseq } from "./common";
-import { canFitString, validateTest } from "./d12";
+import { bigBoy, canFitString } from "./d12";
 
 asseq(
 	canFitString(`
@@ -37,4 +37,4 @@ asseq(
 	false,
 );
 
-validateTest();
+bigBoy();
