@@ -12,11 +12,9 @@ import {
   createDedupedTransmutations,
   flipGiftVertically,
   type Gift,
-  type GiftsWithRotations,
   getProgress,
   giftsOverlap,
   giftsOverlapCount,
-  type Int,
   isInBounds,
   isValidBoard,
   isValidBoardRuns,
@@ -160,46 +158,16 @@ describe(isInBounds, () => {
   });
 });
 
-describe(placeGift, () => {
-  test("should not mutate the original board instance and return a new board", () => {
-    const board = {
-      gifts: toGiftsWithRotations(`#`),
-      width: 1,
-      height: 1,
-      placedGifts: [],
-    };
-    asseq(placeGift(board, { type: 0, rotation: 0, x: 0, y: 0 }).placedGifts, [
-      { type: 0, rotation: 0, x: 0, y: 0 },
-    ]);
-
-    asseq(
-      placeGift(placeGift(board, { type: 0, rotation: 0, x: 1, y: 0 }), {
-        type: 0,
-        rotation: 0,
-        x: 0,
-        y: 0,
-      }).placedGifts,
-      [
-        { type: 0, rotation: 0, x: 1, y: 0 },
-        { type: 0, rotation: 0, x: 0, y: 0 },
-      ],
-    );
-  });
-});
-
 describe(isValidBoard, () => {
   test("single space board with 1 placed gift of 1 tile", () => {
     const board = {
       gifts: toGiftsWithRotations(`#`),
       width: 1,
       height: 1,
-      placedGifts: [],
+      placedGifts: [{ type: 0, rotation: 0, x: 0, y: 0 }],
     };
 
-    asseq(
-      isValidBoard(placeGift(board, { type: 0, rotation: 0, x: 0, y: 0 })),
-      true,
-    );
+    asseq(isValidBoard(board), true);
   });
 
   test("placed x position outside of board should be invalid", () => {
@@ -245,17 +213,15 @@ describe(isValidBoard, () => {
 
   test("pieces that have a tile at the same position should be invalid", () => {
     asseq(
-      isValidBoard(
-        createBoard({
-          gifts: toGiftsWithRotations(`#`),
-          width: 1,
-          height: 1,
-          placedGifts: [
-            { type: 0, rotation: 0, x: 0, y: 0 },
-            { type: 0, rotation: 0, x: 0, y: 0 },
-          ],
-        }),
-      ),
+      isValidBoard({
+        gifts: toGiftsWithRotations(`#`),
+        width: 1,
+        height: 1,
+        placedGifts: [
+          { type: 0, rotation: 0, x: 0, y: 0 },
+          { type: 0, rotation: 0, x: 0, y: 0 },
+        ],
+      }),
       false,
       "overlapping pieces ",
     );
@@ -263,28 +229,26 @@ describe(isValidBoard, () => {
 
   test("place 2 gifts side by side should be valid", () => {
     asseq(
-      isValidBoard(
-        createBoard({
-          gifts: toGiftsWithRotations(`#`),
-          width: 2,
-          height: 1,
-          placedGifts: [
-            { type: 0, rotation: 0, x: 0, y: 0 },
-            { type: 0, rotation: 0, x: 1, y: 0 },
-          ],
-        }),
-      ),
+      isValidBoard({
+        gifts: toGiftsWithRotations(`#`),
+        width: 2,
+        height: 1,
+        placedGifts: [
+          { type: 0, rotation: 0, x: 0, y: 0 },
+          { type: 0, rotation: 0, x: 1, y: 0 },
+        ],
+      }),
       true,
     );
   });
 
   test("visualizing board after multiple placements should show X at positions which are wrong", () => {
-    let boardState = createBoard({
+    const boardState = {
       gifts: toGiftsWithRotations(`##`),
       width: 2,
       height: 2,
-      placedGifts: [],
-    });
+      placedGifts: [] as PlacedGift[],
+    };
 
     expect(boardState).toStrictEqual({
       gifts: [
@@ -306,7 +270,7 @@ describe(isValidBoard, () => {
        ..`,
     );
 
-    boardState = placeGift(boardState, { type: 0, rotation: 1, x: 0, y: 0 });
+    boardState.placedGifts.push({ type: 0, rotation: 1, x: 0, y: 0 });
 
     visualizeBoard(
       boardState,
@@ -314,7 +278,7 @@ describe(isValidBoard, () => {
        A.`,
     );
 
-    boardState = placeGift(boardState, { type: 0, rotation: 0, x: 0, y: 0 });
+    boardState.placedGifts.push({ type: 0, rotation: 0, x: 0, y: 0 });
 
     visualizeBoard(
       boardState,
@@ -327,12 +291,12 @@ describe(isValidBoard, () => {
 
   test("visualizing board with a placed gift in the bottom right corner", () => {
     visualizeBoard(
-      createBoard({
+      {
         gifts: toGiftsWithRotations(`#`),
         height: 2,
         width: 2,
         placedGifts: [{ type: 0, rotation: 0, x: 1, y: 1 }],
-      }),
+      },
       `..
        .A`,
     );
@@ -1046,29 +1010,6 @@ describe(someValidPlacements, () => {
 
 function visualizeBoard(board: Board, expected: string) {
   assmeq(boardToVizualizedBoard(board), expected);
-}
-
-/** hint: place multiple gifts on a board by using createBoard with an array of placedGifts */
-function placeGift(board: Board, placement: PlacedGift): Board {
-  return {
-    ...board,
-    placedGifts: [...board.placedGifts, placement],
-  };
-}
-
-// shit this method is probably not necessary?
-function createBoard(options: {
-  gifts: GiftsWithRotations;
-  width: Int;
-  height: Int;
-  placedGifts: PlacedGift[];
-}): Board {
-  return {
-    gifts: options.gifts,
-    width: options.width,
-    height: options.height,
-    placedGifts: options.placedGifts,
-  };
 }
 
 function boardToVizualizedBoard(board: Board): VisualizedBoard {
