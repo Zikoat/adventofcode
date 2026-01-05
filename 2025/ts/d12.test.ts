@@ -13,13 +13,18 @@ import {
   flipGiftVertically,
   type Gift,
   type GiftsWithRotations,
+  getProgress,
   giftsOverlap,
   giftsOverlapCount,
   type Int,
   isInBounds,
   isValidBoard,
   isValidBoardRuns,
+  lerp,
+  lerpMultiple,
+  lerpRange,
   matrixToString,
+  opts,
   type PlacedGift,
   placedGiftToGift,
   rotateGift90Right,
@@ -221,6 +226,7 @@ describe(isValidBoard, () => {
   });
 
   test("placed gift which has piece outside of board should be invalid", () => {
+    opts.validateTooLargeGifts = true;
     expect(() =>
       isValidBoard({
         gifts: toGiftsWithRotations(`##`),
@@ -234,6 +240,7 @@ describe(isValidBoard, () => {
       ##
       "
     `);
+    opts.validateTooLargeGifts = false;
   });
 
   test("pieces that have a tile at the same position should be invalid", () => {
@@ -1176,7 +1183,101 @@ describe(giftsOverlap, () => {
   });
 });
 
+// shit todo use this in the main flow
 const toGiftsWithRotations = (...gifts: string[]) =>
   gifts
     .map((stringGift) => assIsGiftMatrix(stringToGift(stringGift)))
     .map(createDedupedTransmutations);
+
+describe(getProgress, () => {
+  test("should return the progress", () => {
+    asseq(getProgress([1], [0]), 0);
+    asseq(getProgress([1], [1]), 1);
+    asseq(getProgress([2], [0]), 0);
+    asseq(getProgress([2], [1]), 0.5);
+    asseq(getProgress([2], [2]), 1);
+
+    asseq(getProgress([1, 1], [0]), 0 / 6);
+    asseq(getProgress([1, 1], [0, 0]), 0 / 6);
+    asseq(getProgress([1, 1], [0, 1]), 3 / 6);
+    asseq(getProgress([1, 1], [1]), 3 / 6);
+    asseq(getProgress([1, 1], [1, 0]), 3 / 6);
+    asseq(getProgress([1, 1], [1, 1]), 6 / 6);
+
+    asseq(
+      // biome-ignore format: they should be aligned
+      getProgress(
+        [8, 10, 3, 2, 10, 3, 4, 10, 3, 4, 10, 3, 4, 10, 3, 2, 10, 3, 2, 10, 3],
+        [0, 0, 0, 0, 2, 1, 2, 6, 1, 1, 9, 0, 0, 5, 2, 1, 8, 0]
+      ),
+      0.26587301587301587,
+    );
+
+    asseq(
+      // biome-ignore format: they should be aligned
+      getProgress(
+        [8, 10, 3, 2, 10, 3, 4, 10, 3, 4, 10, 3, 4, 10, 3, 2, 10, 3, 2, 10, 3],
+        [0, 0, 0, 0, 6, 0, 3, 2, 2, 1, 3, 1, 1, 9, 1, 1, 3, 1]
+      ),
+      0.2722222222222222,
+    );
+    asseq(
+      // biome-ignore format: they should be aligned
+      getProgress(
+        [8, 10, 3, 2, 10, 3, 4, 10, 3, 4, 10, 3, 4, 10, 3, 2, 10, 3, 2, 10, 3],
+        [0, 0, 0, 0, 9, 2, 3, 2, 1, 1, 6, 0, 2, 0, 1]
+      ),
+      0.21587301587301586,
+    );
+  });
+
+  test.only("2", () => {
+    asseq(lerp(1, 0), { from: 0, to: 0.5 });
+    asseq(lerp(1, 1), { from: 0.5, to: 1 });
+
+    asseq(lerp(2, 0), { from: 0, to: 1 / 3 });
+    asseq(lerp(2, 1), { from: 1 / 3, to: 2 / 3 });
+    asseq(lerp(2, 2), { from: 2 / 3, to: 1 });
+
+    asseq(lerpRange({ from: 0, to: 1 / 2 }, { from: 0, to: 1 / 2 }), {
+      from: 0,
+      to: 1 / 4,
+    });
+
+    asseq(lerpRange({ from: 1 / 2, to: 1 }, { from: 0, to: 1 / 2 }), {
+      from: 2 / 4,
+      to: 3 / 4,
+    });
+
+    asseq(lerpMultiple([1, 1], [0, 0]), [
+      { from: 0, to: 1 },
+      { from: 0, to: 1 },
+    ]);
+
+    asseq(lerpMultiple([2, 2], [1, 1]), [
+      { from: 1 / 2, to: 1 },
+      { from: 0.75, to: 1 },
+    ]);
+
+    asseq(lerpMultiple([8], [7]), [{ from: 7 / 8, to: 8 / 8 }]);
+    asseq(getProgress([8], [7]), 1);
+
+    asseq(
+      // biome-ignore format: they should be aligned
+      getProgress(
+          [8, 10, 3, 2, 10, 3, 4, 10, 3, 4, 10, 3, 4, 10, 3, 2, 10, 3, 2, 10, 3],
+          [0, 0,  0, 0, 2,  1, 2, 6,  1, 1, 9,  0, 0, 5,  2, 1, 8,  0],
+        ),
+      0.0005321043079936129,
+    );
+
+    asseq(
+      // biome-ignore format: they should be aligned
+      getProgress(
+        [8 ,10],
+        [7, 9],
+      ),
+      1,
+    );
+  });
+});

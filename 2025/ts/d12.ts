@@ -1,10 +1,20 @@
 import { expect } from "bun:test";
-import { add, ass, asseq, assInt, diff, nonNull, type Vector } from "./common";
+import {
+  add,
+  ass,
+  asseq,
+  assInt,
+  diff,
+  nonNull,
+  type Rang,
+  type Vector,
+} from "./common";
 
-const opts = {
+export const opts = {
   validateGifts: false,
   validateEveryGiftCellInside: false,
-  validateLastGiftCellInside: true,
+  validateLastGiftCellInside: true, // shit todo required right now
+  validateTooLargeGifts: false,
 };
 
 export type Gift = ("." | "#")[][];
@@ -332,23 +342,32 @@ const perfLog = 1_000_000;
 
 export function isValidBoard(
   board: Board,
-  combination?: Int[],
-  lastCombination?: Int[],
+  currentCombination?: Int[],
+  totalCombination?: Int[],
 ): boolean {
-  assertNotTooLargeGifts(board.gifts, board);
+  if (opts.validateTooLargeGifts) {
+    assertNotTooLargeGifts(board.gifts, board);
+  }
 
   isValidBoardRuns++;
 
   if (isValidBoardRuns % perfLog === 0) {
     const now = performance.now();
+
+    ass(currentCombination);
+    ass(totalCombination);
+
+    const progress = getProgress(totalCombination, currentCombination);
+
+    const firstString = `${isValidBoardRuns.toString().padEnd(10, " ")} avg ${(
+      (isValidBoardRuns / (now - startTime)) * 1000
+    ).toFixed(
+      0,
+    )}/sec ${progress.toFixed(4)} % ${Temporal.Now.plainTimeISO().toString({ fractionalSecondDigits: 2 })} `;
     console.log(
-      `${isValidBoardRuns.toString().padEnd(10, " ")} avg ${(
-        (isValidBoardRuns / (now - startTime)) * 1000
-      ).toFixed(0)}/sec ${combination?.map((num) =>
+      `${firstString}${currentCombination?.map((num) =>
         `${num}`.padStart(2, " "),
-      )}\n                          ${lastCombination?.map((num) =>
-        `${num}`.padStart(2, " "),
-      )}`,
+      )}\n${"".padStart(firstString.length, " ")}${totalCombination?.map((num) => `${num}`.padStart(2, " "))}`,
     );
   }
 
@@ -558,7 +577,9 @@ function assertNotTooLargeGifts(
           { ...matrixToRootRectangle(gift), x: 0, y: 0 },
           board,
         ),
-        `gift is larger than the board. board: ${board.width}x${board.height}. gift: 
+        `gift is larger than the board. board: ${board.width}x${
+          board.height
+        }. gift: 
 
 ${matrixToString(gift)}
 `,
@@ -669,6 +690,64 @@ export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
 
 export function c(f: () => unknown): void {
   console.log(`${nonNull(/^\(\) => (.*)$/.exec(`${f}`))[1]}:`, f());
+}
+
+export function getProgress(
+  totalCombination: Int[],
+  currentCombination: Int[],
+): number {
+  const ranges = lerpMultiple(totalCombination, currentCombination);
+  const progress = nonNull(ranges[ranges.length - 1]).to;
+
+  ass(
+    Number.isFinite(progress),
+    `${totalCombination.join(", ")}---${currentCombination.join(
+      ", ",
+    )} ${progress} `,
+  );
+
+  ass(progress >= 0);
+  ass(progress <= 1);
+
+  return progress;
+}
+
+import { Temporal } from "temporal-polyfill";
+
+export function lerpMultiple(totals: number[], currents: number[]): Rang[] {
+  const new2: Rang[] = [];
+  let currentRange: Rang = { from: 0, to: 1 };
+
+  for (const [index, total] of totals.entries()) {
+    const current = currents[index];
+    if (typeof current !== "number") {
+      break;
+    }
+
+    const { from, to } = lerp(total - 1, current);
+    currentRange = lerpRange(currentRange, { from, to });
+    new2.push(currentRange);
+  }
+
+  return new2;
+}
+
+export function lerp(total: number, current: number): Rang {
+  return {
+    from: current / (total + 1),
+    to: (current + 1) / (total + 1),
+  };
+}
+
+export function lerpRange(bigRange: Rang, smallRange: Rang): Rang {
+  const newStart = lerp2(bigRange.from, bigRange.to, smallRange.from);
+  const newEnd = lerp2(bigRange.from, bigRange.to, smallRange.to);
+
+  return { from: newStart, to: newEnd };
+}
+
+function lerp2(start: number, end: number, t: number): number {
+  return start + (end - start) * t;
 }
 
 /**

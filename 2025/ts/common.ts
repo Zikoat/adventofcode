@@ -56,7 +56,6 @@ export function sum(nums: number[]) {
   return nums.reduce((prev, cur, _i, _arr) => prev + cur, 0);
 }
 
-// 2025 specific
 export type Rang = {
   from: number;
   to: number;
