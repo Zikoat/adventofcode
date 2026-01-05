@@ -1,15 +1,23 @@
 import { watch } from "node:fs/promises";
 import { $ } from "bun";
+import { ass } from "./common";
 
 async function validate() {
-  await $`FORCE_COLOR=1 bun validate --colors=force`.nothrow();
+  await $`FORCE_COLOR=true bun i --silent && bun tsgo --noEmit --pretty && bun test --coverage --coverage-reporter=lcov --only-failures && bun run format`.nothrow();
 }
 
 await validate();
 
-const watcher = watch(import.meta.dir);
+const watcher = watch(import.meta.dir, { recursive: true, maxQueue: 1 });
 
 for await (const event of watcher) {
-  console.log(`Detected ${event.eventType} in ${event.filename}`);
-  await validate();
+  const f = event?.filename;
+  ass(f);
+  if (f.includes("node_modules") || f.includes("coverage")) {
+    console.log(`Skipping ${event.eventType} in ${event.filename}`);
+  } else {
+    await $`clear`;
+    console.log(`Detected ${event.eventType} in ${event.filename}`);
+    await validate();
+  }
 }
