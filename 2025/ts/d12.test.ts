@@ -13,6 +13,7 @@ import {
   flipGiftVertically,
   type Gift,
   type Gifts,
+  giftsOverlap,
   giftsOverlapCount,
   type Int,
   isInBounds,
@@ -1118,5 +1119,49 @@ describe(c, () => {
   test("should log the variable name and the content", () => {
     var foo = "bar";
     c(() => foo);
+  });
+});
+
+describe(giftsOverlap, () => {
+  test("should return true when the gifts overlap", () => {
+    asseq(
+      giftsOverlap(
+        [assIsGiftMatrix([["#"]])].map(createDedupedTransmutations),
+
+        { type: 0, rotation: 0, x: 0, y: 0 },
+        { type: 0, rotation: 0, x: 0, y: 0 },
+      ),
+      true,
+    );
+  });
+
+  test("should return false when the gifts do not overlap with a single #", () => {
+    const toGiftsWithRotations = (...gifts: string[]) =>
+      gifts
+        .map((stringGift) => assIsGiftMatrix(stringToGift(stringGift)))
+        .map(createDedupedTransmutations);
+
+    asseq(
+      giftsOverlap(
+        toGiftsWithRotations(`#`),
+        { type: 0, rotation: 0, x: 1, y: 0 },
+        { type: 0, rotation: 0, x: 0, y: 0 },
+      ),
+      false,
+    );
+
+    asseq(
+      giftsOverlap(
+        toGiftsWithRotations(
+          `#`,
+
+          `##
+		   .#`,
+        ),
+        { type: 0, rotation: 0, x: 0, y: 1 },
+        { type: 1, rotation: 0, x: 0, y: 0 },
+      ),
+      false,
+    );
   });
 });

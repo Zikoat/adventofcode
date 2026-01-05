@@ -402,17 +402,13 @@ ${matrixToString(placedGiftToGift(giftsWithRotations, placedGift))}
   const placedMultiGift1Index = placedGifts.length - 1;
   const placedMultiGift1 = nonNull(placedGifts[placedGifts.length - 1]);
 
-  const gift1 = placedGiftToGift(giftsWithRotations, placedMultiGift1);
-
   for (const [
     placedMultiGift2Index,
     placedMultiGift2,
   ] of placedGifts.entries()) {
     if (placedMultiGift1Index === placedMultiGift2Index) continue;
 
-    const gift2 = placedGiftToGift(giftsWithRotations, placedMultiGift2);
-
-    if (giftsOverlap(gift1, gift2, placedMultiGift1, placedMultiGift2))
+    if (giftsOverlap(giftsWithRotations, placedMultiGift1, placedMultiGift2))
       return false;
   }
 
@@ -421,16 +417,17 @@ ${matrixToString(placedGiftToGift(giftsWithRotations, placedGift))}
 
 export let giftsOverlapCount = 0;
 
-function giftsOverlap(
-  gift1: Gift,
-  gift2: Gift,
+export function giftsOverlap(
+  giftsWithRotations: GiftsWithRotations,
   placedMultiGift1: PlacedGift,
   placedMultiGift2: PlacedGift,
 ): boolean {
   giftsOverlapCount++;
 
-  // c(() => placedMultiGift1);
-  // c(() => placedMultiGift2);
+  const gift1 = placedGiftToGift(giftsWithRotations, placedMultiGift1);
+
+  const gift2 = placedGiftToGift(giftsWithRotations, placedMultiGift2);
+
   for (const [gift1LocalY, gift1Row] of gift1.entries()) {
     for (const [gift1LocalX, gift1Cell] of gift1Row.entries())
       if (gift1Cell === "#") {
