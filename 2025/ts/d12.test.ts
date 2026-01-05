@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, it, mock, test } from "bun:test";
+import { deepEquals } from "bun";
 import { ass, asseq, nonNull } from "./common";
 import {
   assIsGiftMatrix,
@@ -12,6 +13,7 @@ import {
   createDedupedTransmutations,
   flipGiftVertically,
   type Gift,
+  type GiftsWithRotations,
   getProgress,
   giftsOverlap,
   giftsOverlapCount,
@@ -1132,18 +1134,16 @@ const toGiftsWithRotations = (...gifts: string[]) =>
 
 describe(getProgress, () => {
   test("should return the progress", () => {
-    asseq(getProgress([1], [0]), 0);
-    asseq(getProgress([1], [1]), 1);
-    asseq(getProgress([2], [0]), 0);
-    asseq(getProgress([2], [1]), 0.5);
-    asseq(getProgress([2], [2]), 1);
+    asseq(getProgress([1], [0]), 1);
+    asseq(getProgress([2], [0]), 0.5);
+    asseq(getProgress([2], [1]), 1);
 
-    asseq(getProgress([1, 1], [0]), 0 / 6);
-    asseq(getProgress([1, 1], [0, 0]), 0 / 6);
-    asseq(getProgress([1, 1], [0, 1]), 3 / 6);
-    asseq(getProgress([1, 1], [1]), 3 / 6);
-    asseq(getProgress([1, 1], [1, 0]), 3 / 6);
-    asseq(getProgress([1, 1], [1, 1]), 6 / 6);
+    asseq(getProgress([3, 3], [0]), 2 / 6);
+    asseq(getProgress([3, 3], [0, 0]), 1 / 9);
+    asseq(getProgress([3, 3], [0, 1]), 2 / 9);
+    asseq(getProgress([3, 3], [1]), 6 / 9);
+    asseq(getProgress([3, 3], [1, 0]), 4 / 9);
+    asseq(getProgress([3, 3], [1, 1]), 5 / 9);
 
     asseq(
       // biome-ignore format: they should be aligned
@@ -1151,7 +1151,7 @@ describe(getProgress, () => {
         [8, 10, 3, 2, 10, 3, 4, 10, 3, 4, 10, 3, 4, 10, 3, 2, 10, 3, 2, 10, 3],
         [0, 0, 0, 0, 2, 1, 2, 6, 1, 1, 9, 0, 0, 5, 2, 1, 8, 0]
       ),
-      0.26587301587301587,
+      0.0005321043079936129,
     );
 
     asseq(
@@ -1160,7 +1160,7 @@ describe(getProgress, () => {
         [8, 10, 3, 2, 10, 3, 4, 10, 3, 4, 10, 3, 4, 10, 3, 2, 10, 3, 2, 10, 3],
         [0, 0, 0, 0, 6, 0, 3, 2, 2, 1, 3, 1, 1, 9, 1, 1, 3, 1]
       ),
-      0.2722222222222222,
+      0.0013069082225490827,
     );
     asseq(
       // biome-ignore format: they should be aligned
@@ -1168,11 +1168,11 @@ describe(getProgress, () => {
         [8, 10, 3, 2, 10, 3, 4, 10, 3, 4, 10, 3, 4, 10, 3, 2, 10, 3, 2, 10, 3],
         [0, 0, 0, 0, 9, 2, 3, 2, 1, 1, 6, 0, 2, 0, 1]
       ),
-      0.21587301587301586,
+      0.0020702571212705763,
     );
   });
 
-  test.only("2", () => {
+  test("2", () => {
     asseq(lerp(1, 0), { from: 0, to: 0.5 });
     asseq(lerp(1, 1), { from: 0.5, to: 1 });
 
@@ -1206,19 +1206,99 @@ describe(getProgress, () => {
     asseq(
       // biome-ignore format: they should be aligned
       getProgress(
-          [8, 10, 3, 2, 10, 3, 4, 10, 3, 4, 10, 3, 4, 10, 3, 2, 10, 3, 2, 10, 3],
-          [0, 0,  0, 0, 2,  1, 2, 6,  1, 1, 9,  0, 0, 5,  2, 1, 8,  0],
-        ),
+        [8, 10, 3, 2, 10, 3, 4, 10, 3, 4, 10, 3, 4, 10, 3, 2, 10, 3, 2, 10, 3],
+        [0, 0, 0, 0, 2, 1, 2, 6, 1, 1, 9, 0, 0, 5, 2, 1, 8, 0]
+      ),
       0.0005321043079936129,
     );
 
     asseq(
       // biome-ignore format: they should be aligned
-      getProgress(
-        [8 ,10],
-        [7, 9],
-      ),
+      getProgress([8, 10], [7, 9]),
       1,
     );
+  });
+});
+
+function hasBeenValidated(
+  board: Board,
+  seen: Set<string>,
+  gifts: GiftsWithRotations,
+): boolean {
+  deepEquals(board, gifts, true); // validation
+
+  const stringBoard = board.placedGifts
+    .flatMap((placedGift) =>
+      [placedGift.type, placedGift.rotation, placedGift.x, placedGift.y].join(
+        ",",
+      ),
+    )
+    .toSorted()
+    .join("|");
+  console.log(stringBoard);
+  const hasSeen = seen.has(stringBoard);
+  seen.add(stringBoard);
+  return hasSeen;
+}
+
+describe(hasBeenValidated, () => {
+  test("should return true when the board has been validated", () => {
+    const board = {
+      gifts: toGiftsWithRotations(`#`),
+      placedGifts: [{ type: 0, rotation: 0, x: 0, y: 0 }],
+      width: 1,
+      height: 1,
+    };
+
+    const validatedBoards = new Set<string>();
+    const gifts = board.gifts;
+
+    asseq(hasBeenValidated(board, validatedBoards, gifts), false);
+    asseq(hasBeenValidated(board, validatedBoards, gifts), true);
+    nonNull(board.placedGifts[0]).x = 1;
+    asseq(hasBeenValidated(board, validatedBoards, gifts), false);
+    asseq(hasBeenValidated(board, validatedBoards, gifts), true);
+  });
+
+  test("should detect permutations of the order of placed gifts", () => {
+    const board = {
+      gifts: toGiftsWithRotations(`##`),
+      placedGifts: [
+        { type: 0, rotation: 0, x: 0, y: 0 },
+        { type: 0, rotation: 1, x: 0, y: 0 },
+      ],
+      width: 2,
+      height: 2,
+    };
+
+    console.log("\nboard.gifts");
+    console.log(
+      board.gifts
+        .map((giftWithRotations) =>
+          giftWithRotations.map((gift) => matrixToString(gift)).join("\n---\n"),
+        )
+        .join("\n"),
+    );
+    console.log();
+
+    const validatedBoards = new Set<string>();
+    const gifts = board.gifts;
+
+    visualizeBoard(
+      board,
+      `
+      XA
+      B.`,
+    );
+
+    asseq(hasBeenValidated(board, validatedBoards, gifts), false);
+    asseq(hasBeenValidated(board, validatedBoards, gifts), true);
+
+    nonNull(board.placedGifts[0]).rotation = 1;
+    nonNull(board.placedGifts[1]).rotation = 0;
+
+    asseq(hasBeenValidated(board, validatedBoards, gifts), true);
+
+    asseq([...validatedBoards], ["0,0,0,0|0,1,0,0"]);
   });
 });
