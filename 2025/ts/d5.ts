@@ -1195,29 +1195,29 @@ const testRawInput = `
 32`;
 
 function parseInput(input: string): {
-	ranges: {
-		from: number;
-		to: number;
-	}[];
-	ings: number[];
+  ranges: {
+    from: number;
+    to: number;
+  }[];
+  ings: number[];
 } {
-	const testInput = input.trim().split("\n\n");
-	ass(testInput[0]);
-	ass(testInput[1]);
-	const ranges = testInput[0].split("\n").map((rangeString) => {
-		const splittedRange = rangeString.split("-");
-		const from = splittedRange[0];
-		const to = splittedRange[1];
-		assInt(nonNull(from));
-		assInt(nonNull(to));
-		return { from: Number(from), to: Number(to) };
-	});
+  const testInput = input.trim().split("\n\n");
+  ass(testInput[0]);
+  ass(testInput[1]);
+  const ranges = testInput[0].split("\n").map((rangeString) => {
+    const splittedRange = rangeString.split("-");
+    const from = splittedRange[0];
+    const to = splittedRange[1];
+    assInt(nonNull(from));
+    assInt(nonNull(to));
+    return { from: Number(from), to: Number(to) };
+  });
 
-	const ings: Ing[] = testInput[1].split("\n").map((ing) => {
-		assInt(ing);
-		return Number(ing);
-	});
-	return { ranges, ings };
+  const ings: Ing[] = testInput[1].split("\n").map((ing) => {
+    assInt(ing);
+    return Number(ing);
+  });
+  return { ranges, ings };
 }
 
 const { ranges: rangesTest, ings: ingsTest } = parseInput(testRawInput);
@@ -1225,7 +1225,7 @@ const { ranges: rangesTest, ings: ingsTest } = parseInput(testRawInput);
 type Ing = number;
 
 function isInRange(range: Rang, ing: Ing): boolean {
-	return range.from <= ing && range.to >= ing;
+  return range.from <= ing && range.to >= ing;
 }
 
 ass(rangesTest[0]);
@@ -1235,40 +1235,40 @@ ass(ingsTest[1]);
 asseq(isInRange(rangesTest[0], ingsTest[1]), true);
 
 function getFreshCount(input: string): number {
-	const parsed = parseInput(input);
+  const parsed = parseInput(input);
 
-	const freshIngs = parsed.ings.filter((ing) => {
-		return parsed.ranges.some((range) => isInRange(range, ing));
-	}).length;
+  const freshIngs = parsed.ings.filter((ing) => {
+    return parsed.ranges.some((range) => isInRange(range, ing));
+  }).length;
 
-	return freshIngs;
+  return freshIngs;
 }
 
 asseq(getFreshCount(testRawInput), 3);
 asseq(getFreshCount(rawInput), 681);
 
 function rangeToInts(range: Rang): number[] {
-	const output: number[] = [];
-	for (let i = range.from; i <= range.to; i++) {
-		output.push(i);
-	}
-	return output;
+  const output: number[] = [];
+  for (let i = range.from; i <= range.to; i++) {
+    output.push(i);
+  }
+  return output;
 }
 
 const rangeLength = ({ from, to }: Rang) => {
-	return to - from + 1;
+  return to - from + 1;
 };
 
 function getRangesLengthRaw(input: string): number {
-	const ranges = parseInput(input).ranges;
-	console.log("ranges length", ranges.length);
-	console.log(sum(ranges.map(rangeLength)));
-	const ints = ranges.flatMap((range) => {
-		const ints = rangeToInts(range);
-		return ints;
-	});
-	console.log("ints length", ints.length);
-	return new Set(ints).size;
+  const ranges = parseInput(input).ranges;
+  console.log("ranges length", ranges.length);
+  console.log(sum(ranges.map(rangeLength)));
+  const ints = ranges.flatMap((range) => {
+    const ints = rangeToInts(range);
+    return ints;
+  });
+  console.log("ints length", ints.length);
+  return new Set(ints).size;
 }
 
 asseq(getRangesLengthRaw(testRawInput), 14);
@@ -1279,37 +1279,37 @@ console.log("completed");
 //   { from: 1, to: 2 },
 // ]);
 asseq(mergeRanges({ from: 1, to: 2 }, { from: 3, to: 4 }), [
-	{ from: 1, to: 2 },
-	{ from: 3, to: 4 },
+  { from: 1, to: 2 },
+  { from: 3, to: 4 },
 ]);
 
 asseq(mergeRanges({ from: 3, to: 4 }, { from: 1, to: 2 }), [
-	{ from: 3, to: 4 },
-	{ from: 1, to: 2 },
+  { from: 3, to: 4 },
+  { from: 1, to: 2 },
 ]);
 
 asseq(mergeRanges({ from: 1, to: 2 }, { from: 2, to: 3 }), [
-	{ from: 1, to: 3 },
+  { from: 1, to: 3 },
 ]);
 
 function mergeRanges(rangeA: Rang, rangeB: Rang): Rang[] {
-	if (rangeB.from > rangeA.from && rangeB.to > rangeA.from) {
-		console.log("case 1");
-		return [rangeA, rangeB];
-	}
+  if (rangeB.from > rangeA.from && rangeB.to > rangeA.from) {
+    console.log("case 1");
+    return [rangeA, rangeB];
+  }
 
-	if (rangeA.from > rangeB.from && rangeA.to > rangeB.from) {
-		console.log("case 2");
+  if (rangeA.from > rangeB.from && rangeA.to > rangeB.from) {
+    console.log("case 2");
 
-		return [rangeA, rangeB];
-	}
+    return [rangeA, rangeB];
+  }
 
-	const a = rangeA.from < rangeB.from;
-	const b = rangeA.to >= rangeB.from;
-	console.log(a, b);
-	if (a && b) {
-		return [{ from: rangeA.from, to: rangeB.to }];
-	}
+  const a = rangeA.from < rangeB.from;
+  const b = rangeA.to >= rangeB.from;
+  console.log(a, b);
+  if (a && b) {
+    return [{ from: rangeA.from, to: rangeB.to }];
+  }
 
-	return [];
+  return [];
 }

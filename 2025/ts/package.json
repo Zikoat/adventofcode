@@ -1,17 +1,17 @@
 {
-	"dependencies": {
-		"@biomejs/biome": "2.3.10",
-		"@types/bun": "^1.3.3",
-		"@typescript/native-preview": "^7.0.0-dev.20260105.1",
-		"zod": "^4.1.13"
-	},
-	"scripts": {
-		"debug": "bun --inspect-brk d12",
-		"type": "tsgo --noEmit",
-		"test": "bun test",
-		"format": "biome check --write",
-		"validate": "bun i && tsgo --noEmit && bun test --dots --coverage --coverage-reporter=lcov && bun run format",
-		"bigboy": "bun run validate && bun run d12-bigboy",
-		"watch": "bun run watch.ts"
-	}
+  "dependencies": {
+    "@biomejs/biome": "2.3.10",
+    "@types/bun": "^1.3.3",
+    "@typescript/native-preview": "^7.0.0-dev.20260105.1",
+    "zod": "^4.1.13"
+  },
+  "scripts": {
+    "debug": "bun --inspect-brk d12",
+    "type": "tsgo --noEmit",
+    "test": "bun test",
+    "format": "biome check --write",
+    "validate": "bun i && tsgo --noEmit && bun test --dots --coverage --coverage-reporter=lcov && bun run format",
+    "bigboy": "bun run validate && bun run d12-bigboy",
+    "watch": "bun run watch.ts"
+  }
 }

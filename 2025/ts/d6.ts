@@ -29,87 +29,87 @@ console.log("starting loop");
 const currentMathThing = [];
 
 for (const [index, symbolOrSpace] of symbols.entries()) {
-	// console.log("loop number ", index)
+  // console.log("loop number ", index)
 
-	const currentNumberArray = numbers
-		.map((numberLine) => nonNull(numberLine[index]))
-		.join("")
-		.trim();
+  const currentNumberArray = numbers
+    .map((numberLine) => nonNull(numberLine[index]))
+    .join("")
+    .trim();
 
-	if (currentNumberArray) {
-		assInt(currentNumberArray);
-		currentMathThing.push(currentNumberArray);
-	}
+  if (currentNumberArray) {
+    assInt(currentNumberArray);
+    currentMathThing.push(currentNumberArray);
+  }
 
-	if (symbolOrSpace !== " ") {
-		columnSymbol = symbolOrSpace;
-		currentMathThing.push({ columnSymbol, currentNumberArray });
-		currentColumnm++;
+  if (symbolOrSpace !== " ") {
+    columnSymbol = symbolOrSpace;
+    currentMathThing.push({ columnSymbol, currentNumberArray });
+    currentColumnm++;
 
-		console.log(columnSymbol, currentColumnm);
-	}
+    console.log(columnSymbol, currentColumnm);
+  }
 }
 
 console.log(currentMathThing);
 
 function parseInput(input: string): {
-	numberLines: number[][];
-	symbolLine: ("*" | "+")[];
+  numberLines: number[][];
+  symbolLine: ("*" | "+")[];
 } {
-	const inputParsed = input.split("\n").map((line) => line.trim().split(/ +/));
+  const inputParsed = input.split("\n").map((line) => line.trim().split(/ +/));
 
-	const numberLines = inputParsed
-		.toSpliced(inputParsed.length - 1, Infinity)
-		.map((line) => {
-			return line.map((num) => {
-				assInt(num);
-				return Number(num);
-			});
-		});
+  const numberLines = inputParsed
+    .toSpliced(inputParsed.length - 1, Infinity)
+    .map((line) => {
+      return line.map((num) => {
+        assInt(num);
+        return Number(num);
+      });
+    });
 
-	const symbolLineRaw = inputParsed[inputParsed.length - 1];
-	ass(symbolLineRaw);
-	const symbolLine = symbolLineRaw.map((symbol) => {
-		ass(symbol === "*" || symbol === "+");
-		return symbol;
-	});
-	ass(
-		numberLines.every((numberLine) => numberLine.length === symbolLine.length),
-	);
+  const symbolLineRaw = inputParsed[inputParsed.length - 1];
+  ass(symbolLineRaw);
+  const symbolLine = symbolLineRaw.map((symbol) => {
+    ass(symbol === "*" || symbol === "+");
+    return symbol;
+  });
+  ass(
+    numberLines.every((numberLine) => numberLine.length === symbolLine.length),
+  );
 
-	return { numberLines, symbolLine };
+  return { numberLines, symbolLine };
 }
 
 function getLineResult(input: string): number {
-	const { symbolLine, numberLines } = parseInput(input);
+  const { symbolLine, numberLines } = parseInput(input);
 
-	const lineResult: number[] = [];
+  const lineResult: number[] = [];
 
-	for (const [index, symbol] of symbolLine.entries()) {
-		const numberLine = numberLines.map((numberLine) => {
-			const num = numberLine[index];
-			ass(num);
-			return num;
-		});
+  for (const [index, symbol] of symbolLine.entries()) {
+    const numberLine = numberLines.map((numberLine) => {
+      const num = numberLine[index];
+      ass(num);
+      return num;
+    });
 
-		ass(numberLine);
+    ass(numberLine);
 
-		if (symbol === "+") {
-			const sumLine = sum(numberLine);
-			lineResult.push(sumLine);
-		} else if (symbol === "*") {
-			const productLine = numberLine.reduce(
-				(prev, cur, _i, _arr) => prev * cur,
-				1,
-			);
+    if (symbol === "+") {
+      const sumLine = sum(numberLine);
+      lineResult.push(sumLine);
+    } else if (symbol === "*") {
+      const productLine = numberLine.reduce(
+        (prev, cur, _i, _arr) => prev * cur,
+        1,
+      );
 
-			lineResult.push(productLine);
-		} else {
-			throw Error("symbol not recognized");
-		}
-	}
+      lineResult.push(productLine);
+    } else {
+      throw Error("symbol not recognized");
+    }
+  }
 
-	return sum(lineResult);
+  return sum(lineResult);
 }
 
 asseq(getLineResult(testInputRaw3), 4277556);

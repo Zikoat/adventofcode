@@ -4556,48 +4556,48 @@ R6
 L15
 L3`;
 function getZeroCount(input: string): number {
-	const schema = z.array(
-		z.strictObject({
-			direction: z.union([z.literal("R"), z.literal("L")]),
-			ticks: z.number().int().min(1),
-		}),
-	);
-	const inputParsed = schema.parse(
-		input.split("\n").map((command: string) => ({
-			direction: command[0],
-			ticks: Number(command.substring(1)),
-		})),
-	);
+  const schema = z.array(
+    z.strictObject({
+      direction: z.union([z.literal("R"), z.literal("L")]),
+      ticks: z.number().int().min(1),
+    }),
+  );
+  const inputParsed = schema.parse(
+    input.split("\n").map((command: string) => ({
+      direction: command[0],
+      ticks: Number(command.substring(1)),
+    })),
+  );
 
-	let currentRotation = 50;
-	let zeroCount = 0;
+  let currentRotation = 50;
+  let zeroCount = 0;
 
-	inputParsed.forEach((command) => {
-		let ticks = command.ticks;
-		while (ticks > 0) {
-			if (command.direction === "R") {
-				currentRotation = currentRotation + 1;
-			} else {
-				currentRotation = currentRotation - 1;
-			}
+  inputParsed.forEach((command) => {
+    let ticks = command.ticks;
+    while (ticks > 0) {
+      if (command.direction === "R") {
+        currentRotation = currentRotation + 1;
+      } else {
+        currentRotation = currentRotation - 1;
+      }
 
-			ticks--;
+      ticks--;
 
-			if (currentRotation % 100 === 0) {
-				zeroCount++;
-			}
-		}
-	});
-	return zeroCount;
+      if (currentRotation % 100 === 0) {
+        zeroCount++;
+      }
+    }
+  });
+  return zeroCount;
 }
 const testZeroCount = getZeroCount(testInput);
 if (testZeroCount !== 6) {
-	throw new Error(`Test zero count is incorrect: ${testZeroCount}`);
+  throw new Error(`Test zero count is incorrect: ${testZeroCount}`);
 }
 
 const inputZeroCount = getZeroCount(input);
 if (inputZeroCount !== 6623) {
-	throw new Error(`Input zero count is incorrect: ${inputZeroCount}`);
+  throw new Error(`Input zero count is incorrect: ${inputZeroCount}`);
 }
 
 console.log(inputZeroCount);
