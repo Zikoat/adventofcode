@@ -15,6 +15,7 @@ export const opts = {
   validateEveryGiftCellInside: false,
   validateLastGiftCellInside: true, // shit todo required right now
   validateTooLargeGifts: false,
+  logHasAlreadyBeenValidated: false,
 };
 
 export type Gift = ("." | "#")[][];
@@ -569,8 +570,7 @@ export function someValidPlacements(
         combinationsInput,
       );
 
-      //   && opts.logHasAlreadyBeenValidated
-      if (!isPlacementValid) {
+      if (!isPlacementValid && opts.logHasAlreadyBeenValidated) {
         //  const placedGifts = combinationToPlacedGifts(combination, giftCounts);
         const placedGifts: PlacedGift[] = giftPlacement;
         const hasAlreadyBeenValidated = hasBeenValidated(
