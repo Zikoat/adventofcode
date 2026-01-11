@@ -821,8 +821,12 @@ describe(canFitString, () => {
     opts.validateLastGiftCellInside = prevValidateLastGiftCellInside;
   });
 
-  // todo this is broken because we do not support pieces that have different widths and heights. we need to implement support for every layer giving the valid values for the next layer.
-  test.skip("rotated ## should fit on 1x2 board", () => {
+  // todo this is broken because we do not support pieces that have different 
+  // widths and heights. we need to implement support for every layer giving 
+  // the valid values for the next layer.
+  test("rotated ## should fit on 1x2 board", () => {
+    const previousValidateTooLargeGifts = opts.validateTooLargeGifts;
+    opts.validateTooLargeGifts = false
     asseq(
       canFitString(`1:
 ##
@@ -830,6 +834,7 @@ describe(canFitString, () => {
 1x2: 1`),
       true,
     );
+    opts.validateTooLargeGifts= previousValidateTooLargeGifts
   });
 
   test.skip("pieces that fit inside each other should be rotated to fit into each other", () => {
