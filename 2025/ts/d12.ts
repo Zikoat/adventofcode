@@ -755,7 +755,7 @@ function lerp2(start: number, end: number, t: number): number {
 
 
 [ ] we can dedupe work between trees by reusing the same placement for multiple trees
-  pseudo: if we place a next piece, then only place it if it would cause the bounding box to be inside another AND it would not cause 
+  pseudo: if we place a next piece, then only place it if it would cause the bounding box to be inside another AND it would not cause
 
 
 [ ] we can also cache gift placements, although we should probably try to avoid using multiple gift placements
