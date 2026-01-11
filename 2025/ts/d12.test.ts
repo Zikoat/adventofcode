@@ -8,6 +8,7 @@ import {
   c,
   canFitString,
   combinationsWithCheck,
+  combinationToPlacedGifts,
   createAllTransmutations,
   createDedupedTransmutations,
   flipGiftVertically,
@@ -25,6 +26,7 @@ import {
   matrixToString,
   opts,
   type PlacedGift,
+  placedGiftsToCombination,
   placedGiftToGift,
   rotateGift90Right,
   someValidPlacements,
@@ -32,8 +34,6 @@ import {
   stringToMatrix,
   transposeGift,
   wrapGift,
-  placedGiftsToCombination,
-  combinationToPlacedGifts,
 } from "./d12";
 
 describe(wrapGift, () => {
@@ -253,7 +253,7 @@ describe(isValidBoard, () => {
         },
         [2],
         toGiftsWithRotations(`#`),
-       placedGiftsToCombination( [
+        placedGiftsToCombination([
           { type: 0, rotation: 0, x: 0, y: 0 },
           { type: 0, rotation: 0, x: 1, y: 0 },
         ]),
@@ -308,7 +308,12 @@ describe(isValidBoard, () => {
     );
 
     asseq(
-      isValidBoard(boardState, [2], boardState.gifts, placedGiftsToCombination(boardState.placedGifts)),
+      isValidBoard(
+        boardState,
+        [2],
+        boardState.gifts,
+        placedGiftsToCombination(boardState.placedGifts),
+      ),
       false,
     );
   });
@@ -511,7 +516,12 @@ describe(isValidBoard, () => {
     const combination = placedGiftsToCombination(test1Board.placedGifts);
 
     asseq(
-      isValidBoard(test1Board, [0,0,0,0,2,0], test1Board.gifts, combination),
+      isValidBoard(
+        test1Board,
+        [0, 0, 0, 0, 2, 0],
+        test1Board.gifts,
+        combination,
+      ),
       false,
     );
   });
@@ -1316,7 +1326,9 @@ describe(hasBeenValidated, () => {
 });
 
 describe(combinationToPlacedGifts, () => {
-  test.only("should return the placed gifts", () => {
-    asseq(combinationToPlacedGifts([0, 0, 0, 0], [1]), [{ type: 0, rotation: 0, x: 0, y: 0 }]);
+  test("should return the placed gifts", () => {
+    asseq(combinationToPlacedGifts([0, 0, 0], [1]), [
+      { type: 0, rotation: 0, x: 0, y: 0 },
+    ]);
   });
 });
