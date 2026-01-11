@@ -222,6 +222,13 @@
         "useSolidForComponent": "error",
         "useTopLevelRegex": "error"
       },
+      "security": {
+        "noBlankTarget": "error",
+        "noDangerouslySetInnerHtml": "error",
+        "noDangerouslySetInnerHtmlWithChildren": "error",
+        "noGlobalEval": "error",
+        "noSecrets": "off"
+      },
       "suspicious": {
         "noAlert": "error",
         "noApproximativeNumericConstant": "error",
