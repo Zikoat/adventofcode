@@ -542,7 +542,7 @@ describe(combinationsWithCheck, () => {
   });
 });
 
-type GetNext<T = unknown> = (combination: unknown[]) => T | null;
+type GetNext<T = unknown> = (combination: unknown[]) => T[];
 type IsComplete = (combination: unknown[]) => boolean;
 
 function combinationsWithNext<T>(
@@ -551,41 +551,35 @@ function combinationsWithNext<T>(
 ) {
   const currentCombinations: T[][] = [];
   const indices: Int[] = [];
-  let currentCombination = indicesToCurrentCombination(
-    currentCombinations,
-    indices,
-  );
-  let nextValue = getNext(currentCombination);
-  if (nextValue === null) {
-    return isComplete([]);
+  let currentCombination: T[];
+  let nextValue: T[];
+  for(let quea=0; quea <1000; quea++){
+
+    currentCombination = indicesToCurrentCombination(
+      currentCombinations,
+      indices,
+    );
+    nextValue = getNext(currentCombination);
+    if (nextValue.length === 0) {
+      return isComplete([]);
+    }
+    ass(nextValue);
+    currentCombinations.push(nextValue);
+    indices.push(0);
   }
-  ass(nextValue);
-  currentCombinations.push([nextValue]);
-  indices.push(0);
+  // ass(false, "we have an infinite loop bluds")
+  // ---
+  // ---
   currentCombination = indicesToCurrentCombination(
     currentCombinations,
     indices,
   );
   nextValue = getNext(currentCombination);
-  if (nextValue === null) {
+  if (nextValue.length === 0) {
     return isComplete(currentCombination);
   }
   ass(nextValue);
-  currentCombinations.push([...currentCombination, nextValue]);
-  indices.push(0);
-  currentCombination = indicesToCurrentCombination(
-    currentCombinations,
-    indices,
-  );
-  if (isComplete(currentCombination)) {
-    return true;
-  }
-  nextValue = getNext(currentCombination);
-  if (nextValue === null) {
-    return isComplete(currentCombination);
-  }
-  ass(nextValue);
-  currentCombinations.push([...currentCombination, nextValue]);
+  currentCombinations.push(nextValue);
   indices.push(0);
   currentCombination = indicesToCurrentCombination(
     currentCombinations,
@@ -595,11 +589,11 @@ function combinationsWithNext<T>(
     return true;
   }
   nextValue = getNext(currentCombination);
-  if (nextValue === null) {
+  if (nextValue.length === 0) {
     return isComplete(currentCombination);
   }
   ass(nextValue);
-  currentCombinations.push([...currentCombination, nextValue]);
+  currentCombinations.push(nextValue);
   indices.push(0);
   currentCombination = indicesToCurrentCombination(
     currentCombinations,
@@ -609,11 +603,11 @@ function combinationsWithNext<T>(
     return true;
   }
   nextValue = getNext(currentCombination);
-  if (nextValue === null) {
+  if (nextValue.length === 0) {
     return isComplete(currentCombination);
   }
   ass(nextValue);
-  currentCombinations.push([...currentCombination, nextValue]);
+  currentCombinations.push(nextValue);
   indices.push(0);
   currentCombination = indicesToCurrentCombination(
     currentCombinations,
@@ -623,11 +617,11 @@ function combinationsWithNext<T>(
     return true;
   }
   nextValue = getNext(currentCombination);
-  if (nextValue === null) {
+  if (nextValue.length === 0) {
     return isComplete(currentCombination);
   }
   ass(nextValue);
-  currentCombinations.push([...currentCombination, nextValue]);
+  currentCombinations.push(nextValue);
   indices.push(0);
   currentCombination = indicesToCurrentCombination(
     currentCombinations,
@@ -637,11 +631,25 @@ function combinationsWithNext<T>(
     return true;
   }
   nextValue = getNext(currentCombination);
-  if (nextValue === null) {
+  if (nextValue.length === 0) {
     return isComplete(currentCombination);
   }
   ass(nextValue);
-  currentCombinations.push([...currentCombination, nextValue]);
+  currentCombinations.push(nextValue);
+  indices.push(0);
+  currentCombination = indicesToCurrentCombination(
+    currentCombinations,
+    indices,
+  );
+  if (isComplete(currentCombination)) {
+    return true;
+  }
+  nextValue = getNext(currentCombination);
+  if (nextValue.length === 0) {
+    return isComplete(currentCombination);
+  }
+  ass(nextValue);
+  currentCombinations.push(nextValue);
 
   return isComplete(currentCombination);
 }
@@ -697,24 +705,24 @@ describe(combinationsWithNext, () => {
   // we can have a progress bar
 
   test("it should terminate current step when [] is returned", () => {
-    const next = mock<GetNext>(() => null);
+    const next = mock<GetNext>(() => []);
 
     asseq(combinationsWithNext(next), false);
 
     expect(next).toBeCalledTimes(1);
-    expect(next).toHaveLastReturnedWith(null);
+    expect(next).toHaveLastReturnedWith([]);
     expect(next).lastCalledWith([]);
     asseq(next.mock.calls, [[[]]]);
   });
 
   test("if the empty combination is complete, then return true.", () => {
-    const getNext = mock<GetNext>(() => null);
+    const getNext = mock<GetNext>(() => []);
     const isComplete = mock<IsComplete>(() => true);
 
     asseq(combinationsWithNext(getNext, isComplete), true);
 
     expect(getNext).toBeCalledTimes(1);
-    expect(getNext).toHaveLastReturnedWith(null);
+    expect(getNext).toHaveLastReturnedWith([]);
     expect(getNext).lastCalledWith([]);
 
     expect(isComplete).toBeCalledTimes(1);
@@ -723,8 +731,8 @@ describe(combinationsWithNext, () => {
   });
 
   test("if we always return 'a', then it should traverse that until it reaches the end and the lowest one returns []", () => {
-    const getNext = mock<GetNext<"b">>((combinations): "b" | null =>
-      combinations.length < 6 ? "b" : null,
+    const getNext = mock<GetNext<"b">>((combinations): "b"[] =>
+      combinations.length < 6 ? ["b"] : [],
     );
 
     asseq(combinationsWithNext(getNext), false);
@@ -736,7 +744,7 @@ describe(combinationsWithNext, () => {
     expect(getNext).toBeCalledTimes(7);
   });
 
-  test.todo(`
+  test(`
     // 
 
     // if the first returns ["a","b","c"], then it will traverse to index 0
@@ -745,7 +753,28 @@ describe(combinationsWithNext, () => {
     // we continue until we hit "b 20" which is valid and complete, and so we
     // stop and return true.
     // `, () => {
-    //
+    const getNext = mock<GetNext>((combinations) => {
+      switch (combinations.length) {
+        case 0:
+          return ["a", "b", "c"];
+        case 1:
+          return ["10", "20"];
+        default:
+          return [];
+      }
+    });
+
+    asseq(combinationsWithNext(getNext), false);
+
+    expect(getNext).nthCalledWith(1, []);
+    expect(getNext).toHaveNthReturnedWith(1, ["a", "b", "c"]);
+    expect(getNext).nthCalledWith(2, ["a"]);
+    expect(getNext).toHaveNthReturnedWith(2, ["10", "20"]);
+    expect(getNext).nthCalledWith(3, ["a", "10"]);
+    expect(getNext).toHaveNthReturnedWith(3, []);
+    expect(getNext).nthCalledWith(4, ["a", "20"]);
+
+    expect(getNext).toBeCalledTimes(1000);
   });
 });
 
