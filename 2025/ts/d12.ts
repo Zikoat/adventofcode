@@ -712,6 +712,7 @@ export function getProgress(
   return progress;
 }
 
+import { deepEquals } from "bun";
 import { Temporal } from "temporal-polyfill";
 
 export function lerpMultiple(totals: number[], currents: number[]): Rang[] {
@@ -748,6 +749,27 @@ export function lerpRange(bigRange: Rang, smallRange: Rang): Rang {
 
 function lerp2(start: number, end: number, t: number): number {
   return start + (end - start) * t;
+}
+
+export function hasBeenValidated(
+  board: Board,
+  seen: Set<string>,
+  gifts: GiftsWithRotations,
+): boolean {
+  deepEquals(board, gifts, true); // validation
+
+  const stringBoard = board.placedGifts
+    .flatMap((placedGift) =>
+      [placedGift.type, placedGift.rotation, placedGift.x, placedGift.y].join(
+        ",",
+      ),
+    )
+    .toSorted()
+    .join("|");
+  console.log(stringBoard);
+  const hasSeen = seen.has(stringBoard);
+  seen.add(stringBoard);
+  return hasSeen;
 }
 
 /**

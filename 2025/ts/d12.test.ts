@@ -1,5 +1,4 @@
 import { afterAll, describe, expect, it, mock, test } from "bun:test";
-import { deepEquals } from "bun";
 import { ass, asseq, nonNull } from "./common";
 import {
   assIsGiftMatrix,
@@ -13,10 +12,10 @@ import {
   createDedupedTransmutations,
   flipGiftVertically,
   type Gift,
-  type GiftsWithRotations,
   getProgress,
   giftsOverlap,
   giftsOverlapCount,
+  hasBeenValidated,
   isInBounds,
   isValidBoard,
   isValidBoardRuns,
@@ -1219,27 +1218,6 @@ describe(getProgress, () => {
     );
   });
 });
-
-function hasBeenValidated(
-  board: Board,
-  seen: Set<string>,
-  gifts: GiftsWithRotations,
-): boolean {
-  deepEquals(board, gifts, true); // validation
-
-  const stringBoard = board.placedGifts
-    .flatMap((placedGift) =>
-      [placedGift.type, placedGift.rotation, placedGift.x, placedGift.y].join(
-        ",",
-      ),
-    )
-    .toSorted()
-    .join("|");
-  console.log(stringBoard);
-  const hasSeen = seen.has(stringBoard);
-  seen.add(stringBoard);
-  return hasSeen;
-}
 
 describe(hasBeenValidated, () => {
   test("should return true when the board has been validated", () => {
