@@ -173,6 +173,8 @@ describe(isValidBoard, () => {
   });
 
   test("placed x position outside of board should be invalid", () => {
+    const prevValidateLastGiftCellInside = opts.validateLastGiftCellInside;
+    opts.validateLastGiftCellInside = true;
     expect(() =>
       isValidBoard({
         gifts: toGiftsWithRotations(`#`),
@@ -192,7 +194,8 @@ describe(isValidBoard, () => {
       ---
       #
       ---"
-    `);
+      `);
+    opts.validateLastGiftCellInside = prevValidateLastGiftCellInside;
   });
 
   test("placed gift which has piece outside of board should be invalid", () => {
@@ -800,14 +803,21 @@ describe(canFitString, () => {
     );
   });
 
-  test.skip("3 ## pieces should not fit on a 2x2 board", () => {
-    asseq(
+  test("3 ## pieces should not fit on a 2x2 board", () => {
+    const prevValidateLastGiftCellInside = opts.validateLastGiftCellInside;
+    opts.validateLastGiftCellInside = true;
+    expect(() =>
       canFitString(`1:
-##
-
-2x2: 3`),
-      false,
-    );
+        ##
+        
+        2x2: 3`),
+    ).toThrowErrorMatchingInlineSnapshot(`
+        "gift was placed outside of the board. placed gift {"type":0,"rotation":0,"x":1,"y":0,"width":2,"height":1} should be inside of {"width":2,"height":2}. gift shape:
+        ---
+        ##
+        ---"
+        `);
+    opts.validateLastGiftCellInside = prevValidateLastGiftCellInside;
   });
 
   // todo this is broken because we do not support pieces that have different widths and heights. we need to implement support for every layer giving the valid values for the next layer.

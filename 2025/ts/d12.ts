@@ -13,7 +13,7 @@ import {
 export const opts = {
   validateGifts: false,
   validateEveryGiftCellInside: false,
-  validateLastGiftCellInside: true, // shit todo required right now
+  validateLastGiftCellInside: false, // shit todo required right now
   validateTooLargeGifts: false,
   logHasAlreadyBeenValidated: false,
 };
@@ -85,7 +85,12 @@ function shape(matrix: unknown[][]): [number, number] {
 }
 
 function parseInput(input: string): Puzzle {
-  const matchedInput = input.trim().split("\n\n");
+  const matchedInput = input
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n")
+    .trim()
+    .split("\n\n");
 
   const giftsTuple = matchedInput.toSpliced(matchedInput.length - 1);
 
