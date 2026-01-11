@@ -161,12 +161,15 @@ describe(isInBounds, () => {
 
 describe(isValidBoard, () => {
   test("single space board with 1 placed gift of 1 tile", () => {
-    asseq(isValidBoard({
-      gifts: toGiftsWithRotations(`#`),
-      width: 1,
-      height: 1,
-      placedGifts: [{ type: 0, rotation: 0, x: 0, y: 0 }],
-    }), true);
+    asseq(
+      isValidBoard({
+        gifts: toGiftsWithRotations(`#`),
+        width: 1,
+        height: 1,
+        placedGifts: [{ type: 0, rotation: 0, x: 0, y: 0 }],
+      }),
+      true,
+    );
   });
 
   test("placed x position outside of board should be invalid", () => {
@@ -982,16 +985,24 @@ describe(someValidPlacements, () => {
     `);
   });
 
-  test.skip("# and ## should not fit 2x1", () => {
-    asseq(
+  test("# and ## should not fit 2x1", () => {
+    const prevValidateTooLargeGifts = opts.validateTooLargeGifts;
+    opts.validateTooLargeGifts = true;
+    expect(() =>
       someValidPlacements(
         [assIsGiftMatrix([["#"]]), assIsGiftMatrix([["#", "#"]])].map(
           createDedupedTransmutations,
         ),
         { width: 2, height: 1, giftCounts: [1, 1] },
       ),
-      false,
-    );
+    ).toThrowErrorMatchingInlineSnapshot(`
+      "gift is larger than the board. board: 2x1. gift: 
+
+      #
+      #
+      "
+    `);
+    opts.validateTooLargeGifts = prevValidateTooLargeGifts;
   });
 
   test("# and ## should fit 2x2", () => {
