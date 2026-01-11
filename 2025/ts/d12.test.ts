@@ -541,31 +541,51 @@ describe(combinationsWithCheck, () => {
   });
 });
 
-type NextCombination = () => unknown[];
+type GetNext = () => unknown[];
+type IsComplete = () => boolean;
 
-function combinationsWithNext(next: NextCombination) {
-  return next().length !== 0;
+function combinationsWithNext(
+  getNext: GetNext,
+  isComplete: IsComplete = () => false,
+) {
+  getNext();
+  return isComplete();
 }
 
 describe(combinationsWithNext, () => {
-  test("it should terminate when [] is returned", () => {
-    // so it should return the values for the next downstream combination
-    // we should also have a counter which checks the current index such that
-    // we can have a progress bar
+  // so it should return the values for the next downstream combination
+  // we should also have a counter which checks the current index such that
+  // we can have a progress bar
 
-    // for test we have a function which returns the next valid values.
+  // for test we have a function which returns the next valid values.
+  test("it should terminate current step when [] is returned", () => {
+    const next = mock<GetNext>(() => []);
 
-    // ()=>[], should terminate the current step, and also all of the next steps
-    const spy = mock<NextCombination>(() => []);
-    asseq(combinationsWithNext(spy), false);
-    expect(spy).toBeCalledTimes(1);
-    expect(spy).toHaveLastReturnedWith([]);
-    expect(spy).lastCalledWith();
-    asseq(spy.mock.calls, [[]]);
+    asseq(combinationsWithNext(next), false);
 
-    // if the empty combination is complete, then return true.
+    expect(next).toBeCalledTimes(1);
+    expect(next).toHaveLastReturnedWith([]);
+    expect(next).lastCalledWith();
+    asseq(next.mock.calls, [[]]);
+  });
 
-    // if we always return "a", then it should traverse that until it reaches
+  test("if the empty combination is complete, then return true.", () => {
+    const getNext = mock<GetNext>(() => []);
+    const isComplete = mock<IsComplete>(() => true);
+
+    asseq(combinationsWithNext(getNext, isComplete), true);
+
+    expect(getNext).toBeCalledTimes(1);
+    expect(getNext).toHaveLastReturnedWith([]);
+    expect(getNext).lastCalledWith();
+
+    expect(isComplete).toBeCalledTimes(1);
+    expect(isComplete).toHaveLastReturnedWith(true);
+    expect(isComplete).lastCalledWith();
+  });
+
+  test.todo(`
+      // if we always return "a", then it should traverse that until it reaches
     // the end and the lowest one returns []
 
     // if the first returns ["a","b","c"], then it will traverse to index 0
@@ -573,7 +593,7 @@ describe(combinationsWithNext, () => {
     // ["10", "20"]. we then traverse to "10" with index 0, and this returns []
     // we continue until we hit "b 20" which is valid and complete, and so we
     // stop and return true.
-  });
+    // `, () => {});
 });
 
 describe("Rotations", () => {
