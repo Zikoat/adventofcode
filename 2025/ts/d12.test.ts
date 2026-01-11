@@ -1050,11 +1050,10 @@ describe(someValidPlacements, () => {
         { width: 2, height: 1, giftCounts: [1, 1] },
       ),
     ).toThrowErrorMatchingInlineSnapshot(`
-      "gift is larger than the board. board: 2x1. gift: 
-
-      #
-      #
-      "
+      "gift was placed outside of the board. placed gift {"type":1,"rotation":0,"x":1,"y":0,"width":2,"height":1} should be inside of {"width":2,"height":1}. gift shape:
+      ---
+      ##
+      ---"
     `);
     opts.validateTooLargeGifts = prevValidateTooLargeGifts;
   });
