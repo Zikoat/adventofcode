@@ -544,7 +544,7 @@ describe(combinationsWithCheck, () => {
 type NextCombination = () => unknown[];
 
 function combinationsWithNext(next: NextCombination) {
-  return next().length === 0;
+  return next().length !== 0;
 }
 
 describe(combinationsWithNext, () => {
@@ -557,7 +557,7 @@ describe(combinationsWithNext, () => {
 
     // ()=>[], should terminate the current step, and also all of the next steps
     const spy = mock<NextCombination>(() => []);
-    asseq(combinationsWithNext(spy), true);
+    asseq(combinationsWithNext(spy), false);
     expect(spy).toBeCalledTimes(1);
     expect(spy).toHaveLastReturnedWith([]);
     expect(spy).lastCalledWith();
