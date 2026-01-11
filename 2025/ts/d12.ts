@@ -490,6 +490,10 @@ function combinationToGiftPlacement(
   asseq(combination.length % 3, 0);
   const giftPlacement: PlacedGift[] = [];
 
+  // shit todo performance optimization is to not create this array,
+  // but instead use the combination directly, and then exit on the
+  // first invalid piece that would be placed
+
   let currentGiftMultiIndex = 0;
   for (const [type, giftCount] of giftCounts.entries()) {
     for (let i = 0; i < giftCount; i++) {
