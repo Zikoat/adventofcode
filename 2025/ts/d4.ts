@@ -156,9 +156,11 @@ function parseInput(input: string): Field {
     line.split("").map((tile) => {
       if (tile === "@") {
         return true;
-      } else if (tile === ".") {
+      }
+      if (tile === ".") {
         return false;
-      } else throw Error("invalid char");
+      }
+      throw new Error("invalid char");
     }),
   );
 }
@@ -300,7 +302,8 @@ const markAccessibleCell = (
   }
   if (isAccessible(loc, field)) {
     return "x";
-  } else return "@";
+  }
+  return "@";
 };
 
 const { markedField, accessibleCount } = getAccessibleField(rawTestInput);
@@ -365,7 +368,7 @@ function getRemovableRolls(input: string): number {
   const initialRolls = countRolls(initialState);
   const endRolls = countRolls(currentState);
   const removed = initialRolls - endRolls;
-  console.log({ endRolls, initialRolls, removed: removed });
+  console.log({ endRolls, initialRolls, removed });
 
   return removed;
 }

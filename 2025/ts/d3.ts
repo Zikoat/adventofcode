@@ -245,7 +245,7 @@ function toJoltage12(
 }
 
 asseq(toJoltage(9, 8), 98);
-asseq(toJoltage12(9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1), 987654321111);
+asseq(toJoltage12(9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1), 987_654_321_111);
 
 type Battery = number;
 type Bank = Battery[];
@@ -265,127 +265,130 @@ function getLargestJoltage(bank: Bank): number {
 
 function getLargestJoltage12(bank: Bank): number {
   // first digit should be the first instance of the largest of the digits from 0 to len-12
-  const n1_digitsFrom0toLen12 = bank.toSpliced(bank.length - 12, Infinity);
-  const n1_maxDigit = Math.max(...n1_digitsFrom0toLen12);
-  const n1_maxIndex = n1_digitsFrom0toLen12.indexOf(n1_maxDigit);
-  console.log(n1_digitsFrom0toLen12, n1_maxDigit, n1_maxIndex);
+  const n1DigitsFrom0toLen12 = bank.toSpliced(
+    bank.length - 12,
+    Number.POSITIVE_INFINITY,
+  );
+  const n1MaxDigit = Math.max(...n1DigitsFrom0toLen12);
+  const n1MaxIndex = n1DigitsFrom0toLen12.indexOf(n1MaxDigit);
+  console.log(n1DigitsFrom0toLen12, n1MaxDigit, n1MaxIndex);
   // second digit should be the first instance of the largest digits from (index first) to len - 11
 
-  const n2_digitsFromN1MaxIndextoLen11 = bank
-    .toSpliced(bank.length - 11, Infinity)
-    .toSpliced(0, n1_maxIndex + 1);
-  const n2_maxDigit = Math.max(...n2_digitsFromN1MaxIndextoLen11);
-  const n2_maxIndex = n2_digitsFromN1MaxIndextoLen11.indexOf(n2_maxDigit);
+  const n2DigitsFromN1MaxIndextoLen11 = bank
+    .toSpliced(bank.length - 11, Number.POSITIVE_INFINITY)
+    .toSpliced(0, n1MaxIndex + 1);
+  const n2MaxDigit = Math.max(...n2DigitsFromN1MaxIndextoLen11);
+  const n2MaxIndex = n2DigitsFromN1MaxIndextoLen11.indexOf(n2MaxDigit);
 
-  console.log(n2_digitsFromN1MaxIndextoLen11, n2_maxDigit, n2_maxIndex);
+  console.log(n2DigitsFromN1MaxIndextoLen11, n2MaxDigit, n2MaxIndex);
 
-  const n3_digitsFromN1MaxIndextoLen11 = bank
-    .toSpliced(bank.length - 10, Infinity)
-    .toSpliced(0, n2_maxIndex + 2);
-  const n3_maxDigit = Math.max(...n3_digitsFromN1MaxIndextoLen11);
-  const n3_maxIndex = n3_digitsFromN1MaxIndextoLen11.indexOf(n3_maxDigit);
+  const n3DigitsFromN1MaxIndextoLen11 = bank
+    .toSpliced(bank.length - 10, Number.POSITIVE_INFINITY)
+    .toSpliced(0, n2MaxIndex + 2);
+  const n3MaxDigit = Math.max(...n3DigitsFromN1MaxIndextoLen11);
+  const n3MaxIndex = n3DigitsFromN1MaxIndextoLen11.indexOf(n3MaxDigit);
 
-  console.log(n3_digitsFromN1MaxIndextoLen11, n3_maxDigit, n3_maxIndex);
+  console.log(n3DigitsFromN1MaxIndextoLen11, n3MaxDigit, n3MaxIndex);
 
-  const n4_digitsFromN1MaxIndextoLen11 = bank
-    .toSpliced(bank.length - 9, Infinity)
-    .toSpliced(0, n3_maxIndex + 3);
-  const n4_maxDigit = Math.max(...n4_digitsFromN1MaxIndextoLen11);
-  const n4_maxIndex = n4_digitsFromN1MaxIndextoLen11.indexOf(n4_maxDigit);
+  const n4DigitsFromN1MaxIndextoLen11 = bank
+    .toSpliced(bank.length - 9, Number.POSITIVE_INFINITY)
+    .toSpliced(0, n3MaxIndex + 3);
+  const n4MaxDigit = Math.max(...n4DigitsFromN1MaxIndextoLen11);
+  const n4MaxIndex = n4DigitsFromN1MaxIndextoLen11.indexOf(n4MaxDigit);
 
-  console.log(n4_digitsFromN1MaxIndextoLen11, n4_maxDigit, n4_maxIndex);
+  console.log(n4DigitsFromN1MaxIndextoLen11, n4MaxDigit, n4MaxIndex);
 
-  const n5_digitsFromN1MaxIndextoLen11 = bank
-    .toSpliced(bank.length - 8, Infinity)
-    .toSpliced(0, n4_maxIndex + 4);
-  const n5_maxDigit = Math.max(...n5_digitsFromN1MaxIndextoLen11);
-  const n5_maxIndex = n5_digitsFromN1MaxIndextoLen11.indexOf(n5_maxDigit);
+  const n5DigitsFromN1MaxIndextoLen11 = bank
+    .toSpliced(bank.length - 8, Number.POSITIVE_INFINITY)
+    .toSpliced(0, n4MaxIndex + 4);
+  const n5MaxDigit = Math.max(...n5DigitsFromN1MaxIndextoLen11);
+  const n5MaxIndex = n5DigitsFromN1MaxIndextoLen11.indexOf(n5MaxDigit);
 
-  console.log(n5_digitsFromN1MaxIndextoLen11, n5_maxDigit, n5_maxIndex);
+  console.log(n5DigitsFromN1MaxIndextoLen11, n5MaxDigit, n5MaxIndex);
 
-  const n6_digitsFromN1MaxIndextoLen11 = bank
-    .toSpliced(bank.length - 7, Infinity)
-    .toSpliced(0, n5_maxIndex + 5);
-  const n6_maxDigit = Math.max(...n6_digitsFromN1MaxIndextoLen11);
-  const n6_maxIndex = n6_digitsFromN1MaxIndextoLen11.indexOf(n6_maxDigit);
+  const n6DigitsFromN1MaxIndextoLen11 = bank
+    .toSpliced(bank.length - 7, Number.POSITIVE_INFINITY)
+    .toSpliced(0, n5MaxIndex + 5);
+  const n6MaxDigit = Math.max(...n6DigitsFromN1MaxIndextoLen11);
+  const n6MaxIndex = n6DigitsFromN1MaxIndextoLen11.indexOf(n6MaxDigit);
 
-  console.log(n6_digitsFromN1MaxIndextoLen11, n6_maxDigit, n6_maxIndex);
+  console.log(n6DigitsFromN1MaxIndextoLen11, n6MaxDigit, n6MaxIndex);
 
-  const n7_digitsFromN1MaxIndextoLen11 = bank
-    .toSpliced(bank.length - 6, Infinity)
-    .toSpliced(0, n5_maxIndex + 6);
-  const n7_maxDigit = Math.max(...n7_digitsFromN1MaxIndextoLen11);
-  const n7_maxIndex = n7_digitsFromN1MaxIndextoLen11.indexOf(n7_maxDigit);
+  const n7DigitsFromN1MaxIndextoLen11 = bank
+    .toSpliced(bank.length - 6, Number.POSITIVE_INFINITY)
+    .toSpliced(0, n5MaxIndex + 6);
+  const n7MaxDigit = Math.max(...n7DigitsFromN1MaxIndextoLen11);
+  const n7MaxIndex = n7DigitsFromN1MaxIndextoLen11.indexOf(n7MaxDigit);
 
-  console.log(n7_digitsFromN1MaxIndextoLen11, n7_maxDigit, n7_maxIndex);
+  console.log(n7DigitsFromN1MaxIndextoLen11, n7MaxDigit, n7MaxIndex);
 
-  const n8_digitsFromN1MaxIndextoLen11 = bank
-    .toSpliced(bank.length - 5, Infinity)
-    .toSpliced(0, n5_maxIndex + 7);
-  const n8_maxDigit = Math.max(...n8_digitsFromN1MaxIndextoLen11);
-  const n8_maxIndex = n8_digitsFromN1MaxIndextoLen11.indexOf(n8_maxDigit);
+  const n8DigitsFromN1MaxIndextoLen11 = bank
+    .toSpliced(bank.length - 5, Number.POSITIVE_INFINITY)
+    .toSpliced(0, n5MaxIndex + 7);
+  const n8MaxDigit = Math.max(...n8DigitsFromN1MaxIndextoLen11);
+  const n8MaxIndex = n8DigitsFromN1MaxIndextoLen11.indexOf(n8MaxDigit);
 
-  console.log(n8_digitsFromN1MaxIndextoLen11, n8_maxDigit, n8_maxIndex);
+  console.log(n8DigitsFromN1MaxIndextoLen11, n8MaxDigit, n8MaxIndex);
 
-  const n9_digitsFromN1MaxIndextoLen11 = bank
-    .toSpliced(bank.length - 4, Infinity)
-    .toSpliced(0, n5_maxIndex + 8);
-  const n9_maxDigit = Math.max(...n9_digitsFromN1MaxIndextoLen11);
-  const n9_maxIndex = n9_digitsFromN1MaxIndextoLen11.indexOf(n9_maxDigit);
+  const n9DigitsFromN1MaxIndextoLen11 = bank
+    .toSpliced(bank.length - 4, Number.POSITIVE_INFINITY)
+    .toSpliced(0, n5MaxIndex + 8);
+  const n9MaxDigit = Math.max(...n9DigitsFromN1MaxIndextoLen11);
+  const n9MaxIndex = n9DigitsFromN1MaxIndextoLen11.indexOf(n9MaxDigit);
 
-  console.log(n9_digitsFromN1MaxIndextoLen11, n9_maxDigit, n9_maxIndex);
+  console.log(n9DigitsFromN1MaxIndextoLen11, n9MaxDigit, n9MaxIndex);
 
-  const n10_digitsFromN1MaxIndextoLen11 = bank
-    .toSpliced(bank.length - 3, Infinity)
-    .toSpliced(0, n5_maxIndex + 9);
-  const n10_maxDigit = Math.max(...n10_digitsFromN1MaxIndextoLen11);
-  const n10_maxIndex = n10_digitsFromN1MaxIndextoLen11.indexOf(n10_maxDigit);
+  const n10DigitsFromN1MaxIndextoLen11 = bank
+    .toSpliced(bank.length - 3, Number.POSITIVE_INFINITY)
+    .toSpliced(0, n5MaxIndex + 9);
+  const n10MaxDigit = Math.max(...n10DigitsFromN1MaxIndextoLen11);
+  const n10MaxIndex = n10DigitsFromN1MaxIndextoLen11.indexOf(n10MaxDigit);
 
-  console.log(n10_digitsFromN1MaxIndextoLen11, n10_maxDigit, n10_maxIndex);
+  console.log(n10DigitsFromN1MaxIndextoLen11, n10MaxDigit, n10MaxIndex);
 
-  const n11_digitsFromN1MaxIndextoLen11 = bank
-    .toSpliced(bank.length - 2, Infinity)
-    .toSpliced(0, n5_maxIndex + 10);
-  const n11_maxDigit = Math.max(...n11_digitsFromN1MaxIndextoLen11);
-  const n11_maxIndex = n11_digitsFromN1MaxIndextoLen11.indexOf(n11_maxDigit);
+  const n11DigitsFromN1MaxIndextoLen11 = bank
+    .toSpliced(bank.length - 2, Number.POSITIVE_INFINITY)
+    .toSpliced(0, n5MaxIndex + 10);
+  const n11MaxDigit = Math.max(...n11DigitsFromN1MaxIndextoLen11);
+  const n11MaxIndex = n11DigitsFromN1MaxIndextoLen11.indexOf(n11MaxDigit);
 
-  console.log(n11_digitsFromN1MaxIndextoLen11, n11_maxDigit, n11_maxIndex);
+  console.log(n11DigitsFromN1MaxIndextoLen11, n11MaxDigit, n11MaxIndex);
 
-  const n12_digitsFromN1MaxIndextoLen11 = bank
-    .toSpliced(bank.length - 1, Infinity)
-    .toSpliced(0, n5_maxIndex + 11);
-  const n12_maxDigit = Math.max(...n12_digitsFromN1MaxIndextoLen11);
-  const n12_maxIndex = n12_digitsFromN1MaxIndextoLen11.indexOf(n12_maxDigit);
+  const n12DigitsFromN1MaxIndextoLen11 = bank
+    .toSpliced(bank.length - 1, Number.POSITIVE_INFINITY)
+    .toSpliced(0, n5MaxIndex + 11);
+  const n12MaxDigit = Math.max(...n12DigitsFromN1MaxIndextoLen11);
+  const n12MaxIndex = n12DigitsFromN1MaxIndextoLen11.indexOf(n12MaxDigit);
 
-  console.log(n12_digitsFromN1MaxIndextoLen11, n12_maxDigit, n12_maxIndex);
+  console.log(n12DigitsFromN1MaxIndextoLen11, n12MaxDigit, n12MaxIndex);
 
   return toJoltage12(
-    n1_maxDigit,
-    n2_maxDigit,
-    n3_maxDigit,
-    n4_maxDigit,
-    n5_maxDigit,
-    n6_maxDigit,
-    n7_maxDigit,
-    n8_maxDigit,
-    n9_maxDigit,
-    n10_maxDigit,
-    n11_maxDigit,
-    n12_maxDigit,
+    n1MaxDigit,
+    n2MaxDigit,
+    n3MaxDigit,
+    n4MaxDigit,
+    n5MaxDigit,
+    n6MaxDigit,
+    n7MaxDigit,
+    n8MaxDigit,
+    n9MaxDigit,
+    n10MaxDigit,
+    n11MaxDigit,
+    n12MaxDigit,
   );
 }
 
-const [firstBank] = parseBanks(`987654321111111`);
+const [firstBank] = parseBanks("987654321111111");
 ass(firstBank);
 // asseq(getLargestJoltage12(firstBank), 987654321111);
 
-const [firstBank2] = parseBanks(`811111111111119`);
+const [firstBank2] = parseBanks("811111111111119");
 ass(firstBank2);
-asseq(getLargestJoltage12(firstBank2), 811111111119);
+asseq(getLargestJoltage12(firstBank2), 811_111_111_119);
 
 asseq(
   parseBanks(rawTestInput).map(getLargestJoltage12),
-  [987654321111, 811111111119, 434234234278, 888911112111],
+  [987_654_321_111, 811_111_111_119, 434_234_234_278, 888_911_112_111],
 );
 
 asseq(parseBanks(rawTestInput).map(getLargestJoltage), [98, 89, 78, 92]);
@@ -396,4 +399,4 @@ function totalJoltage(input: string): number {
 }
 
 asseq(totalJoltage(rawTestInput), 357);
-asseq(totalJoltage(rawInput), 16946);
+asseq(totalJoltage(rawInput), 16_946);

@@ -12,8 +12,11 @@ const testInputRaw3 = `123 328  51 64
 *   +   *   +  `;
 
 const splitted = testInputRaw3.split("\n");
-const numbers = splitted.toSpliced(splitted.length - 1, Infinity);
-const symbols = nonNull(splitted[splitted.length - 1]).split("");
+const numbers = splitted.toSpliced(
+  splitted.length - 1,
+  Number.POSITIVE_INFINITY,
+);
+const symbols = nonNull(splitted.at(-1)).split("");
 ass(symbols);
 console.log(numbers);
 console.log(symbols);
@@ -66,7 +69,7 @@ function parseInput(input: string): {
     .map((line) => line.trim().split(spacesRegex));
 
   const numberLines = inputParsed
-    .toSpliced(inputParsed.length - 1, Infinity)
+    .toSpliced(inputParsed.length - 1, Number.POSITIVE_INFINITY)
     .map((line) =>
       line.map((num) => {
         assInt(num);
@@ -74,7 +77,7 @@ function parseInput(input: string): {
       }),
     );
 
-  const symbolLineRaw = inputParsed[inputParsed.length - 1];
+  const symbolLineRaw = inputParsed.at(-1);
   ass(symbolLineRaw);
   const symbolLine = symbolLineRaw.map((symbol) => {
     ass(symbol === "*" || symbol === "+");
@@ -112,12 +115,12 @@ function getLineResult(input: string): number {
 
       lineResult.push(productLine);
     } else {
-      throw Error("symbol not recognized");
+      throw new Error("symbol not recognized");
     }
   }
 
   return sum(lineResult);
 }
 
-asseq(getLineResult(testInputRaw3), 4277556);
-asseq(getLineResult(inputRaw), 4771265398012);
+asseq(getLineResult(testInputRaw3), 4_277_556);
+asseq(getLineResult(inputRaw), 4_771_265_398_012);

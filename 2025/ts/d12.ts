@@ -67,10 +67,10 @@ export function bigBoy() {
 
   const parsedInput = parseInput(testInput2);
   const { gifts } = parsedInput;
-  const first_gift: Gift = nonNull(gifts[0]);
+  const firstGift: Gift = nonNull(gifts[0]);
 
   assmeq(
-    first_gift,
+    firstGift,
     `###
      ##.
      ##.`,
@@ -107,7 +107,7 @@ function parseInput(input: string): Puzzle {
     },
   );
 
-  const trees: Tree[] = nonNull(matchedInput[matchedInput.length - 1])
+  const trees: Tree[] = nonNull(matchedInput.at(-1))
     .split("\n")
     .map(function mapTree(tree) {
       const [size, giftsCountString] = tree.split(": ");
@@ -216,7 +216,7 @@ export function wrapGift(input: Gift): Gift {
 
   while (
     rows.every(function checkRowsEveryLastChar(row) {
-      return row[row.length - 1] === ".";
+      return row.at(-1) === ".";
     })
   ) {
     rows = rows.map(function mapRowsToSpliced(row) {
@@ -233,7 +233,7 @@ export function wrapGift(input: Gift): Gift {
   }
 
   while (
-    nonNull(rows[rows.length - 1]).every(function checkRowsEveryLastChar(char) {
+    nonNull(rows.at(-1)).every(function checkRowsEveryLastChar(char) {
       return char === ".";
     })
   ) {
@@ -428,12 +428,12 @@ ${matrixToString(placedGiftToGift(giftsWithRotations, placedGift))}
       if (!giftInside(placedGift)) return false;
     }
   } else if (opts.validateLastGiftCellInside) {
-    const lastGift: PlacedGift = nonNull(placedGifts[placedGifts.length - 1]);
+    const lastGift: PlacedGift = nonNull(placedGifts.at(-1));
     if (!giftInside(lastGift)) return false;
   }
 
   const placedMultiGift1Index = placedGifts.length - 1;
-  const placedMultiGift1 = nonNull(placedGifts[placedGifts.length - 1]);
+  const placedMultiGift1 = nonNull(placedGifts.at(-1));
 
   for (const [
     placedMultiGift2Index,
@@ -562,7 +562,7 @@ export function someValidPlacements(
     ass(giftRotationCount !== 0);
     const validXPos = board.width - minGiftSize + 1;
     const validYPos = board.height - minGiftSize + 1;
-    return Array(giftCount)
+    return new Array(giftCount)
       .fill([giftRotationCount, validXPos, validYPos])
       .flat();
   });
@@ -653,24 +653,22 @@ export function combinationsWithCheck(
   const recurse = (combination: Int[]): boolean => {
     const isValid = check(combination);
 
-    if (combination.length === combinationsInput.length) {
-      if (isValid) {
-        return true;
-      }
+    if (combination.length === combinationsInput.length && isValid) {
+      return true;
     }
 
     if (isValid) {
       return recurse([...combination, 0]);
-    } else if (combination.length > 0) {
+    }
+    if (combination.length > 0) {
       const acc = [...combination];
       // biome-ignore lint/nursery/noUnnecessaryConditions: will remove in refactoring
       while (true) {
         if (acc.length === 0) break;
-        acc[acc.length - 1] = toNumInt(acc[acc.length - 1]) + 1;
+        acc[acc.length - 1] = toNumInt(acc.at(-1)) + 1;
 
         if (
-          toNumInt(acc[acc.length - 1]) >=
-          toNumInt(combinationsInput[acc.length - 1])
+          toNumInt(acc.at(-1)) >= toNumInt(combinationsInput[acc.length - 1])
         ) {
           toNumInt(acc.pop());
         } else {
@@ -681,9 +679,8 @@ export function combinationsWithCheck(
       if (acc.length === 0) return false;
 
       return recurse(acc);
-    } else {
-      ass(false);
     }
+    ass(false);
   };
 
   return recurse([0]);
@@ -729,10 +726,9 @@ export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
 
       if (uniqueTransmutations.has(stringTransmutation)) {
         return false;
-      } else {
-        uniqueTransmutations.add(stringTransmutation);
-        return true;
       }
+      uniqueTransmutations.add(stringTransmutation);
+      return true;
     },
   );
 }
@@ -753,7 +749,7 @@ export function getProgress(
   currentCombination: Int[],
 ): number {
   const ranges = lerpMultiple(totalCombination, currentCombination);
-  const progress = nonNull(ranges[ranges.length - 1]).to;
+  const progress = nonNull(ranges.at(-1)).to;
 
   ass(
     Number.isFinite(progress),

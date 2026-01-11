@@ -1,5 +1,7 @@
 import { deepEquals } from "bun";
 
+const numberRegex = /^\d+$/;
+
 export type Vector = {
   x: number;
   y: number;
@@ -29,14 +31,14 @@ export function negate(v: Vector): Vector {
 
 export function ass(truthy: unknown, message?: string): asserts truthy {
   if (!truthy) {
-    throw Error(message ?? "assertion failed");
+    throw new Error(message ?? "assertion failed");
   }
 }
 
 export function asseq<T>(got: T, want: T, message?: string): asserts want is T {
   if (!deepEquals(want, got, true)) {
     const actualString = JSON.stringify(got);
-    throw Error(
+    throw new Error(
       `${(message ?? "") + actualString} should be ${JSON.stringify(want)}`,
     );
   }
@@ -47,7 +49,6 @@ export function nonNull<T>(shit: T | undefined): NonNullable<T> {
   return shit;
 }
 
-const numberRegex = /^\d+$/;
 export function assInt(input: string): asserts input {
   ass(numberRegex.test(input));
   return;

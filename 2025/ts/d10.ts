@@ -97,7 +97,7 @@ function findSmallestButtonPresses(machine: {
     }
   }
 
-  throw Error("shit, more than 10");
+  throw new Error("shit, more than 10");
 }
 
 asseq(

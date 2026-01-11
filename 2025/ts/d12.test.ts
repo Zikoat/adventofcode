@@ -54,11 +54,11 @@ describe(wrapGift, () => {
 
 describe(wrapGiftString, () => {
   it("should return the string turned to a matrix", () => {
-    assmeq(wrapGiftString(`#`), "#");
+    assmeq(wrapGiftString("#"), "#");
   });
 
   it("should handle various wrapping cases", () => {
-    assmeq(wrapGiftString(`##`), "##");
+    assmeq(wrapGiftString("##"), "##");
     assmeq(
       wrapGiftString(
         `#
@@ -67,9 +67,9 @@ describe(wrapGiftString, () => {
       `#
        #`,
     );
-    assmeq(wrapGiftString(`.#`), "#");
-    assmeq(wrapGiftString(`#.`), "#");
-    assmeq(wrapGiftString(`#.#`), "#.#");
+    assmeq(wrapGiftString(".#"), "#");
+    assmeq(wrapGiftString("#."), "#");
+    assmeq(wrapGiftString("#.#"), "#.#");
     assmeq(
       wrapGiftString(
         `#.#
@@ -166,7 +166,7 @@ describe(isValidBoard, () => {
   test("single space board with 1 placed gift of 1 tile", () => {
     asseq(
       isValidBoard({
-        gifts: toGiftsWithRotations(`#`),
+        gifts: toGiftsWithRotations("#"),
         height: 1,
         placedGifts: [{ rotation: 0, type: 0, x: 0, y: 0 }],
         width: 1,
@@ -180,7 +180,7 @@ describe(isValidBoard, () => {
     opts.validateLastGiftCellInside = true;
     expect(() =>
       isValidBoard({
-        gifts: toGiftsWithRotations(`#`),
+        gifts: toGiftsWithRotations("#"),
         height: 1,
         placedGifts: [
           {
@@ -206,7 +206,7 @@ describe(isValidBoard, () => {
     opts.validateTooLargeGifts = true;
     expect(() =>
       isValidBoard({
-        gifts: toGiftsWithRotations(`##`),
+        gifts: toGiftsWithRotations("##"),
         height: 1,
         placedGifts: [{ rotation: 0, type: 0, x: 0, y: 0 }],
         width: 1,
@@ -223,7 +223,7 @@ describe(isValidBoard, () => {
   test("pieces that have a tile at the same position should be invalid", () => {
     asseq(
       isValidBoard({
-        gifts: toGiftsWithRotations(`#`),
+        gifts: toGiftsWithRotations("#"),
         height: 1,
         placedGifts: [
           { rotation: 0, type: 0, x: 0, y: 0 },
@@ -239,7 +239,7 @@ describe(isValidBoard, () => {
   test("place 2 gifts side by side should be valid", () => {
     asseq(
       isValidBoard({
-        gifts: toGiftsWithRotations(`#`),
+        gifts: toGiftsWithRotations("#"),
         height: 1,
         placedGifts: [
           { rotation: 0, type: 0, x: 0, y: 0 },
@@ -253,7 +253,7 @@ describe(isValidBoard, () => {
 
   test("visualizing board after multiple placements should show X at positions which are wrong", () => {
     const boardState = {
-      gifts: toGiftsWithRotations(`##`),
+      gifts: toGiftsWithRotations("##"),
       height: 2,
       placedGifts: [] as PlacedGift[],
       width: 2,
@@ -301,7 +301,7 @@ describe(isValidBoard, () => {
   test("visualizing board with a placed gift in the bottom right corner", () => {
     visualizeBoard(
       {
-        gifts: toGiftsWithRotations(`#`),
+        gifts: toGiftsWithRotations("#"),
         height: 2,
         placedGifts: [{ rotation: 0, type: 0, x: 1, y: 1 }],
         width: 2,
@@ -655,7 +655,7 @@ function indicesToCurrentCombination<T = unknown>(
     `${indices.length} indices but ${currentCombinations.length} combinations`,
   );
   ass(
-    currentCombinations.every((combination) => combination.length >= 1),
+    currentCombinations.every((combination) => combination.length > 0),
     `a combination was empty ${JSON.stringify(currentCombinations)}`,
   );
   // shit todo assert indices is always array of ints between 0 and max safe integer
@@ -1251,10 +1251,10 @@ function visualizeBoard(board: Board, expected: string) {
 function boardToVizualizedBoard(board: Board): VisualizedBoard {
   let warning = "";
 
-  const boardMatrix: string[][] = Array(board.height)
+  const boardMatrix: string[][] = new Array(board.height)
     .fill([] as string[])
     .map(function fillBoardMatrix() {
-      return Array(board.width).fill(".");
+      return new Array(board.width).fill(".");
     });
 
   for (const [placedGiftIndex, placedGift] of board.placedGifts.entries()) {
@@ -1320,7 +1320,7 @@ afterAll(() => {
 
 describe(c, () => {
   test("should log the variable name and the content", () => {
-    let a: number = 1;
+    let a = 1;
     a++;
 
     const foo = a === 2 ? "bar" : "shit";
@@ -1345,7 +1345,7 @@ describe(giftsOverlap, () => {
   test("should return false when the gifts do not overlap with a single #", () => {
     asseq(
       giftsOverlap(
-        toGiftsWithRotations(`#`),
+        toGiftsWithRotations("#"),
         { rotation: 0, type: 0, x: 1, y: 0 },
         { rotation: 0, type: 0, x: 0, y: 0 },
       ),
@@ -1355,7 +1355,7 @@ describe(giftsOverlap, () => {
     asseq(
       giftsOverlap(
         toGiftsWithRotations(
-          `#`,
+          "#",
 
           `##
 		   .#`,
@@ -1393,7 +1393,7 @@ describe(getProgress, () => {
         [8, 10, 3, 2, 10, 3, 4, 10, 3, 4, 10, 3, 4, 10, 3, 2, 10, 3, 2, 10, 3],
         [0, 0, 0, 0, 2, 1, 2, 6, 1, 1, 9, 0, 0, 5, 2, 1, 8, 0]
       ),
-      0.0005321043079936129,
+      0.000_532_104_307_993_612_9,
     );
 
     asseq(
@@ -1402,7 +1402,7 @@ describe(getProgress, () => {
         [8, 10, 3, 2, 10, 3, 4, 10, 3, 4, 10, 3, 4, 10, 3, 2, 10, 3, 2, 10, 3],
         [0, 0, 0, 0, 6, 0, 3, 2, 2, 1, 3, 1, 1, 9, 1, 1, 3, 1]
       ),
-      0.0013069082225490827,
+      0.001_306_908_222_549_082_7,
     );
     asseq(
       // biome-ignore format: they should be aligned
@@ -1410,7 +1410,7 @@ describe(getProgress, () => {
         [8, 10, 3, 2, 10, 3, 4, 10, 3, 4, 10, 3, 4, 10, 3, 2, 10, 3, 2, 10, 3],
         [0, 0, 0, 0, 9, 2, 3, 2, 1, 1, 6, 0, 2, 0, 1]
       ),
-      0.0020702571212705763,
+      0.002_070_257_121_270_576_3,
     );
   });
 
@@ -1451,7 +1451,7 @@ describe(getProgress, () => {
         [8, 10, 3, 2, 10, 3, 4, 10, 3, 4, 10, 3, 4, 10, 3, 2, 10, 3, 2, 10, 3],
         [0, 0, 0, 0, 2, 1, 2, 6, 1, 1, 9, 0, 0, 5, 2, 1, 8, 0]
       ),
-      0.0005321043079936129,
+      0.000_532_104_307_993_612_9,
     );
 
     asseq(
@@ -1465,7 +1465,7 @@ describe(getProgress, () => {
 describe(hasBeenValidated, () => {
   test("should return true when the board has been validated", () => {
     const board = {
-      gifts: toGiftsWithRotations(`#`),
+      gifts: toGiftsWithRotations("#"),
       height: 1,
       placedGifts: [{ rotation: 0, type: 0, x: 0, y: 0 }],
       width: 1,
@@ -1483,7 +1483,7 @@ describe(hasBeenValidated, () => {
 
   test("should detect permutations of the order of placed gifts", () => {
     const board = {
-      gifts: toGiftsWithRotations(`##`),
+      gifts: toGiftsWithRotations("##"),
       height: 2,
       placedGifts: [
         { rotation: 0, type: 0, x: 0, y: 0 },

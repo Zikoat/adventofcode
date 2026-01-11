@@ -4576,9 +4576,9 @@ function getZeroCount(input2: string): number {
     let { ticks } = command;
     while (ticks > 0) {
       if (command.direction === "R") {
-        currentRotation = currentRotation + 1;
+        currentRotation += 1;
       } else {
-        currentRotation = currentRotation - 1;
+        currentRotation -= 1;
       }
 
       ticks--;
