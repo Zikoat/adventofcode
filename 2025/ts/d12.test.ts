@@ -7,6 +7,7 @@ import {
   type CombinationChecker,
   c,
   canFitString,
+  cc,
   combinationsWithCheck,
   createAllTransmutations,
   createDedupedTransmutations,
@@ -33,10 +34,9 @@ import {
   someValidPlacements,
   stringToGift,
   stringToMatrix,
+  toNumInt,
   transposeGift,
   wrapGift,
-  cc,
-  toNumInt,
 } from "./d12";
 
 describe(wrapGift, () => {
@@ -544,7 +544,7 @@ describe(combinationsWithCheck, () => {
   });
 });
 
-type GetNext<T = unknown> = (combination: unknown[]) => T;
+type GetNext<T = unknown> = (combination: unknown[]) => T | undefined;
 type IsComplete = () => boolean;
 
 function combinationsWithNext<T>(
@@ -562,83 +562,92 @@ function combinationsWithNext<T>(
   // it should return ["a"]
   // we add ["a"] to the current combinations
 
+  ass(nextValue);
+
   currentCombinations.push([nextValue]);
   // this means that the first combination can be multiple values
   // and we are currently investigatind index 0
-
 
   const currentCombination: T[] = [];
 
   // to create the combination we take the indices
   for (let i = 0; i < indices.length; i++) {
     const newLocal = indices[i];
-    ass(typeof newLocal === 'number')
+    ass(typeof newLocal === "number");
 
     // and we map the current index
-    const currentIndex = (newLocal);
+    const currentIndex = newLocal;
     // to a value of  the current combination
     const currentCombinationValue = nonNull(
       nonNull(currentCombinations[i])[currentIndex],
     );
-    c(() => currentCombinationValue)
+    c(() => currentCombinationValue);
 
     // we push that on the current combinotion
     currentCombination.push(currentCombinationValue);
   }
 
-  c(() => currentCombination)
+  c(() => currentCombination);
 
   // const currentIndices: Int[] = [0];
 
   // if(currentCombinations.length ===0) return isComplete();
 
   const nextValues = getNext(nonNull(currentCombinations[0]));
+  ass(nextValues);
 
   currentCombinations.push([...currentCombination, nextValues]);
 
-  c(() => currentCombinations)
-
-  if (nextValues.length === 0) {
-    return isComplete();
-  }
+  c(() => currentCombinations);
 
   return isComplete();
 }
 
-function indicesToCurrentCombination<T = unknown>(currentCombinations: T[][], indices: Int[]): T[] {
-  ass(indices.length === currentCombinations.length, `${indices.length} indices but ${currentCombinations.length} combinations`)
-  ass(currentCombinations.every(combination => combination.length >= 1), "a combination was empty " + JSON.stringify(currentCombinations))
+function indicesToCurrentCombination<T = unknown>(
+  currentCombinations: T[][],
+  indices: Int[],
+): T[] {
+  ass(
+    indices.length === currentCombinations.length,
+    `${indices.length} indices but ${currentCombinations.length} combinations`,
+  );
+  ass(
+    currentCombinations.every((combination) => combination.length >= 1),
+    `a combination was empty ${JSON.stringify(currentCombinations)}`,
+  );
   // shit todo assert indices is always array of ints between 0 and max safe integer
 
   return indices.map((val, index) => {
-    return nonNull(nonNull(currentCombinations[index])[toNumInt(val)])
-  })
-
+    return nonNull(nonNull(currentCombinations[index])[toNumInt(val)]);
+  });
 }
 
 describe.only(indicesToCurrentCombination, () => {
   test("shit", () => {
-    const combinations = [["a", "b"], ["c", "d"]];
-    asseq(indicesToCurrentCombination(combinations, [0, 0]), ["a", "c"])
-    asseq(indicesToCurrentCombination(combinations, [0, 1]), ["a", "d"])
-  })
+    const combinations = [
+      ["a", "b"],
+      ["c", "d"],
+    ];
+    asseq(indicesToCurrentCombination(combinations, [0, 0]), ["a", "c"]);
+    asseq(indicesToCurrentCombination(combinations, [0, 1]), ["a", "d"]);
+  });
 
   test.failing("should throw an error when an empty array is added", () => {
-    indicesToCurrentCombination([[]], [0])
-  })
+    indicesToCurrentCombination([[]], [0]);
+  });
 
   test.failing("should throw an error when an index is out of bounds", () => {
-    indicesToCurrentCombination([["a"]], [2])
-  })
+    indicesToCurrentCombination([["a"]], [2]);
+  });
 
   test.failing("should throw an error when there are more indices than arrays", () => {
-    indicesToCurrentCombination([["a"]], [0, 0])
-  })
+    indicesToCurrentCombination([["a"]], [0, 0]);
+  });
 
   test.failing("should throw an error when there are less indices than arrays", () => {
-    indicesToCurrentCombination([["a"]], [])
-  })
-})
+    indicesToCurrentCombination([["a"]], []);
+  });
+});
 
 describe(combinationsWithNext, () => {
   // shit todo we should also have a counter which checks the current index such that
@@ -671,8 +680,8 @@ describe(combinationsWithNext, () => {
   });
 
   test("if we always return 'a', then it should traverse that until it reaches the end and the lowest one returns []", () => {
-    const getNext = mock<GetNext<"b">>((combinations) =>
-      combinations.length < 10 ? ["b"] : [],
+    const getNext = mock<GetNext<"b">>((combinations): "b" | undefined =>
+      combinations.length < 10 ? "b" : undefined,
     );
 
     asseq(combinationsWithNext(getNext), false);
@@ -702,7 +711,7 @@ describe(combinationsWithNext, () => {
     // ["10", "20"]. we then traverse to "10" with index 0, and this returns []
     // we continue until we hit "b 20" which is valid and complete, and so we
     // stop and return true.
-    // `, () => { });
+    // `, () => {});
 });
 
 describe("Rotations", () => {
@@ -1465,4 +1474,3 @@ describe(hasBeenValidated, () => {
     asseq([...validatedBoards], ["0,0,0,0|0,1,0,0"]);
   });
 });
-
