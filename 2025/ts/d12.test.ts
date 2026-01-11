@@ -541,6 +541,45 @@ describe(combinationsWithCheck, () => {
   });
 });
 
+type NextCombination = ()=>unknown[];
+
+function combinationsWithNext(next:NextCombination){
+  return false;
+}
+
+describe(combinationsWithNext,()=>{
+
+  test.only("it should terminate when [] is returned",()=>{
+    // so it should return the values for the next downstream combination
+    // we should also have a counter which checks the current index such that
+    // we can have a progress bar
+    
+    // for test we have a function which returns the next valid values.
+    
+    // ()=>[], should terminate the current step, and also all of the next steps
+    const spy = mock<NextCombination>(() => []);
+    asseq(combinationsWithNext(spy), true);
+    expect(spy).toBeCalledTimes(1)
+    expect(spy).toHaveLastReturnedWith([])
+    expect(spy).lastCalledWith(1)
+    asseq(spy.mock.calls, [[[0]]]);
+
+    
+    // if the empty combination is complete, then return true.
+
+    // if we always return "a", then it should traverse that until it reaches 
+    // the end and the lowest one returns []
+
+    // if the first returns ["a","b","c"], then it will traverse to index 0
+    // which is "a", then it will run the next combination function and return 
+    // ["10", "20"]. we then traverse to "10" with index 0, and this returns []
+    // we continue until we hit "b 20" which is valid and complete, and so we
+    // stop and return true.
+
+
+  })
+})
+
 describe("Rotations", () => {
   describe(transposeGift, () => {
     test("transpose should work", () => {
