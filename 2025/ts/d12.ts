@@ -18,6 +18,8 @@ export const opts = {
   logHasAlreadyBeenValidated: true,
 };
 
+export const optsDuplicate = {...opts}
+
 export type Gift = ("." | "#")[][];
 export type Gifts = Gift[];
 export type Int = number;

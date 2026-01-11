@@ -33,6 +33,7 @@ import {
   stringToMatrix,
   transposeGift,
   wrapGift,
+  optsDuplicate,
 } from "./d12";
 
 describe(wrapGift, () => {
@@ -200,6 +201,7 @@ describe(isValidBoard, () => {
   });
 
   test("placed gift which has piece outside of board should be invalid", () => {
+    const prevValidateTooLargegifts= opts.validateTooLargeGifts;
     opts.validateTooLargeGifts = true;
     expect(() =>
       isValidBoard({
@@ -214,7 +216,7 @@ describe(isValidBoard, () => {
       ##
       "
     `);
-    opts.validateTooLargeGifts = false;
+    opts.validateTooLargeGifts = prevValidateTooLargegifts;
   });
 
   test("pieces that have a tile at the same position should be invalid", () => {
@@ -1104,6 +1106,8 @@ afterAll(() => {
     ...c(() => isValidBoardRuns),
     ...c(() => giftsOverlapCount),
   );
+
+  expect(opts).toStrictEqual(optsDuplicate)
 });
 
 describe(c, () => {
