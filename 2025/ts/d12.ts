@@ -13,8 +13,9 @@ import {
 export const opts = {
   validateGifts: false,
   validateEveryGiftCellInside: false,
-  validateLastGiftCellInside: true, // shit todo required right now
+  validateLastGiftCellInside: false, // shit todo required right now
   validateTooLargeGifts: false,
+  logHasAlreadyBeenValidated: false,
 };
 
 export type Gift = ("." | "#")[][];
@@ -68,7 +69,7 @@ export function bigBoy() {
     first_gift,
     `###
      ##.
-     ##.`,
+     ##.`
   );
 
   gifts.forEach(function forEachGifts(gift) {
@@ -90,12 +91,12 @@ function parseInput(input: string): Puzzle {
 
   asseq(giftsTuple.length, matchedInput.length - 1);
 
-  const gifts: Gifts = giftsTuple.map(
-    function mapGiftsTuple(giftStringWithNumber) {
-      const giftString = nonNull(giftStringWithNumber.split(":")[1]);
-      return stringToGift(giftString);
-    },
-  );
+  const gifts: Gifts = giftsTuple.map(function mapGiftsTuple(
+    giftStringWithNumber
+  ) {
+    const giftString = nonNull(giftStringWithNumber.split(":")[1]);
+    return stringToGift(giftString);
+  });
 
   const trees: Tree[] = nonNull(matchedInput[matchedInput.length - 1])
     .split("\n")
@@ -136,7 +137,7 @@ export function stringToMatrix(input: string): string[][] {
   ass(
     matrix.every(function checkMatrixEveryRowLength(row) {
       return row.length === firstRow.length;
-    }),
+    })
   );
 
   return matrix;
@@ -161,7 +162,7 @@ export function assmeq(stringMatrix: string[][], expected: string): void {
     cleanViz(visualizedBoard),
     "the visualized matrix is not correct. it is \n---\n" +
       visualizedBoard +
-      "\n---",
+      "\n---"
   ).toBe(cleanViz(expected));
 }
 
@@ -171,14 +172,14 @@ export function stringToGift(giftString: string): Gift {
 
 function assMatrix<T extends string>(
   stringMatrix: unknown[][],
-  assertionCallback: (input: unknown) => input is T,
+  assertionCallback: (input: unknown) => input is T
 ): T[][] {
   ass(
     stringMatrix.every(function checkMatrixEveryRow(row) {
       return row.every(function checkMatrixEveryChar(char) {
         return assertionCallback(char);
       });
-    }),
+    })
   );
 
   return stringMatrix;
@@ -253,7 +254,7 @@ type RootRectangle = { width: Int; height: Int };
 type Rectangle = Vector & RootRectangle;
 
 function assVector(
-  vector: Vector | undefined | null,
+  vector: Vector | undefined | null
 ): asserts vector is Vector {
   ass(vector);
   toNumInt(vector.x);
@@ -261,7 +262,7 @@ function assVector(
 }
 
 function assRootRectangle(
-  rootRectangle: RootRectangle | null | undefined,
+  rootRectangle: RootRectangle | null | undefined
 ): asserts rootRectangle is RootRectangle {
   ass(rootRectangle);
   toNumInt(rootRectangle.width);
@@ -291,7 +292,7 @@ function assMatrixSquare(matrix: unknown[][]): void {
   ass(
     matrix.every(function checkMatrixEveryRowLength(row) {
       return row.length === nonNull(matrix[0]).length;
-    }),
+    })
   );
 }
 
@@ -309,23 +310,23 @@ function rectangleIsInside(inner: Rectangle, outer: RootRectangle): boolean {
           x: inner.width - 1,
           y: inner.height - 1,
         },
-        { x: inner.x, y: inner.y },
+        { x: inner.x, y: inner.y }
       ),
-      outer,
+      outer
     )
   );
 }
 
 export function placedGiftToGift(
   giftsWithRotations: GiftsWithRotations,
-  placedGift: PlacedGift,
+  placedGift: PlacedGift
 ) {
   return nonNull(giftsWithRotations[placedGift.type]?.[placedGift.rotation]);
 }
 
 function placedGiftToBoundingRectangle(
   giftsWithRotations: GiftsWithRotations,
-  placedGift: PlacedGift,
+  placedGift: PlacedGift
 ): Rectangle {
   const gift = placedGiftToGift(giftsWithRotations, placedGift);
   const giftRootRectangle = matrixToRootRectangle(gift);
@@ -340,13 +341,19 @@ export let isValidBoardRuns = 0;
 const startTime = performance.now();
 const perfLog = 1_000_000;
 
+// shit this should not need giftcounts
+// shit totalcombination may not be used, although this can be generated from giftcounts?
 export function isValidBoard(
-  board: Board,
-  currentCombination?: Int[],
-  totalCombination?: Int[],
+  board: RootRectangle,
+  giftCounts: Int[],
+  giftsWithRotations: GiftsWithRotations,
+  currentCombination: Int[],
+  totalCombination?: Int[]
 ): boolean {
+  const placedGifts = combinationToPlacedGifts(currentCombination, giftCounts);
+
   if (opts.validateTooLargeGifts) {
-    assertNotTooLargeGifts(board.gifts, board);
+    assertNotTooLargeGifts(giftsWithRotations, board);
   }
 
   isValidBoardRuns++;
@@ -360,19 +367,21 @@ export function isValidBoard(
     const progress = getProgress(totalCombination, currentCombination);
 
     const firstString = `${isValidBoardRuns.toString().padEnd(10, " ")} avg ${(
-      (isValidBoardRuns / (now - startTime)) * 1000
-    ).toFixed(
-      0,
-    )}/sec ${progress.toFixed(4)} % ${Temporal.Now.plainTimeISO().toString({ fractionalSecondDigits: 2 })} `;
+      (isValidBoardRuns / (now - startTime)) *
+      1000
+    ).toFixed(0)}/sec ${progress.toFixed(
+      4
+    )} % ${Temporal.Now.plainTimeISO().toString({
+      fractionalSecondDigits: 2,
+    })} revalidated: ${hasBeenValidatedCount} `;
     console.log(
       `${firstString}${currentCombination?.map((num) =>
-        `${num}`.padStart(2, " "),
-      )}\n${"".padStart(firstString.length, " ")}${totalCombination?.map((num) => `${num}`.padStart(2, " "))}`,
+        `${num}`.padStart(2, " ")
+      )}\n${"".padStart(firstString.length, " ")}${totalCombination?.map(
+        (num) => `${num}`.padStart(2, " ")
+      )}`
     );
   }
-
-  const placedGifts = board.placedGifts;
-  const giftsWithRotations = board.gifts;
 
   if (opts.validateGifts) {
     giftsWithRotations.forEach((giftWithRotations): void => {
@@ -386,7 +395,7 @@ export function isValidBoard(
   const giftInside = (placedGift: PlacedGift): boolean => {
     const giftRectangle = placedGiftToBoundingRectangle(
       giftsWithRotations,
-      placedGift,
+      placedGift
     );
 
     const isRectangleInside = rectangleIsInside(giftRectangle, board);
@@ -398,14 +407,14 @@ export function isValidBoard(
       ass(
         isRectangleInside,
         `gift was placed outside of the board. placed gift ${JSON.stringify(
-          giftRectangle,
+          giftRectangle
         )} should be inside of ${JSON.stringify({
           width: board.width,
           height: board.height,
         })}. gift shape:
 ---
 ${matrixToString(placedGiftToGift(giftsWithRotations, placedGift))}
----`,
+---`
       );
     }
 
@@ -442,7 +451,7 @@ export let giftsOverlapCount = 0;
 export function giftsOverlap(
   giftsWithRotations: GiftsWithRotations,
   placedMultiGift1: PlacedGift,
-  placedMultiGift2: PlacedGift,
+  placedMultiGift2: PlacedGift
 ): boolean {
   giftsOverlapCount++;
 
@@ -454,7 +463,7 @@ export function giftsOverlap(
       if (gift1Cell === "#") {
         const globalPos = add(
           { y: placedMultiGift1.y, x: placedMultiGift1.x },
-          { x: gift1LocalX, y: gift1LocalY },
+          { x: gift1LocalX, y: gift1LocalY }
         );
 
         const gift2Local = diff(globalPos, {
@@ -483,27 +492,72 @@ function toNumInt(input: Int | undefined | null): Int {
   return input;
 }
 
+export function placedGiftsToCombination(placedGifts: PlacedGift[]): Int[] {
+  return placedGifts.flatMap((placedGift) => [
+    placedGift.type,
+    placedGift.rotation,
+    placedGift.x,
+    placedGift.y,
+  ]);
+}
+
+export function combinationToPlacedGifts(
+  combination: Int[],
+  giftCounts: Int[]
+): PlacedGift[] {
+  asseq(combination.length % 3, 0);
+  const giftPlacement: PlacedGift[] = [];
+
+  let currentGiftMultiIndex = 0;
+  // shit todo performance optimization is to not create this array,
+  // but instead use the combination directly, and then exit on the
+  // first invalid piece that would be placed
+  for (const [type, giftCount] of giftCounts.entries()) {
+    for (let i = 0; i < giftCount; i++) {
+      const newLocal = combination[currentGiftMultiIndex * 3];
+
+      if (newLocal === undefined) {
+        return giftPlacement;
+      }
+
+      giftPlacement.push({
+        type,
+        rotation: toNumInt(newLocal),
+        x: toNumInt(combination[currentGiftMultiIndex * 3 + 1]),
+        y: toNumInt(combination[currentGiftMultiIndex * 3 + 2]),
+      });
+
+      currentGiftMultiIndex++;
+    }
+  }
+
+  asseq(currentGiftMultiIndex * 3, combination.length);
+  return giftPlacement;
+}
+
 export function someValidPlacements(
   giftsWithRotations: GiftsWithRotations,
-  tree: Tree,
+  tree: Tree
 ): boolean {
   const giftCounts = tree.giftCounts;
-  const board = tree;
+  const board: RootRectangle = { width: tree.width, height: tree.height };
 
   asseq(giftsWithRotations.length, giftCounts.length);
 
   ass(board.width !== 0);
   ass(board.height !== 0);
 
-  assertNotTooLargeGifts(giftsWithRotations, board);
+  if (opts.validateTooLargeGifts) {
+    assertNotTooLargeGifts(giftsWithRotations, board);
+  }
 
   const combinationsInput: Int[] = giftCounts.flatMap((giftCount, index) => {
     const giftRotationCount = nonNull(giftsWithRotations[index]).length;
 
     const minGiftSize = Math.min(
       ...nonNull(giftsWithRotations[index]).map(
-        (gift) => nonNull(gift[0]).length,
-      ),
+        (gift) => nonNull(gift[0]).length
+      )
     );
 
     ass(giftRotationCount !== 0);
@@ -514,31 +568,7 @@ export function someValidPlacements(
       .flat();
   });
 
-  const combinationToGiftPlacement = (combination: Int[]): PlacedGift[] => {
-    asseq(combination.length % 3, 0);
-    const giftPlacement: PlacedGift[] = [];
-
-    let currentGiftMultiIndex = 0;
-    for (const [type, giftCount] of giftCounts.entries()) {
-      for (let i = 0; i < giftCount; i++) {
-        const newLocal = combination[currentGiftMultiIndex * 3];
-        if (newLocal === undefined) {
-          return giftPlacement;
-        }
-        giftPlacement.push({
-          type,
-          rotation: toNumInt(newLocal),
-          x: toNumInt(combination[currentGiftMultiIndex * 3 + 1]),
-          y: toNumInt(combination[currentGiftMultiIndex * 3 + 2]),
-        });
-
-        currentGiftMultiIndex++;
-      }
-    }
-
-    asseq(currentGiftMultiIndex * 3, combination.length);
-    return giftPlacement;
-  };
+  const seenBoards = new Set<string>();
 
   const anyValidPlacements = combinationsWithCheck(
     combinationsInput,
@@ -547,20 +577,31 @@ export function someValidPlacements(
 
       // console.log(combination.join(","));
 
-      const giftPlacement = combinationToGiftPlacement(combination);
-
       const isPlacementValid = isValidBoard(
-        {
-          ...board,
-          placedGifts: giftPlacement,
-          gifts: giftsWithRotations,
-        },
+        board,
+        giftCounts,
+        giftsWithRotations,
         combination,
-        combinationsInput,
+        combinationsInput
       );
 
+      if (!isPlacementValid && opts.logHasAlreadyBeenValidated) {
+        const placedGifts = combinationToPlacedGifts(combination, giftCounts);
+
+        const hasAlreadyBeenValidated = hasBeenValidated(
+          { ...board, gifts: giftsWithRotations, placedGifts },
+          seenBoards,
+          giftsWithRotations
+        );
+        if (hasAlreadyBeenValidated) {
+          hasBeenValidatedCount++;
+        }
+      }
+
+      // shit todo, use the has already been validated to skip the validation of this and all children of this combination
+
       return isPlacementValid;
-    },
+    }
   );
 
   return anyValidPlacements;
@@ -568,21 +609,21 @@ export function someValidPlacements(
 
 function assertNotTooLargeGifts(
   giftsWithRotations: GiftsWithRotations,
-  board: RootRectangle,
+  board: RootRectangle
 ) {
   for (const giftWithRotations of giftsWithRotations) {
     for (const gift of giftWithRotations) {
       ass(
         rectangleIsInside(
           { ...matrixToRootRectangle(gift), x: 0, y: 0 },
-          board,
+          board
         ),
         `gift is larger than the board. board: ${board.width}x${
           board.height
         }. gift: 
 
 ${matrixToString(gift)}
-`,
+`
       );
     }
   }
@@ -592,14 +633,14 @@ export type CombinationChecker = (c: Int[]) => boolean;
 
 export function combinationsWithCheck(
   combinationsInput: Int[],
-  check: CombinationChecker,
+  check: CombinationChecker
 ): boolean {
   ass(
     combinationsInput.every(
       (radix) =>
-        typeof radix === "number" && Number.isSafeInteger(radix) && radix !== 0,
+        typeof radix === "number" && Number.isSafeInteger(radix) && radix !== 0
     ),
-    `invalid inputs found: ${combinationsInput.join()}`,
+    `invalid inputs found: ${combinationsInput.join()}`
   );
 
   const recurse = (combination: Int[]): boolean => {
@@ -646,7 +687,7 @@ export function flipGiftVertically<T>(gift: T[][]): T[][] {
 
 export function transposeGift<T>(gift: T[][]): T[][] {
   return nonNull(gift[0]).map((_, colIndex) =>
-    gift.map((row) => nonNull(row[colIndex])),
+    gift.map((row) => nonNull(row[colIndex]))
   );
 }
 
@@ -664,7 +705,7 @@ export function createAllTransmutations<T>(gift: T[][]): T[][][] {
     flipGiftVertically(rotateGift90Right(gift)),
     flipGiftVertically(rotateGift90Right(rotateGift90Right(gift))),
     flipGiftVertically(
-      rotateGift90Right(rotateGift90Right(rotateGift90Right(gift))),
+      rotateGift90Right(rotateGift90Right(rotateGift90Right(gift)))
     ),
   ];
 }
@@ -675,7 +716,7 @@ export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
   return createAllTransmutations(gift).filter(
     function filterDedupedTransmutations(transmutation) {
       const stringTransmutation = matrixToString(
-        assMatrix(transmutation, isGiftChar),
+        assMatrix(transmutation, isGiftChar)
       );
 
       if (uniqueTransmutations.has(stringTransmutation)) {
@@ -684,7 +725,7 @@ export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
         uniqueTransmutations.add(stringTransmutation);
         return true;
       }
-    },
+    }
   );
 }
 
@@ -694,7 +735,7 @@ export function c(f: () => unknown): void {
 
 export function getProgress(
   totalCombination: Int[],
-  currentCombination: Int[],
+  currentCombination: Int[]
 ): number {
   const ranges = lerpMultiple(totalCombination, currentCombination);
   const progress = nonNull(ranges[ranges.length - 1]).to;
@@ -702,8 +743,8 @@ export function getProgress(
   ass(
     Number.isFinite(progress),
     `${totalCombination.join(", ")}---${currentCombination.join(
-      ", ",
-    )} ${progress} `,
+      ", "
+    )} ${progress} `
   );
 
   ass(progress >= 0);
@@ -712,6 +753,7 @@ export function getProgress(
   return progress;
 }
 
+import { deepEquals } from "bun";
 import { Temporal } from "temporal-polyfill";
 
 export function lerpMultiple(totals: number[], currents: number[]): Rang[] {
@@ -749,6 +791,27 @@ export function lerpRange(bigRange: Rang, smallRange: Rang): Rang {
 function lerp2(start: number, end: number, t: number): number {
   return start + (end - start) * t;
 }
+let hasBeenValidatedCount = 0;
+
+export function hasBeenValidated(
+  board: Board,
+  seen: Set<string>,
+  gifts: GiftsWithRotations
+): boolean {
+  deepEquals(board, gifts, true); // validation
+
+  const stringBoard = board.placedGifts
+    .flatMap((placedGift) =>
+      [placedGift.type, placedGift.rotation, placedGift.x, placedGift.y].join(
+        ","
+      )
+    )
+    .toSorted()
+    .join("|");
+  const hasSeen = seen.has(stringBoard);
+  seen.add(stringBoard);
+  return hasSeen;
+}
 
 /**
 # performance optimizations
@@ -783,6 +846,7 @@ function lerp2(start: number, end: number, t: number): number {
   we also have to move things closer to the center
   we also have to keep track of the bounding border
 [] in the recursion, when we place or remove a gift, then we edit the current board instead of creating a new one.
+
 
 # correctness verifications
 [ ] we can count the amonut of tests it tried, then sort the amount by correct and incorrect tests.
