@@ -18,7 +18,7 @@ export const opts = {
   logHasAlreadyBeenValidated: true,
 };
 
-export const optsDuplicate = {...opts}
+export const optsDuplicate = { ...opts };
 
 export type Gift = ("." | "#")[][];
 export type Gifts = Gift[];
@@ -168,8 +168,8 @@ export function assmeq(stringMatrix: string[][], expected: string): void {
   expect(
     cleanViz(visualizedBoard),
     "the visualized matrix is not correct. it is \n---\n" +
-    visualizedBoard +
-    "\n---",
+      visualizedBoard +
+      "\n---",
   ).toBe(cleanViz(expected));
 }
 
@@ -610,7 +610,8 @@ function assertNotTooLargeGifts(
           { ...matrixToRootRectangle(gift), x: 0, y: 0 },
           board,
         ),
-        `gift is larger than the board. board: ${board.width}x${board.height
+        `gift is larger than the board. board: ${board.width}x${
+          board.height
         }. gift: 
 
 ${matrixToString(gift)}

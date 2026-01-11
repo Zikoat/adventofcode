@@ -25,6 +25,7 @@ import {
   lerpRange,
   matrixToString,
   opts,
+  optsDuplicate,
   type PlacedGift,
   placedGiftToGift,
   rotateGift90Right,
@@ -33,7 +34,6 @@ import {
   stringToMatrix,
   transposeGift,
   wrapGift,
-  optsDuplicate,
 } from "./d12";
 
 describe(wrapGift, () => {
@@ -201,7 +201,7 @@ describe(isValidBoard, () => {
   });
 
   test("placed gift which has piece outside of board should be invalid", () => {
-    const prevValidateTooLargegifts= opts.validateTooLargeGifts;
+    const prevValidateTooLargegifts = opts.validateTooLargeGifts;
     opts.validateTooLargeGifts = true;
     expect(() =>
       isValidBoard({
@@ -541,44 +541,40 @@ describe(combinationsWithCheck, () => {
   });
 });
 
-type NextCombination = ()=>unknown[];
+type NextCombination = () => unknown[];
 
-function combinationsWithNext(next:NextCombination){
-  return false;
+function combinationsWithNext(next: NextCombination) {
+  return next().length === 0;
 }
 
-describe(combinationsWithNext,()=>{
-
-  test.only("it should terminate when [] is returned",()=>{
+describe(combinationsWithNext, () => {
+  test("it should terminate when [] is returned", () => {
     // so it should return the values for the next downstream combination
     // we should also have a counter which checks the current index such that
     // we can have a progress bar
-    
+
     // for test we have a function which returns the next valid values.
-    
+
     // ()=>[], should terminate the current step, and also all of the next steps
     const spy = mock<NextCombination>(() => []);
     asseq(combinationsWithNext(spy), true);
-    expect(spy).toBeCalledTimes(1)
-    expect(spy).toHaveLastReturnedWith([])
-    expect(spy).lastCalledWith(1)
-    asseq(spy.mock.calls, [[[0]]]);
+    expect(spy).toBeCalledTimes(1);
+    expect(spy).toHaveLastReturnedWith([]);
+    expect(spy).lastCalledWith();
+    asseq(spy.mock.calls, [[]]);
 
-    
     // if the empty combination is complete, then return true.
 
-    // if we always return "a", then it should traverse that until it reaches 
+    // if we always return "a", then it should traverse that until it reaches
     // the end and the lowest one returns []
 
     // if the first returns ["a","b","c"], then it will traverse to index 0
-    // which is "a", then it will run the next combination function and return 
+    // which is "a", then it will run the next combination function and return
     // ["10", "20"]. we then traverse to "10" with index 0, and this returns []
     // we continue until we hit "b 20" which is valid and complete, and so we
     // stop and return true.
-
-
-  })
-})
+  });
+});
 
 describe("Rotations", () => {
   describe(transposeGift, () => {
@@ -862,12 +858,12 @@ describe(canFitString, () => {
     opts.validateLastGiftCellInside = prevValidateLastGiftCellInside;
   });
 
-  // todo this is broken because we do not support pieces that have different 
-  // widths and heights. we need to implement support for every layer giving 
+  // todo this is broken because we do not support pieces that have different
+  // widths and heights. we need to implement support for every layer giving
   // the valid values for the next layer.
   test("rotated ## should fit on 1x2 board", () => {
     const previousValidateTooLargeGifts = opts.validateTooLargeGifts;
-    opts.validateTooLargeGifts = false
+    opts.validateTooLargeGifts = false;
     asseq(
       canFitString(`1:
 ##
@@ -875,7 +871,7 @@ describe(canFitString, () => {
 1x2: 1`),
       true,
     );
-    opts.validateTooLargeGifts= previousValidateTooLargeGifts
+    opts.validateTooLargeGifts = previousValidateTooLargeGifts;
   });
 
   test.skip("pieces that fit inside each other should be rotated to fit into each other", () => {
@@ -1146,7 +1142,7 @@ afterAll(() => {
     ...c(() => giftsOverlapCount),
   );
 
-  expect(opts).toStrictEqual(optsDuplicate)
+  expect(opts).toStrictEqual(optsDuplicate);
 });
 
 describe(c, () => {
