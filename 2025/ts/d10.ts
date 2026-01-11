@@ -1,3 +1,4 @@
+import { deepEquals } from "bun";
 import { ass, asseq, assInt } from "./common.ts";
 
 const testInput = (
@@ -62,7 +63,7 @@ asseq(pressButton([false, false, false, false], [3]), [
 ]);
 
 function assStateEqual(a: boolean[], b: boolean[]): boolean {
-  return Bun.deepEquals(a, b);
+  return deepEquals(a, b);
 }
 
 function printState(_lights: boolean[]) {
