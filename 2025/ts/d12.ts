@@ -720,8 +720,8 @@ export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
 export function getVariableName(f: () => unknown): string {
   return nonNull(nonNull(/^\(\) => (.*)$/.exec(`${f}`))[1]);
 }
-export function c(f: () => unknown): void {
-  console.log(`${getVariableName(f)}:`, f());
+export function c(f: () => unknown): [string, unknown] {
+  return [`${getVariableName(f)}:`, f()];
 }
 
 export function getProgress(

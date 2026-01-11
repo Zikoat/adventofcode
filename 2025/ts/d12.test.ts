@@ -1094,9 +1094,11 @@ function wrapGiftString(giftString: string): Gift {
 }
 
 afterAll(() => {
-  console.log("\ndone. The amount of validation checks done during all tests");
-  c(() => isValidBoardRuns);
-  c(() => giftsOverlapCount);
+  console.log(
+    "\ndone. checks done during tests",
+    ...c(() => isValidBoardRuns),
+    ...c(() => giftsOverlapCount),
+  );
 });
 
 describe(c, () => {
