@@ -17,6 +17,7 @@ import {
   giftsOverlap,
   giftsOverlapCount,
   hasBeenValidated,
+  type Int,
   isInBounds,
   isValidBoard,
   isValidBoardRuns,
@@ -34,6 +35,8 @@ import {
   stringToMatrix,
   transposeGift,
   wrapGift,
+  cc,
+  toNumInt,
 } from "./d12";
 
 describe(wrapGift, () => {
@@ -541,28 +544,106 @@ describe(combinationsWithCheck, () => {
   });
 });
 
-type GetNext<T = unknown> = (combination: unknown[]) => T[];
+type GetNext<T = unknown> = (combination: unknown[]) => T;
 type IsComplete = () => boolean;
 
 function combinationsWithNext<T>(
   getNext: GetNext<T>,
   isComplete: IsComplete = () => false,
 ) {
-  for (let i = 0; i < 100; i++) {
-    const nextValues = getNext("a".repeat(i).split(""));
-    if (nextValues.length === 0) {
-      return isComplete();
-    }
+  // the current index has an array of next values for the current index at its position.
+  // we start with no combinations
+  const currentCombinations: T[][] = [];
+  // and a single index at point 0
+  const indices = [0];
+  // the first time we call next value, we don't have any values for the current combination, so we pass an empty array
+  const nextValue = getNext([]);
+
+  // it should return ["a"]
+  // we add ["a"] to the current combinations
+
+  currentCombinations.push([nextValue]);
+  // this means that the first combination can be multiple values
+  // and we are currently investigatind index 0
+
+
+  const currentCombination: T[] = [];
+
+  // to create the combination we take the indices
+  for (let i = 0; i < indices.length; i++) {
+    const newLocal = indices[i];
+    ass(typeof newLocal === 'number')
+
+    // and we map the current index
+    const currentIndex = (newLocal);
+    // to a value of  the current combination
+    const currentCombinationValue = nonNull(
+      nonNull(currentCombinations[i])[currentIndex],
+    );
+    c(() => currentCombinationValue)
+
+    // we push that on the current combinotion
+    currentCombination.push(currentCombinationValue);
   }
+
+  c(() => currentCombination)
+
+  // const currentIndices: Int[] = [0];
+
+  // if(currentCombinations.length ===0) return isComplete();
+
+  const nextValues = getNext(nonNull(currentCombinations[0]));
+
+  currentCombinations.push([...currentCombination, nextValues]);
+
+  c(() => currentCombinations)
+
+  if (nextValues.length === 0) {
+    return isComplete();
+  }
+
   return isComplete();
 }
 
+function indicesToCurrentCombination<T = unknown>(currentCombinations: T[][], indices: Int[]): T[] {
+  ass(indices.length === currentCombinations.length, `${indices.length} indices but ${currentCombinations.length} combinations`)
+  ass(currentCombinations.every(combination => combination.length >= 1), "a combination was empty " + JSON.stringify(currentCombinations))
+  // shit todo assert indices is always array of ints between 0 and max safe integer
+
+  return indices.map((val, index) => {
+    return nonNull(nonNull(currentCombinations[index])[toNumInt(val)])
+  })
+
+}
+
+describe.only(indicesToCurrentCombination, () => {
+  test("shit", () => {
+    const combinations = [["a", "b"], ["c", "d"]];
+    asseq(indicesToCurrentCombination(combinations, [0, 0]), ["a", "c"])
+    asseq(indicesToCurrentCombination(combinations, [0, 1]), ["a", "d"])
+  })
+
+  test.failing("should throw an error when an empty array is added", () => {
+    indicesToCurrentCombination([[]], [0])
+  })
+
+  test.failing("should throw an error when an index is out of bounds", () => {
+    indicesToCurrentCombination([["a"]], [2])
+  })
+
+  test.failing("should throw an error when there are more indices than arrays", () => {
+    indicesToCurrentCombination([["a"]], [0, 0])
+  })
+
+  test.failing("should throw an error when there are less indices than arrays", () => {
+    indicesToCurrentCombination([["a"]], [])
+  })
+})
+
 describe(combinationsWithNext, () => {
-  // so it should return the values for the next downstream combination
-  // we should also have a counter which checks the current index such that
+  // shit todo we should also have a counter which checks the current index such that
   // we can have a progress bar
 
-  // for test we have a function which returns the next valid values.
   test("it should terminate current step when [] is returned", () => {
     const next = mock<GetNext>(() => []);
 
@@ -590,25 +671,27 @@ describe(combinationsWithNext, () => {
   });
 
   test("if we always return 'a', then it should traverse that until it reaches the end and the lowest one returns []", () => {
-    const getNext = mock<GetNext<"a">>((combinations) =>
-      combinations.length < 10 ? ["a"] : [],
+    const getNext = mock<GetNext<"b">>((combinations) =>
+      combinations.length < 10 ? ["b"] : [],
     );
 
     asseq(combinationsWithNext(getNext), false);
 
     expect(getNext).toBeCalledTimes(11);
     expect(getNext).lastCalledWith([
-      "a",
-      "a",
-      "a",
-      "a",
-      "a",
-      "a",
-      "a",
-      "a",
-      "a",
-      "a",
+      "b",
+      "b",
+      "b",
+      "b",
+      "b",
+      "b",
+      "b",
+      "b",
+      "b",
+      "b",
     ]);
+    expect(getNext).nthCalledWith(1, []);
+    expect(getNext).nthCalledWith(2, ["b"]);
   });
 
   test.todo(`
@@ -619,7 +702,7 @@ describe(combinationsWithNext, () => {
     // ["10", "20"]. we then traverse to "10" with index 0, and this returns []
     // we continue until we hit "b 20" which is valid and complete, and so we
     // stop and return true.
-    // `, () => {});
+    // `, () => { });
 });
 
 describe("Rotations", () => {
@@ -1184,8 +1267,8 @@ function wrapGiftString(giftString: string): Gift {
 afterAll(() => {
   console.log(
     "\ndone. checks done during tests",
-    ...c(() => isValidBoardRuns),
-    ...c(() => giftsOverlapCount),
+    ...cc(() => isValidBoardRuns),
+    ...cc(() => giftsOverlapCount),
   );
 
   expect(opts).toStrictEqual(optsDuplicate);
@@ -1382,3 +1465,4 @@ describe(hasBeenValidated, () => {
     asseq([...validatedBoards], ["0,0,0,0|0,1,0,0"]);
   });
 });
+

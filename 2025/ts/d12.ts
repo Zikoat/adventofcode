@@ -485,7 +485,12 @@ export type Board = {
   placedGifts: PlacedGift[];
 } & RootRectangle;
 
-function toNumInt(input: Int | undefined | null): Int {
+// shit max safe integer
+// shit handle -0 and +0
+// shit not infinite
+// shit not nan
+// shit rename to asint
+export function toNumInt(input: Int | undefined | null): Int {
   ass(typeof input === "number");
   ass(Math.abs(input) % 1 === 0);
   return input;
@@ -732,8 +737,11 @@ export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
 export function getVariableName(f: () => unknown): string {
   return nonNull(nonNull(/^\(\) => (.*)$/.exec(`${f}`))[1]);
 }
-export function c(f: () => unknown): [string, unknown] {
+export function cc(f: () => unknown): [string, unknown] {
   return [`${getVariableName(f)}:`, f()];
+}
+export function c(f: () => unknown): void {
+  console.log(...cc(f));
 }
 
 export function getProgress(
