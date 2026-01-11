@@ -732,8 +732,9 @@ export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
   );
 }
 
+const funcRegex = /^\(\) => (.*)$/;
 export function getVariableName(f: () => unknown): string {
-  return nonNull(nonNull(/^\(\) => (.*)$/.exec(`${f}`))[1]);
+  return nonNull(nonNull(funcRegex.exec(`${f}`))[1]);
 }
 export function cc(f: () => unknown): [string, unknown] {
   return [`${getVariableName(f)}:`, f()];

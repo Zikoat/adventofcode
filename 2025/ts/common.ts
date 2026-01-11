@@ -47,8 +47,9 @@ export function nonNull<T>(shit: T | undefined): NonNullable<T> {
   return shit;
 }
 
+const numberRegex = /^\d+$/;
 export function assInt(input: string): asserts input {
-  ass(/^\d+$/.test(input));
+  ass(numberRegex.test(input));
   return;
 }
 

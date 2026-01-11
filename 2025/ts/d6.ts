@@ -55,11 +55,15 @@ for (const [index, symbolOrSpace] of symbols.entries()) {
 
 console.log(currentMathThing);
 
+const spacesRegex = / +/;
+
 function parseInput(input: string): {
   numberLines: number[][];
   symbolLine: ("*" | "+")[];
 } {
-  const inputParsed = input.split("\n").map((line) => line.trim().split(/ +/));
+  const inputParsed = input
+    .split("\n")
+    .map((line) => line.trim().split(spacesRegex));
 
   const numberLines = inputParsed
     .toSpliced(inputParsed.length - 1, Infinity)

@@ -142,6 +142,20 @@
         "useValidTypeof": "error",
         "useYield": "error"
       },
+      "performance": {
+        "noAccumulatingSpread": "error",
+        "noAwaitInLoops": "error",
+        "noBarrelFile": "error",
+        "noDelete": "error",
+        "noDynamicNamespaceImportAccess": "error",
+        "noImgElement": "error",
+        "noNamespaceImport": "error",
+        "noReExportAll": "error",
+        "noUnwantedPolyfillio": "error",
+        "useGoogleFontPreconnect": "error",
+        "useSolidForComponent": "error",
+        "useTopLevelRegex": "error"
+      },
       "suspicious": {
         "noAlert": "error",
         "noApproximativeNumericConstant": "error",
