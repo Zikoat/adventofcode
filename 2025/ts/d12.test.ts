@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it, mock, test } from "bun:test";
-import { ass, asseq, nonNull } from "./common";
+import { ass, asseq, nonNull } from "./common.ts";
 import {
   assIsGiftMatrix,
   assmeq,
@@ -37,7 +37,7 @@ import {
   toNumInt,
   transposeGift,
   wrapGift,
-} from "./d12";
+} from "./d12.ts";
 
 describe(wrapGift, () => {
   it("should wrap all 4 cardinal directions", () => {
@@ -154,13 +154,13 @@ describe(stringToMatrix, () => {
 
 describe(isInBounds, () => {
   test("various cases", () => {
-    asseq(isInBounds({ x: 0, y: 0 }, { width: 1, height: 1 }), true);
-    asseq(isInBounds({ x: -1, y: 0 }, { width: 1, height: 1 }), false);
-    asseq(isInBounds({ x: 0, y: -1 }, { width: 1, height: 1 }), false);
-    asseq(isInBounds({ x: 1, y: 0 }, { width: 1, height: 1 }), false);
-    asseq(isInBounds({ x: 0, y: 1 }, { width: 1, height: 1 }), false);
-    asseq(isInBounds({ x: 2, y: 0 }, { width: 3, height: 1 }), true);
-    asseq(isInBounds({ x: 3, y: 0 }, { width: 3, height: 1 }), false);
+    asseq(isInBounds({ x: 0, y: 0 }, { height: 1, width: 1 }), true);
+    asseq(isInBounds({ x: -1, y: 0 }, { height: 1, width: 1 }), false);
+    asseq(isInBounds({ x: 0, y: -1 }, { height: 1, width: 1 }), false);
+    asseq(isInBounds({ x: 1, y: 0 }, { height: 1, width: 1 }), false);
+    asseq(isInBounds({ x: 0, y: 1 }, { height: 1, width: 1 }), false);
+    asseq(isInBounds({ x: 2, y: 0 }, { height: 1, width: 3 }), true);
+    asseq(isInBounds({ x: 3, y: 0 }, { height: 1, width: 3 }), false);
   });
 });
 
@@ -169,9 +169,9 @@ describe(isValidBoard, () => {
     asseq(
       isValidBoard({
         gifts: toGiftsWithRotations(`#`),
-        width: 1,
         height: 1,
-        placedGifts: [{ type: 0, rotation: 0, x: 0, y: 0 }],
+        placedGifts: [{ rotation: 0, type: 0, x: 0, y: 0 }],
+        width: 1,
       }),
       true,
     );
@@ -183,19 +183,19 @@ describe(isValidBoard, () => {
     expect(() =>
       isValidBoard({
         gifts: toGiftsWithRotations(`#`),
-        width: 1,
         height: 1,
         placedGifts: [
           {
-            type: 0,
             rotation: 0,
+            type: 0,
             x: 1,
             y: 0,
           },
         ],
+        width: 1,
       }),
     ).toThrowErrorMatchingInlineSnapshot(`
-      "gift was placed outside of the board. placed gift {"type":0,"rotation":0,"x":1,"y":0,"width":1,"height":1} should be inside of {"width":1,"height":1}. gift shape:
+      "gift was placed outside of the board. placed gift {"rotation":0,"type":0,"x":1,"y":0,"height":1,"width":1} should be inside of {"height":1,"width":1}. gift shape:
       ---
       #
       ---"
@@ -209,9 +209,9 @@ describe(isValidBoard, () => {
     expect(() =>
       isValidBoard({
         gifts: toGiftsWithRotations(`##`),
-        width: 1,
         height: 1,
-        placedGifts: [{ type: 0, rotation: 0, x: 0, y: 0 }],
+        placedGifts: [{ rotation: 0, type: 0, x: 0, y: 0 }],
+        width: 1,
       }),
     ).toThrowErrorMatchingInlineSnapshot(`
       "gift is larger than the board. board: 1x1. gift: 
@@ -226,12 +226,12 @@ describe(isValidBoard, () => {
     asseq(
       isValidBoard({
         gifts: toGiftsWithRotations(`#`),
-        width: 1,
         height: 1,
         placedGifts: [
-          { type: 0, rotation: 0, x: 0, y: 0 },
-          { type: 0, rotation: 0, x: 0, y: 0 },
+          { rotation: 0, type: 0, x: 0, y: 0 },
+          { rotation: 0, type: 0, x: 0, y: 0 },
         ],
+        width: 1,
       }),
       false,
       "overlapping pieces ",
@@ -242,12 +242,12 @@ describe(isValidBoard, () => {
     asseq(
       isValidBoard({
         gifts: toGiftsWithRotations(`#`),
-        width: 2,
         height: 1,
         placedGifts: [
-          { type: 0, rotation: 0, x: 0, y: 0 },
-          { type: 0, rotation: 0, x: 1, y: 0 },
+          { rotation: 0, type: 0, x: 0, y: 0 },
+          { rotation: 0, type: 0, x: 1, y: 0 },
         ],
+        width: 2,
       }),
       true,
     );
@@ -256,9 +256,9 @@ describe(isValidBoard, () => {
   test("visualizing board after multiple placements should show X at positions which are wrong", () => {
     const boardState = {
       gifts: toGiftsWithRotations(`##`),
-      width: 2,
       height: 2,
       placedGifts: [] as PlacedGift[],
+      width: 2,
     };
 
     expect(boardState).toStrictEqual({
@@ -270,9 +270,9 @@ describe(isValidBoard, () => {
           [["#"], ["#"]], // shape
         ],
       ],
-      width: 2,
       height: 2,
       placedGifts: [],
+      width: 2,
     });
 
     visualizeBoard(
@@ -281,7 +281,7 @@ describe(isValidBoard, () => {
        ..`,
     );
 
-    boardState.placedGifts.push({ type: 0, rotation: 1, x: 0, y: 0 });
+    boardState.placedGifts.push({ rotation: 1, type: 0, x: 0, y: 0 });
 
     visualizeBoard(
       boardState,
@@ -289,7 +289,7 @@ describe(isValidBoard, () => {
        A.`,
     );
 
-    boardState.placedGifts.push({ type: 0, rotation: 0, x: 0, y: 0 });
+    boardState.placedGifts.push({ rotation: 0, type: 0, x: 0, y: 0 });
 
     visualizeBoard(
       boardState,
@@ -305,8 +305,8 @@ describe(isValidBoard, () => {
       {
         gifts: toGiftsWithRotations(`#`),
         height: 2,
+        placedGifts: [{ rotation: 0, type: 0, x: 1, y: 1 }],
         width: 2,
-        placedGifts: [{ type: 0, rotation: 0, x: 1, y: 1 }],
       },
       `..
        .A`,
@@ -469,22 +469,22 @@ describe(isValidBoard, () => {
           ],
         ],
       ],
-      width: 4,
       height: 4,
       placedGifts: [
         {
-          type: 4,
           rotation: 3,
+          type: 4,
           x: 1,
           y: 1,
         },
         {
-          type: 4,
           rotation: 3,
+          type: 4,
           x: 0,
           y: 1,
         },
       ],
+      width: 4,
     };
 
     visualizeBoard(
@@ -709,7 +709,7 @@ describe(combinationsWithNext, () => {
     asseq(next.mock.calls, [[[]]]);
   });
 
-  test.only("if the empty combination is complete, then return true.", () => {
+  test("if the empty combination is complete, then return true.", () => {
     const getNext = mock<GetNext>(() => null);
     const isComplete = mock<IsComplete>(() => true);
 
@@ -746,7 +746,9 @@ describe(combinationsWithNext, () => {
     // ["10", "20"]. we then traverse to "10" with index 0, and this returns []
     // we continue until we hit "b 20" which is valid and complete, and so we
     // stop and return true.
-    // `, () => {});
+    // `, () => {
+    //
+  });
 });
 
 describe("Rotations", () => {
@@ -1023,7 +1025,7 @@ describe(canFitString, () => {
         
         2x2: 3`),
     ).toThrowErrorMatchingInlineSnapshot(`
-        "gift was placed outside of the board. placed gift {"type":0,"rotation":0,"x":1,"y":0,"width":2,"height":1} should be inside of {"width":2,"height":2}. gift shape:
+        "gift was placed outside of the board. placed gift {"rotation":0,"type":0,"x":1,"y":0,"height":1,"width":2} should be inside of {"height":2,"width":2}. gift shape:
         ---
         ##
         ---"
@@ -1147,9 +1149,9 @@ describe(someValidPlacements, () => {
   test("# should fit 1x1", () => {
     asseq(
       someValidPlacements([[[["#"]]]], {
-        width: 1,
-        height: 1,
         giftCounts: [1],
+        height: 1,
+        width: 1,
       }),
       true,
     );
@@ -1158,9 +1160,9 @@ describe(someValidPlacements, () => {
   test("2 ## should fit 2x2", () => {
     asseq(
       someValidPlacements([[[["#"]]], [[["#"]]]], {
-        width: 2,
-        height: 2,
         giftCounts: [2, 2],
+        height: 2,
+        width: 2,
       }),
       true,
     );
@@ -1170,7 +1172,7 @@ describe(someValidPlacements, () => {
     asseq(
       someValidPlacements(
         [assIsGiftMatrix([["#"]])].map(createDedupedTransmutations),
-        { width: 1, height: 1, giftCounts: [1] },
+        { giftCounts: [1], height: 1, width: 1 },
       ),
       true,
     );
@@ -1180,7 +1182,7 @@ describe(someValidPlacements, () => {
     asseq(
       someValidPlacements(
         [assIsGiftMatrix([["#"]])].map(createDedupedTransmutations),
-        { width: 2, height: 1, giftCounts: [1] },
+        { giftCounts: [1], height: 1, width: 2 },
       ),
       true,
     );
@@ -1190,7 +1192,7 @@ describe(someValidPlacements, () => {
     asseq(
       someValidPlacements(
         [assIsGiftMatrix([["#"]])].map(createDedupedTransmutations),
-        { width: 1, height: 1, giftCounts: [2] },
+        { giftCounts: [2], height: 1, width: 1 },
       ),
       false,
     );
@@ -1202,7 +1204,7 @@ describe(someValidPlacements, () => {
         [assIsGiftMatrix([["#"]]), assIsGiftMatrix([["#", "#"]])].map(
           createDedupedTransmutations,
         ),
-        { width: 1, height: 1, giftCounts: [1, 1] },
+        { giftCounts: [1, 1], height: 1, width: 1 },
       ),
     ).toThrowErrorMatchingInlineSnapshot(`
       "gift is larger than the board. board: 1x1. gift: 
@@ -1220,10 +1222,10 @@ describe(someValidPlacements, () => {
         [assIsGiftMatrix([["#"]]), assIsGiftMatrix([["#", "#"]])].map(
           createDedupedTransmutations,
         ),
-        { width: 2, height: 1, giftCounts: [1, 1] },
+        { giftCounts: [1, 1], height: 1, width: 2 },
       ),
     ).toThrowErrorMatchingInlineSnapshot(`
-      "gift was placed outside of the board. placed gift {"type":1,"rotation":0,"x":1,"y":0,"width":2,"height":1} should be inside of {"width":2,"height":1}. gift shape:
+      "gift was placed outside of the board. placed gift {"rotation":0,"type":1,"x":1,"y":0,"height":1,"width":2} should be inside of {"height":1,"width":2}. gift shape:
       ---
       ##
       ---"
@@ -1237,7 +1239,7 @@ describe(someValidPlacements, () => {
         [assIsGiftMatrix([["#"]]), assIsGiftMatrix([["#", "#"]])].map(
           createDedupedTransmutations,
         ),
-        { width: 2, height: 2, giftCounts: [1, 1] },
+        { giftCounts: [1, 1], height: 2, width: 2 },
       ),
       true,
     );
@@ -1320,7 +1322,11 @@ afterAll(() => {
 
 describe(c, () => {
   test("should log the variable name and the content", () => {
-    var foo = "bar";
+    let a: number = 1;
+    a++;
+
+    const foo = a === 2 ? "bar" : "shit";
+    expect(`${() => foo}`).toBe("() => foo");
     expect(getVariableName(() => foo)).toBe("foo");
   });
 });
@@ -1331,8 +1337,8 @@ describe(giftsOverlap, () => {
       giftsOverlap(
         [assIsGiftMatrix([["#"]])].map(createDedupedTransmutations),
 
-        { type: 0, rotation: 0, x: 0, y: 0 },
-        { type: 0, rotation: 0, x: 0, y: 0 },
+        { rotation: 0, type: 0, x: 0, y: 0 },
+        { rotation: 0, type: 0, x: 0, y: 0 },
       ),
       true,
     );
@@ -1342,8 +1348,8 @@ describe(giftsOverlap, () => {
     asseq(
       giftsOverlap(
         toGiftsWithRotations(`#`),
-        { type: 0, rotation: 0, x: 1, y: 0 },
-        { type: 0, rotation: 0, x: 0, y: 0 },
+        { rotation: 0, type: 0, x: 1, y: 0 },
+        { rotation: 0, type: 0, x: 0, y: 0 },
       ),
       false,
     );
@@ -1356,8 +1362,8 @@ describe(giftsOverlap, () => {
           `##
 		   .#`,
         ),
-        { type: 0, rotation: 0, x: 0, y: 1 },
-        { type: 1, rotation: 0, x: 0, y: 0 },
+        { rotation: 0, type: 0, x: 0, y: 1 },
+        { rotation: 0, type: 1, x: 0, y: 0 },
       ),
       false,
     );
@@ -1462,9 +1468,9 @@ describe(hasBeenValidated, () => {
   test("should return true when the board has been validated", () => {
     const board = {
       gifts: toGiftsWithRotations(`#`),
-      placedGifts: [{ type: 0, rotation: 0, x: 0, y: 0 }],
-      width: 1,
       height: 1,
+      placedGifts: [{ rotation: 0, type: 0, x: 0, y: 0 }],
+      width: 1,
     };
 
     const validatedBoards = new Set<string>();
@@ -1480,12 +1486,12 @@ describe(hasBeenValidated, () => {
   test("should detect permutations of the order of placed gifts", () => {
     const board = {
       gifts: toGiftsWithRotations(`##`),
+      height: 2,
       placedGifts: [
-        { type: 0, rotation: 0, x: 0, y: 0 },
-        { type: 0, rotation: 1, x: 0, y: 0 },
+        { rotation: 0, type: 0, x: 0, y: 0 },
+        { rotation: 1, type: 0, x: 0, y: 0 },
       ],
       width: 2,
-      height: 2,
     };
 
     const validatedBoards = new Set<string>();

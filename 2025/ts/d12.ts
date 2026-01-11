@@ -8,14 +8,14 @@ import {
   nonNull,
   type Rang,
   type Vector,
-} from "./common";
+} from "./common.ts";
 
 export const opts = {
-  validateGifts: true,
+  logHasAlreadyBeenValidated: true,
   validateEveryGiftCellInside: true,
+  validateGifts: true,
   validateLastGiftCellInside: true,
   validateTooLargeGifts: true,
-  logHasAlreadyBeenValidated: true,
 };
 
 export const optsDuplicate = { ...opts };
@@ -126,7 +126,7 @@ function parseInput(input: string): Puzzle {
 
       asseq(giftCounts.length, gifts.length);
 
-      return { width, height, giftCounts };
+      return { giftCounts, height, width };
     });
 
   return { gifts, trees };
@@ -305,7 +305,7 @@ function assMatrixSquare(matrix: unknown[][]): void {
 
 function matrixToRootRectangle(matrix: unknown[][]): RootRectangle {
   assMatrixSquare(matrix);
-  return { width: nonNull(matrix[0]).length, height: matrix.length };
+  return { height: matrix.length, width: nonNull(matrix[0]).length };
 }
 
 function rectangleIsInside(inner: Rectangle, outer: RootRectangle): boolean {
@@ -408,8 +408,8 @@ export function isValidBoard(
         `gift was placed outside of the board. placed gift ${JSON.stringify(
           giftRectangle,
         )} should be inside of ${JSON.stringify({
-          width: board.width,
           height: board.height,
+          width: board.width,
         })}. gift shape:
 ---
 ${matrixToString(placedGiftToGift(giftsWithRotations, placedGift))}
@@ -461,7 +461,7 @@ export function giftsOverlap(
     for (const [gift1LocalX, gift1Cell] of gift1Row.entries())
       if (gift1Cell === "#") {
         const globalPos = add(
-          { y: placedMultiGift1.y, x: placedMultiGift1.x },
+          { x: placedMultiGift1.x, y: placedMultiGift1.y },
           { x: gift1LocalX, y: gift1LocalY },
         );
 
@@ -516,8 +516,8 @@ export function combinationToPlacedGifts(
         return giftPlacement;
       }
       giftPlacement.push({
-        type,
         rotation: toNumInt(newLocal),
+        type,
         x: toNumInt(combination[currentGiftMultiIndex * 3 + 1]),
         y: toNumInt(combination[currentGiftMultiIndex * 3 + 2]),
       });
@@ -577,8 +577,8 @@ export function someValidPlacements(
       const isPlacementValid = isValidBoard(
         {
           ...board,
-          placedGifts: giftPlacement,
           gifts: giftsWithRotations,
+          placedGifts: giftPlacement,
         },
         combination,
         combinationsInput,

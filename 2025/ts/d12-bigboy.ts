@@ -1,5 +1,5 @@
-import { asseq } from "./common";
-import { bigBoy, canFitString } from "./d12";
+import { asseq } from "./common.ts";
+import { bigBoy, canFitString } from "./d12.ts";
 
 asseq(
   canFitString(`

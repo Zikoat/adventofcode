@@ -1,6 +1,6 @@
 import { watch } from "node:fs/promises";
 import { $ } from "bun";
-import { ass } from "./common";
+import { ass } from "./common.ts";
 
 async function validate() {
   await $`FORCE_COLOR=true bun i --silent && bun tsgo --noEmit --pretty && bun test --coverage --coverage-reporter=lcov --only-failures && bun run format --colors=force`.nothrow();
@@ -8,7 +8,7 @@ async function validate() {
 
 await validate();
 
-const watcher = watch(import.meta.dir, { recursive: true, maxQueue: 1 });
+const watcher = watch(import.meta.dir, { maxQueue: 1, recursive: true });
 
 let debounceTimer: ReturnType<typeof setImmediate> | null = null;
 

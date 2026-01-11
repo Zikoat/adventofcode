@@ -1,4 +1,4 @@
-import { add, ass, asseq, type Vector } from "./common";
+import { add, ass, asseq, type Vector } from "./common.ts";
 
 const rawInput = `...@.@@@.@@.@@@@@@@@@@@@@@@@..@.@.@@@@..@@@@@@@@@@@.@...@@...@.@@..@@@...@.@@@....@@@..@@@@@@@.@@@@.@@@@@@@@..@@.@@.@.@@@@@...@@@@..@@@.@..
 @@@@@...@@.@.@@@@.@@@@@@@..@@.@@@@.@@@.@.@.@@.@@@.@@.@@@@@@@@@@.@@@@@.@@@@..@@@@@@@@@@@@@.@.@.@..@.@@@@@..@@@..@.@..@@.@@..@@@@.@@@@...@@@.
@@ -279,7 +279,7 @@ function getAccessibleFieldParsed(field: Field): {
 
   const regex = new RegExp(/x/g);
   const accessibleCount = markedField.matchAll(regex).toArray().length;
-  return { markedField, accessibleCount };
+  return { accessibleCount, markedField };
 }
 
 function getAccessibleField(inputString: string): {
@@ -365,7 +365,7 @@ function getRemovableRolls(input: string): number {
   const initialRolls = countRolls(initialState);
   const endRolls = countRolls(currentState);
   const removed = initialRolls - endRolls;
-  console.log({ initialRolls, endRolls, removed: removed });
+  console.log({ endRolls, initialRolls, removed: removed });
 
   return removed;
 }

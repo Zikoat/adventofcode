@@ -1,4 +1,4 @@
-import { ass, asseq, assInt, nonNull, type Rang, sum } from "./common";
+import { ass, asseq, assInt, nonNull, type Rang, sum } from "./common.ts";
 
 const rawInput = `124495185257650-128523382238124
 11529515560599-14764568063191
@@ -1217,7 +1217,7 @@ function parseInput(input: string): {
     assInt(ing);
     return Number(ing);
   });
-  return { ranges, ings };
+  return { ings, ranges };
 }
 
 const { ranges: rangesTest, ings: ingsTest } = parseInput(testRawInput);
