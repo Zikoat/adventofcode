@@ -13,6 +13,7 @@ import {
   flipGiftVertically,
   type Gift,
   getProgress,
+  getVariableName,
   giftsOverlap,
   giftsOverlapCount,
   hasBeenValidated,
@@ -1101,7 +1102,7 @@ afterAll(() => {
 describe(c, () => {
   test("should log the variable name and the content", () => {
     var foo = "bar";
-    c(() => foo);
+    expect(getVariableName(() => foo)).toBe("foo");
   });
 });
 
@@ -1267,16 +1268,6 @@ describe(hasBeenValidated, () => {
       width: 2,
       height: 2,
     };
-
-    console.log("\nboard.gifts");
-    console.log(
-      board.gifts
-        .map((giftWithRotations) =>
-          giftWithRotations.map((gift) => matrixToString(gift)).join("\n---\n"),
-        )
-        .join("\n"),
-    );
-    console.log();
 
     const validatedBoards = new Set<string>();
     const gifts = board.gifts;

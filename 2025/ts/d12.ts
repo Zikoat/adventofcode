@@ -717,8 +717,11 @@ export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
   );
 }
 
+export function getVariableName(f: () => unknown): string {
+  return nonNull(nonNull(/^\(\) => (.*)$/.exec(`${f}`))[1]);
+}
 export function c(f: () => unknown): void {
-  console.log(`${nonNull(/^\(\) => (.*)$/.exec(`${f}`))[1]}:`, f());
+  console.log(`${getVariableName(f)}:`, f());
 }
 
 export function getProgress(
