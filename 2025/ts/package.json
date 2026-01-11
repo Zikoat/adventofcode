@@ -9,7 +9,9 @@
   "scripts": {
     "debug": "bun --inspect-brk d12",
     "type": "tsgo --noEmit",
+    "type:watch": "tsgo --noEmit --watch",
     "test": "bun test",
+    "test:watch": "bun test --watch --reporter=dots",
     "format": "biome check --write",
     "validate": "bun i && tsgo --noEmit && bun test --coverage --coverage-reporter=lcov --only-failures && bun run format",
     "bigboy": "bun run validate && bun run d12-bigboy",
