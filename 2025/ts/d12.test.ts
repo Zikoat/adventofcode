@@ -545,38 +545,50 @@ describe(combinationsWithCheck, () => {
 type GetNext<T = unknown> = (combination: unknown[]) => T[];
 type IsComplete = (combination: unknown[]) => boolean;
 
+// todo cleanup
 function combinationsWithNext<T>(
   getNext: GetNext<T>,
-  _isComplete: IsComplete = () => false,
+  isComplete: IsComplete = () => false,
 ): boolean {
   const currentCombinations: T[][] = [];
   const indices: Int[] = [];
   let currentCombination: T[];
-  let nextValue: T[];
+  let nextValue: T[] = [];
   for (let quea = 0; quea < 1000; quea++) {
     if (quea > 900) ass(false);
 
-    currentCombination = indicesToCurrentCombination(
-      currentCombinations,
-      indices,
-    );
-    nextValue = getNext(currentCombination);
     for (let queaaoakb = 0; queaaoakb < 1000; queaaoakb++) {
       if (queaaoakb > 900) ass(false);
+      currentCombination = indicesToCurrentCombination(
+        currentCombinations,
+        indices,
+      );
+      nextValue = getNext(currentCombination);
 
       if (nextValue.length === 0) {
-        const lastItem = indices.at(-1);
-        if (lastItem === undefined) {
+        if (isComplete(currentCombination)) return true;
+        const lastIndex = indices.at(-1);
+        if (lastIndex === undefined) {
           return false;
         }
-        ass(typeof lastItem === "number");
-        indices[indices.length - 1] = lastItem + 1;
-        if (
-          nonNull(currentCombinations.at(-1))[nonNull(indices.at(-1))] ===
-          undefined
-        ) {
-          indices.pop();
-          currentCombinations.pop();
+        ass(typeof lastIndex === "number");
+        indices[indices.length - 1] = lastIndex + 1;
+        for (let aybak = 0; aybak < 1000; aybak++) {
+          if (aybak > 900) ass(false);
+
+          if (
+            nonNull(currentCombinations.at(-1))[nonNull(indices.at(-1))] ===
+            undefined
+          ) {
+            indices.pop();
+            const newLocal = indices.at(-1);
+            if (typeof newLocal === "number") {
+              indices[indices.length - 1] = newLocal + 1;
+              currentCombinations.pop();
+            } else {
+              return false;
+            }
+          } else break;
         }
       } else {
         break;
@@ -651,10 +663,9 @@ describe(combinationsWithNext, () => {
     asseq(next.mock.calls, [[[]]]);
   });
 
-  test.only("if the empty combination is complete, then return true.", () => {
+  test("if the empty combination is complete, then return true.", () => {
     const getNext = mock<GetNext>(() => []);
     const isComplete = mock<IsComplete>(() => true);
-
     asseq(combinationsWithNext(getNext, isComplete), true);
 
     expect(getNext).toBeCalledTimes(1);
@@ -670,6 +681,7 @@ describe(combinationsWithNext, () => {
     const getNext = mock<GetNext<"b">>((combinations): "b"[] =>
       combinations.length < 6 ? ["b"] : [],
     );
+
     asseq(combinationsWithNext(getNext), false);
 
     expect(getNext).nthCalledWith(1, []);
@@ -679,7 +691,7 @@ describe(combinationsWithNext, () => {
     expect(getNext).toBeCalledTimes(7);
   });
 
-  test(`
+  test.only(`
     // 
 
     // if the first returns ["a","b","c"], then it will traverse to index 0
@@ -699,7 +711,15 @@ describe(combinationsWithNext, () => {
       }
     });
 
-    asseq(combinationsWithNext(getNext), false);
+    const isComplete = mock<IsComplete>(
+      (combinations): boolean =>
+        combinations.length === 2 &&
+        combinations[0] === "b" &&
+        combinations[1] === "20",
+    );
+
+    debugger;
+    asseq(combinationsWithNext(getNext, isComplete), true);
 
     expect(getNext).nthCalledWith(1, []);
     expect(getNext).toHaveNthReturnedWith(1, ["a", "b", "c"]);
@@ -708,8 +728,20 @@ describe(combinationsWithNext, () => {
     expect(getNext).nthCalledWith(3, ["a", "10"]);
     expect(getNext).toHaveNthReturnedWith(3, []);
     expect(getNext).nthCalledWith(4, ["a", "20"]);
+    expect(getNext).toHaveNthReturnedWith(4, []);
+    expect(getNext).nthCalledWith(5, ["b"]);
+    expect(getNext).toHaveNthReturnedWith(5, ["10", "20"]);
+    expect(getNext).nthCalledWith(6, ["b", "10"]);
+    expect(getNext).toHaveNthReturnedWith(6, []);
+    expect(getNext).nthCalledWith(7, ["b", "20"]);
+    expect(getNext).toHaveNthReturnedWith(7, []);
+    expect(getNext).toBeCalledTimes(7);
 
-    expect(getNext).toBeCalledTimes(1000);
+    expect(isComplete).toBeCalledTimes(4);
+    expect(isComplete).nthCalledWith(1, ["a", "10"]);
+    expect(isComplete).nthCalledWith(2, ["a", "20"]);
+    expect(isComplete).nthCalledWith(3, ["b", "10"]);
+    expect(isComplete).nthCalledWith(3, ["b", "20"]);
   });
 });
 
