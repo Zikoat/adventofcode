@@ -547,111 +547,47 @@ type IsComplete = (combination: unknown[]) => boolean;
 
 function combinationsWithNext<T>(
   getNext: GetNext<T>,
-  isComplete: IsComplete = () => false,
-) {
+  _isComplete: IsComplete = () => false,
+): boolean {
   const currentCombinations: T[][] = [];
   const indices: Int[] = [];
   let currentCombination: T[];
   let nextValue: T[];
-  for(let quea=0; quea <1000; quea++){
+  for (let quea = 0; quea < 1000; quea++) {
+    if (quea > 900) ass(false);
 
     currentCombination = indicesToCurrentCombination(
       currentCombinations,
       indices,
     );
     nextValue = getNext(currentCombination);
-    if (nextValue.length === 0) {
-      return isComplete([]);
+    for (let queaaoakb = 0; queaaoakb < 1000; queaaoakb++) {
+      if (queaaoakb > 900) ass(false);
+
+      if (nextValue.length === 0) {
+        const lastItem = indices.at(-1);
+        if (lastItem === undefined) {
+          return false;
+        }
+        ass(typeof lastItem === "number");
+        indices[indices.length - 1] = lastItem + 1;
+        if (
+          nonNull(currentCombinations.at(-1))[nonNull(indices.at(-1))] ===
+          undefined
+        ) {
+          indices.pop();
+          currentCombinations.pop();
+        }
+      } else {
+        break;
+      }
     }
     ass(nextValue);
     currentCombinations.push(nextValue);
     indices.push(0);
   }
-  // ass(false, "we have an infinite loop bluds")
-  // ---
-  // ---
-  currentCombination = indicesToCurrentCombination(
-    currentCombinations,
-    indices,
-  );
-  nextValue = getNext(currentCombination);
-  if (nextValue.length === 0) {
-    return isComplete(currentCombination);
-  }
-  ass(nextValue);
-  currentCombinations.push(nextValue);
-  indices.push(0);
-  currentCombination = indicesToCurrentCombination(
-    currentCombinations,
-    indices,
-  );
-  if (isComplete(currentCombination)) {
-    return true;
-  }
-  nextValue = getNext(currentCombination);
-  if (nextValue.length === 0) {
-    return isComplete(currentCombination);
-  }
-  ass(nextValue);
-  currentCombinations.push(nextValue);
-  indices.push(0);
-  currentCombination = indicesToCurrentCombination(
-    currentCombinations,
-    indices,
-  );
-  if (isComplete(currentCombination)) {
-    return true;
-  }
-  nextValue = getNext(currentCombination);
-  if (nextValue.length === 0) {
-    return isComplete(currentCombination);
-  }
-  ass(nextValue);
-  currentCombinations.push(nextValue);
-  indices.push(0);
-  currentCombination = indicesToCurrentCombination(
-    currentCombinations,
-    indices,
-  );
-  if (isComplete(currentCombination)) {
-    return true;
-  }
-  nextValue = getNext(currentCombination);
-  if (nextValue.length === 0) {
-    return isComplete(currentCombination);
-  }
-  ass(nextValue);
-  currentCombinations.push(nextValue);
-  indices.push(0);
-  currentCombination = indicesToCurrentCombination(
-    currentCombinations,
-    indices,
-  );
-  if (isComplete(currentCombination)) {
-    return true;
-  }
-  nextValue = getNext(currentCombination);
-  if (nextValue.length === 0) {
-    return isComplete(currentCombination);
-  }
-  ass(nextValue);
-  currentCombinations.push(nextValue);
-  indices.push(0);
-  currentCombination = indicesToCurrentCombination(
-    currentCombinations,
-    indices,
-  );
-  if (isComplete(currentCombination)) {
-    return true;
-  }
-  nextValue = getNext(currentCombination);
-  if (nextValue.length === 0) {
-    return isComplete(currentCombination);
-  }
-  ass(nextValue);
-  currentCombinations.push(nextValue);
-
-  return isComplete(currentCombination);
+  ass(false, "we have an infinite loop bluds");
+  // return isComplete(currentCombination)
 }
 
 function indicesToCurrentCombination<T = unknown>(
@@ -715,7 +651,7 @@ describe(combinationsWithNext, () => {
     asseq(next.mock.calls, [[[]]]);
   });
 
-  test("if the empty combination is complete, then return true.", () => {
+  test.only("if the empty combination is complete, then return true.", () => {
     const getNext = mock<GetNext>(() => []);
     const isComplete = mock<IsComplete>(() => true);
 
@@ -734,7 +670,6 @@ describe(combinationsWithNext, () => {
     const getNext = mock<GetNext<"b">>((combinations): "b"[] =>
       combinations.length < 6 ? ["b"] : [],
     );
-
     asseq(combinationsWithNext(getNext), false);
 
     expect(getNext).nthCalledWith(1, []);
