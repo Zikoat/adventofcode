@@ -122,5 +122,5 @@ function getLineResult(input: string): number {
   return sum(lineResult);
 }
 
-asseq(getLineResult(testInputRaw3), 4_277_556);
-asseq(getLineResult(inputRaw), 4_771_265_398_012);
+asseq(getLineResult(testInputRaw3), 4277556);
+asseq(getLineResult(inputRaw), 4771265398012);

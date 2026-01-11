@@ -59,11 +59,11 @@ const atLeastRepeated = (num: number): boolean => {
   return false;
 };
 
-asseq(atLeastRepeated(12_341_234), true);
+asseq(atLeastRepeated(12341234), true);
 asseq(atLeastRepeated(12), false);
-asseq(atLeastRepeated(123_123_123), true);
-asseq(atLeastRepeated(1_212_121_212), true);
-asseq(atLeastRepeated(1_111_111), true);
+asseq(atLeastRepeated(123123123), true);
+asseq(atLeastRepeated(1212121212), true);
+asseq(atLeastRepeated(1111111), true);
 // console.log("twiceCounst:", twiceCounts);
 // console.log("itemsInRange:", itemsInRange);
 // console.log("twices", twices);

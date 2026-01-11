@@ -251,7 +251,7 @@ function scorep2(trails: Record<Head, number>[]): number {
   return score;
 }
 console.log("starting");
-// await sleep(40_000);
+// await sleep(40000);
 debugger;
 console.log("continueing");
 asseq(

@@ -348,7 +348,7 @@ function placedGiftToBoundingRectangle(
 
 export let isValidBoardRuns = 0;
 const startTime = performance.now();
-const perfLog = 1_000_000;
+const perfLog = 1000000;
 
 export function isValidBoard(
   board: Board,

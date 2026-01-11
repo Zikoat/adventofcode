@@ -245,7 +245,7 @@ function toJoltage12(
 }
 
 asseq(toJoltage(9, 8), 98);
-asseq(toJoltage12(9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1), 987_654_321_111);
+asseq(toJoltage12(9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1), 987654321111);
 
 type Battery = number;
 type Bank = Battery[];
@@ -384,11 +384,11 @@ ass(firstBank);
 
 const [firstBank2] = parseBanks("811111111111119");
 ass(firstBank2);
-asseq(getLargestJoltage12(firstBank2), 811_111_111_119);
+asseq(getLargestJoltage12(firstBank2), 811111111119);
 
 asseq(
   parseBanks(rawTestInput).map(getLargestJoltage12),
-  [987_654_321_111, 811_111_111_119, 434_234_234_278, 888_911_112_111],
+  [987654321111, 811111111119, 434234234278, 888911112111],
 );
 
 asseq(parseBanks(rawTestInput).map(getLargestJoltage), [98, 89, 78, 92]);
@@ -399,4 +399,4 @@ function totalJoltage(input: string): number {
 }
 
 asseq(totalJoltage(rawTestInput), 357);
-asseq(totalJoltage(rawInput), 16_946);
+asseq(totalJoltage(rawInput), 16946);
