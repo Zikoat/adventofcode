@@ -11,11 +11,11 @@ import {
 } from "./common";
 
 export const opts = {
-  validateGifts: false,
-  validateEveryGiftCellInside: false,
-  validateLastGiftCellInside: false, // shit todo required right now
-  validateTooLargeGifts: false,
-  logHasAlreadyBeenValidated: false,
+  validateGifts: true,
+  validateEveryGiftCellInside: true,
+  validateLastGiftCellInside: true,
+  validateTooLargeGifts: true,
+  logHasAlreadyBeenValidated: true,
 };
 
 export type Gift = ("." | "#")[][];
