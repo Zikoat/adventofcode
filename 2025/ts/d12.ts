@@ -484,7 +484,7 @@ function toNumInt(input: Int | undefined | null): Int {
   return input;
 }
 
-function combinationToPlacedGifts(
+export function combinationToPlacedGifts(
   combination: Int[],
   giftCounts: Int[],
 ): PlacedGift[] {

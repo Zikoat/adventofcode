@@ -161,14 +161,12 @@ describe(isInBounds, () => {
 
 describe(isValidBoard, () => {
   test("single space board with 1 placed gift of 1 tile", () => {
-    const board = {
+    asseq(isValidBoard({
       gifts: toGiftsWithRotations(`#`),
       width: 1,
       height: 1,
       placedGifts: [{ type: 0, rotation: 0, x: 0, y: 0 }],
-    };
-
-    asseq(isValidBoard(board), true);
+    }), true);
   });
 
   test("placed x position outside of board should be invalid", () => {
