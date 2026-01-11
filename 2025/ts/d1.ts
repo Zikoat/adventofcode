@@ -4572,7 +4572,7 @@ function getZeroCount(input: string): number {
   let currentRotation = 50;
   let zeroCount = 0;
 
-  inputParsed.forEach((command) => {
+  for (const command of inputParsed) {
     let ticks = command.ticks;
     while (ticks > 0) {
       if (command.direction === "R") {
@@ -4587,7 +4587,7 @@ function getZeroCount(input: string): number {
         zeroCount++;
       }
     }
-  });
+  }
   return zeroCount;
 }
 const testZeroCount = getZeroCount(testInput);

@@ -133,9 +133,7 @@ describe(stringToMatrix, () => {
     const matrix = stringToMatrix(giftString);
 
     // @ts-expect-error
-    const gift: Gift = matrix;
-
-    void gift;
+    const _gift: Gift = matrix;
   });
 
   it("should validate gift with assIsGiftMatrix", () => {
@@ -1265,8 +1263,8 @@ function boardToVizualizedBoard(board: Board): VisualizedBoard {
 
     // shit use helper to loop through 2d array
 
-    giftShape.forEach((row, localY2): void => {
-      row.forEach((char, localX2): void => {
+    for (const [localY2, row] of giftShape.entries()) {
+      for (const [localX2, char] of row.entries()) {
         if (char === "#") {
           const globalX = placedGift.x + localX2;
           const globalY = placedGift.y + localY2;
@@ -1293,8 +1291,8 @@ function boardToVizualizedBoard(board: Board): VisualizedBoard {
             row[globalX] = "X";
           }
         }
-      });
-    });
+      }
+    }
   }
 
   if (warning) {

@@ -74,9 +74,9 @@ export function bigBoy() {
      ##.`,
   );
 
-  gifts.forEach(function forEachGifts(gift) {
+  for (const gift of gifts) {
     asseq(shape(gift), [3, 3]);
-  });
+  }
 }
 
 function shape(matrix: unknown[][]): [number, number] {
@@ -383,12 +383,12 @@ export function isValidBoard(
   const giftsWithRotations = board.gifts;
 
   if (opts.validateGifts) {
-    giftsWithRotations.forEach((giftWithRotations): void => {
-      giftWithRotations.forEach((gift) => {
+    for (const giftWithRotations of giftsWithRotations) {
+      for (const gift of giftWithRotations) {
         assMatrixSquare(gift);
         asseq(wrapGift(gift), gift);
-      });
-    });
+      }
+    }
   }
 
   const giftInside = (placedGift: PlacedGift): boolean => {
@@ -570,8 +570,6 @@ export function someValidPlacements(
     (combination: Int[]): boolean => {
       if (combination.length % 3 !== 0) return true;
 
-      // console.log(combination.join(","));
-
       const giftPlacement = combinationToPlacedGifts(combination, giftCounts);
 
       const isPlacementValid = isValidBoard(
@@ -585,7 +583,6 @@ export function someValidPlacements(
       );
 
       if (!isPlacementValid && opts.logHasAlreadyBeenValidated) {
-        //  const placedGifts = combinationToPlacedGifts(combination, giftCounts);
         const placedGifts: PlacedGift[] = giftPlacement;
         const hasAlreadyBeenValidated = hasBeenValidated(
           { ...board, gifts: giftsWithRotations, placedGifts },
@@ -596,6 +593,7 @@ export function someValidPlacements(
           hasBeenValidatedCount++;
         }
       }
+
       // shit todo, use the has already been validated to skip the validation of this and all children of this combination
       return isPlacementValid;
     },
