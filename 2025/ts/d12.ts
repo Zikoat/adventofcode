@@ -605,18 +605,26 @@ function assertNotTooLargeGifts(
 ) {
   for (const giftWithRotations of giftsWithRotations) {
     for (const gift of giftWithRotations) {
-      ass(
-        rectangleIsInside(
-          { ...matrixToRootRectangle(gift), x: 0, y: 0 },
-          board,
-        ),
-        `gift is larger than the board. board: ${board.width}x${
-          board.height
-        }. gift: 
+      const giftRootRectangle = matrixToRootRectangle(gift);
+
+      const maxGiftSize = Math.max(
+        giftRootRectangle.width,
+        giftRootRectangle.height,
+      );
+      const minGiftSize = Math.min(
+        giftRootRectangle.width,
+        giftRootRectangle.height,
+      );
+
+      const maxBoardSize = Math.max(board.width, board.height);
+      const minBoardSize = Math.min(board.width, board.height);
+
+      const errorMessage = `gift is larger than the board. board: ${board.width}x${board.height}. gift: 
 
 ${matrixToString(gift)}
-`,
-      );
+`;
+      ass(maxGiftSize <= maxBoardSize, errorMessage);
+      ass(minGiftSize <= minBoardSize, errorMessage);
     }
   }
 }
