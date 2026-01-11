@@ -2,7 +2,7 @@ import { watch } from "node:fs/promises";
 import { $ } from "bun";
 import { ass } from "./common.ts";
 
-async function validate() {
+async function validate(): Promise<void> {
   await $`FORCE_COLOR=true bun i --silent && bun tsgo --noEmit --pretty && bun test --coverage --coverage-reporter=lcov --only-failures && bun run format --colors=force`.nothrow();
 }
 

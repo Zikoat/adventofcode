@@ -375,11 +375,11 @@ function getLargestJoltage12(bank: Bank): number {
   );
 }
 
-const firstBank = parseBanks(`987654321111111`)[0];
+const [firstBank] = parseBanks(`987654321111111`);
 ass(firstBank);
 // asseq(getLargestJoltage12(firstBank), 987654321111);
 
-const firstBank2 = parseBanks(`811111111111119`)[0];
+const [firstBank2] = parseBanks(`811111111111119`);
 ass(firstBank2);
 asseq(getLargestJoltage12(firstBank2), 811111111119);
 

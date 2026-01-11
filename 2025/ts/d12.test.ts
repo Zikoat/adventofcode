@@ -660,9 +660,9 @@ function indicesToCurrentCombination<T = unknown>(
   );
   // shit todo assert indices is always array of ints between 0 and max safe integer
 
-  return indices.map((val, index) => {
-    return nonNull(nonNull(currentCombinations[index])[toNumInt(val)]);
-  });
+  return indices.map((val, index) =>
+    nonNull(nonNull(currentCombinations[index])[toNumInt(val)]),
+  );
 }
 
 describe(indicesToCurrentCombination, () => {
@@ -1269,10 +1269,10 @@ function boardToVizualizedBoard(board: Board): VisualizedBoard {
           const globalX = placedGift.x + localX2;
           const globalY = placedGift.y + localY2;
 
-          const row = boardMatrix[globalY];
+          const row2 = boardMatrix[globalY];
           // shit create helper to set a single value in a 2d char matrix
-          const char = row?.[globalX];
-          if (char === undefined) {
+          const char2 = row2?.[globalX];
+          if (char2 === undefined) {
             warning =
               "---piece is outside of board:" +
               globalX +
@@ -1281,14 +1281,14 @@ function boardToVizualizedBoard(board: Board): VisualizedBoard {
               "\n" +
               matrixToString(giftShape) +
               "\n---";
-          } else if (char === "X") {
+          } else if (char2 === "X") {
             // nothing
-          } else if (char === ".") {
-            ass(row);
-            row[globalX] = letter;
+          } else if (char2 === ".") {
+            ass(row2);
+            row2[globalX] = letter;
           } else {
-            ass(row);
-            row[globalX] = "X";
+            ass(row2);
+            row2[globalX] = "X";
           }
         }
       }
@@ -1472,7 +1472,7 @@ describe(hasBeenValidated, () => {
     };
 
     const validatedBoards = new Set<string>();
-    const gifts = board.gifts;
+    const { gifts } = board;
 
     asseq(hasBeenValidated(board, validatedBoards, gifts), false);
     asseq(hasBeenValidated(board, validatedBoards, gifts), true);
@@ -1493,7 +1493,7 @@ describe(hasBeenValidated, () => {
     };
 
     const validatedBoards = new Set<string>();
-    const gifts = board.gifts;
+    const { gifts } = board;
 
     visualizeBoard(
       board,

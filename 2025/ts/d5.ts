@@ -1206,8 +1206,7 @@ function parseInput(input: string): {
   ass(testInput[1]);
   const ranges = testInput[0].split("\n").map((rangeString) => {
     const splittedRange = rangeString.split("-");
-    const from = splittedRange[0];
-    const to = splittedRange[1];
+    const [from, to] = splittedRange;
     assInt(nonNull(from));
     assInt(nonNull(to));
     return { from: Number(from), to: Number(to) };
@@ -1237,9 +1236,9 @@ asseq(isInRange(rangesTest[0], ingsTest[1]), true);
 function getFreshCount(input: string): number {
   const parsed = parseInput(input);
 
-  const freshIngs = parsed.ings.filter((ing) => {
-    return parsed.ranges.some((range) => isInRange(range, ing));
-  }).length;
+  const freshIngs = parsed.ings.filter((ing) =>
+    parsed.ranges.some((range) => isInRange(range, ing)),
+  ).length;
 
   return freshIngs;
 }
@@ -1255,17 +1254,15 @@ function rangeToInts(range: Rang): number[] {
   return output;
 }
 
-const rangeLength = ({ from, to }: Rang) => {
-  return to - from + 1;
-};
+const rangeLength = ({ from, to }: Rang) => to - from + 1;
 
 function getRangesLengthRaw(input: string): number {
-  const ranges = parseInput(input).ranges;
+  const { ranges } = parseInput(input);
   console.log("ranges length", ranges.length);
   console.log(sum(ranges.map(rangeLength)));
   const ints = ranges.flatMap((range) => {
-    const ints = rangeToInts(range);
-    return ints;
+    const ints2 = rangeToInts(range);
+    return ints2;
   });
   console.log("ints length", ints.length);
   return new Set(ints).size;

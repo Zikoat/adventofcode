@@ -1,4 +1,6 @@
 import { expect } from "bun:test";
+import { deepEquals } from "bun";
+import { Temporal } from "temporal-polyfill";
 import {
   add,
   ass,
@@ -64,7 +66,7 @@ export function bigBoy() {
 12x5: 1 0 1 0 3 2` as const;
 
   const parsedInput = parseInput(testInput2);
-  const gifts = parsedInput.gifts;
+  const { gifts } = parsedInput;
   const first_gift: Gift = nonNull(gifts[0]);
 
   assmeq(
@@ -379,7 +381,8 @@ export function isValidBoard(
     );
   }
 
-  const placedGifts = board.placedGifts;
+  const { placedGifts } = board;
+  // shit rename to giftswithrotations on board
   const giftsWithRotations = board.gifts;
 
   if (opts.validateGifts) {
@@ -436,9 +439,10 @@ ${matrixToString(placedGiftToGift(giftsWithRotations, placedGift))}
     placedMultiGift2Index,
     placedMultiGift2,
   ] of placedGifts.entries()) {
-    if (placedMultiGift1Index === placedMultiGift2Index) continue;
-
-    if (giftsOverlap(giftsWithRotations, placedMultiGift1, placedMultiGift2))
+    if (
+      placedMultiGift1Index !== placedMultiGift2Index &&
+      giftsOverlap(giftsWithRotations, placedMultiGift1, placedMultiGift2)
+    )
       return false;
   }
 
@@ -534,7 +538,7 @@ export function someValidPlacements(
   giftsWithRotations: GiftsWithRotations,
   tree: Tree,
 ): boolean {
-  const giftCounts = tree.giftCounts;
+  const { giftCounts } = tree;
   const board = tree;
 
   asseq(giftsWithRotations.length, giftCounts.length);
@@ -632,7 +636,7 @@ ${matrixToString(gift)}
   }
 }
 
-export type CombinationChecker = (c: Int[]) => boolean;
+export type CombinationChecker = (combination: Int[]) => boolean;
 
 export function combinationsWithCheck(
   combinationsInput: Int[],
@@ -659,6 +663,7 @@ export function combinationsWithCheck(
       return recurse([...combination, 0]);
     } else if (combination.length > 0) {
       const acc = [...combination];
+      // biome-ignore lint/nursery/noUnnecessaryConditions: will remove in refactoring
       while (true) {
         if (acc.length === 0) break;
         acc[acc.length - 1] = toNumInt(acc[acc.length - 1]) + 1;
@@ -763,9 +768,6 @@ export function getProgress(
   return progress;
 }
 
-import { deepEquals } from "bun";
-import { Temporal } from "temporal-polyfill";
-
 export function lerpMultiple(totals: number[], currents: number[]): Rang[] {
   const new2: Rang[] = [];
   let currentRange: Rang = { from: 0, to: 1 };
@@ -809,7 +811,7 @@ export function hasBeenValidated(
   seen: Set<string>,
   gifts: GiftsWithRotations,
 ): boolean {
-  deepEquals(board, gifts, true); // validation
+  deepEquals(board, gifts, true);
 
   const stringBoard = board.placedGifts
     .flatMap((placedGift) =>

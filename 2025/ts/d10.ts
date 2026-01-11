@@ -37,11 +37,11 @@ const testInput = (
     return { buttons, joltages, lights };
   });
 
-const firstMachine = testInput[0];
-ass(firstMachine);
-console.log(firstMachine);
+const [firstMachine2] = testInput;
+ass(firstMachine2);
+console.log(firstMachine2);
 
-const state = firstMachine.lights.map((_) => false);
+const state = firstMachine2.lights.map((_) => false);
 console.log(state);
 
 function pressButton(lights: boolean[], button: number[]): boolean[] {
@@ -78,17 +78,17 @@ function findSmallestButtonPresses(machine: {
 
   for (let i = 0; i < 10; i++) {
     // const newStates = states.flatMap
-    const currentState: number[] = [];
-    while (currentState) {
-      // currentState = states.unshift();
-    }
+    // const currentState: number[] = [];
+    // while (currentState) {
+    //   // currentState = states.unshift();
+    // }
 
-    for (const state of states) {
+    for (const state2 of states) {
       for (const button of machine.buttons) {
-        const nextState = pressButton(state, button);
+        const nextState = pressButton(state2, button);
         // console.log(nextState);
         printState(nextState);
-        if (assStateEqual(state, machine.lights)) {
+        if (assStateEqual(state2, machine.lights)) {
           return i;
         }
         // newStates.push(nextState);

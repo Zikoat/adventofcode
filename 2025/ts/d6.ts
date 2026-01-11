@@ -67,12 +67,12 @@ function parseInput(input: string): {
 
   const numberLines = inputParsed
     .toSpliced(inputParsed.length - 1, Infinity)
-    .map((line) => {
-      return line.map((num) => {
+    .map((line) =>
+      line.map((num) => {
         assInt(num);
         return Number(num);
-      });
-    });
+      }),
+    );
 
   const symbolLineRaw = inputParsed[inputParsed.length - 1];
   ass(symbolLineRaw);
@@ -93,8 +93,8 @@ function getLineResult(input: string): number {
   const lineResult: number[] = [];
 
   for (const [index, symbol] of symbolLine.entries()) {
-    const numberLine = numberLines.map((numberLine) => {
-      const num = numberLine[index];
+    const numberLine = numberLines.map((numberLine2) => {
+      const num = numberLine2[index];
       ass(num);
       return num;
     });

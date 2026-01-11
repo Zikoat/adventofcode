@@ -4555,7 +4555,7 @@ R3
 R6
 L15
 L3`;
-function getZeroCount(input: string): number {
+function getZeroCount(input2: string): number {
   const schema = z.array(
     z.strictObject({
       direction: z.union([z.literal("R"), z.literal("L")]),
@@ -4563,7 +4563,7 @@ function getZeroCount(input: string): number {
     }),
   );
   const inputParsed = schema.parse(
-    input.split("\n").map((command: string) => ({
+    input2.split("\n").map((command: string) => ({
       direction: command[0],
       ticks: Number(command.substring(1)),
     })),
@@ -4573,7 +4573,7 @@ function getZeroCount(input: string): number {
   let zeroCount = 0;
 
   for (const command of inputParsed) {
-    let ticks = command.ticks;
+    let { ticks } = command;
     while (ticks > 0) {
       if (command.direction === "R") {
         currentRotation = currentRotation + 1;

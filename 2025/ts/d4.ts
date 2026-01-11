@@ -207,7 +207,7 @@ function isInside(loc: Vector, field: Field) {
   if (loc.y > field.length - 1) return false;
   if (loc.y < 0) return false;
 
-  const firstRow = field[0];
+  const [firstRow] = field;
   ass(firstRow);
   ass(
     field.every((row) => row.length === firstRow.length),
@@ -231,8 +231,8 @@ function isAccessible(loc: Vector, field: Field) {
   const currentLoc = loc;
   const activeNeighbors = getActiveNeighborCount(currentLoc, field);
 
-  const isAccessible = activeNeighbors < 4;
-  return isAccessible;
+  const isAccessible2 = activeNeighbors < 4;
+  return isAccessible2;
 }
 
 function getActiveNeighborCount(
@@ -273,13 +273,13 @@ function getAccessibleFieldParsed(field: Field): {
   markedField: string;
   accessibleCount: number;
 } {
-  const markedField = drawField(
+  const markedField2 = drawField(
     map2d(field, (cell, loc) => markAccessibleCell(cell, loc, field)),
   );
 
   const regex = new RegExp(/x/g);
-  const accessibleCount = markedField.matchAll(regex).toArray().length;
-  return { accessibleCount, markedField };
+  const accessibleCount2 = markedField2.matchAll(regex).toArray().length;
+  return { accessibleCount: accessibleCount2, markedField: markedField2 };
 }
 
 function getAccessibleField(inputString: string): {
