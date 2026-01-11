@@ -863,7 +863,8 @@ describe(canFitString, () => {
   // the valid values for the next layer.
   test("rotated ## should fit on 1x2 board", () => {
     const previousValidateTooLargeGifts = opts.validateTooLargeGifts;
-    opts.validateTooLargeGifts = false;
+    opts.validateTooLargeGifts = true;
+
     asseq(
       canFitString(`1:
 ##
