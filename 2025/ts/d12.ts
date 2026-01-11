@@ -363,7 +363,7 @@ export function isValidBoard(
       (isValidBoardRuns / (now - startTime)) * 1000
     ).toFixed(
       0,
-    )}/sec ${progress.toFixed(4)} % ${Temporal.Now.plainTimeISO().toString({ fractionalSecondDigits: 2 })} `;
+    )}/sec ${progress.toFixed(4)} % ${Temporal.Now.plainTimeISO().toString({ fractionalSecondDigits: 2 })} revalidated: ${hasBeenValidatedCount} `;
     console.log(
       `${firstString}${currentCombination?.map((num) =>
         `${num}`.padStart(2, " "),
@@ -540,6 +540,8 @@ export function someValidPlacements(
     return giftPlacement;
   };
 
+  const seenBoards = new Set<string>();
+
   const anyValidPlacements = combinationsWithCheck(
     combinationsInput,
     (combination: Int[]): boolean => {
@@ -559,6 +561,20 @@ export function someValidPlacements(
         combinationsInput,
       );
 
+      //   && opts.logHasAlreadyBeenValidated
+      if (!isPlacementValid) {
+        //  const placedGifts = combinationToPlacedGifts(combination, giftCounts);
+        const placedGifts: PlacedGift[] = giftPlacement;
+        const hasAlreadyBeenValidated = hasBeenValidated(
+          { ...board, gifts: giftsWithRotations, placedGifts },
+          seenBoards,
+          giftsWithRotations,
+        );
+        if (hasAlreadyBeenValidated) {
+          hasBeenValidatedCount++;
+        }
+      }
+      // shit todo, use the has already been validated to skip the validation of this and all children of this combination
       return isPlacementValid;
     },
   );
@@ -751,7 +767,7 @@ function lerp2(start: number, end: number, t: number): number {
   return start + (end - start) * t;
 }
 
-const hasBeenValidatedCount = 0;
+let hasBeenValidatedCount = 0;
 
 export function hasBeenValidated(
   board: Board,
@@ -768,7 +784,7 @@ export function hasBeenValidated(
     )
     .toSorted()
     .join("|");
-  console.log(stringBoard);
+
   const hasSeen = seen.has(stringBoard);
   seen.add(stringBoard);
   return hasSeen;
