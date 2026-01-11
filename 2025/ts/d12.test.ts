@@ -541,14 +541,19 @@ describe(combinationsWithCheck, () => {
   });
 });
 
-type GetNext = () => unknown[];
+type GetNext<T = unknown> = (combination: unknown[]) => T[];
 type IsComplete = () => boolean;
 
-function combinationsWithNext(
-  getNext: GetNext,
+function combinationsWithNext<T>(
+  getNext: GetNext<T>,
   isComplete: IsComplete = () => false,
 ) {
-  getNext();
+  for (let i = 0; i < 100; i++) {
+    const nextValues = getNext("a".repeat(i).split(""));
+    if (nextValues.length === 0) {
+      return isComplete();
+    }
+  }
   return isComplete();
 }
 
@@ -565,8 +570,8 @@ describe(combinationsWithNext, () => {
 
     expect(next).toBeCalledTimes(1);
     expect(next).toHaveLastReturnedWith([]);
-    expect(next).lastCalledWith();
-    asseq(next.mock.calls, [[]]);
+    expect(next).lastCalledWith([]);
+    asseq(next.mock.calls, [[[]]]);
   });
 
   test("if the empty combination is complete, then return true.", () => {
@@ -577,16 +582,37 @@ describe(combinationsWithNext, () => {
 
     expect(getNext).toBeCalledTimes(1);
     expect(getNext).toHaveLastReturnedWith([]);
-    expect(getNext).lastCalledWith();
+    expect(getNext).lastCalledWith([]);
 
     expect(isComplete).toBeCalledTimes(1);
     expect(isComplete).toHaveLastReturnedWith(true);
     expect(isComplete).lastCalledWith();
   });
 
+  test("if we always return 'a', then it should traverse that until it reaches the end and the lowest one returns []", () => {
+    const getNext = mock<GetNext<"a">>((combinations) =>
+      combinations.length < 10 ? ["a"] : [],
+    );
+
+    asseq(combinationsWithNext(getNext), false);
+
+    expect(getNext).toBeCalledTimes(11);
+    expect(getNext).lastCalledWith([
+      "a",
+      "a",
+      "a",
+      "a",
+      "a",
+      "a",
+      "a",
+      "a",
+      "a",
+      "a",
+    ]);
+  });
+
   test.todo(`
-      // if we always return "a", then it should traverse that until it reaches
-    // the end and the lowest one returns []
+    // 
 
     // if the first returns ["a","b","c"], then it will traverse to index 0
     // which is "a", then it will run the next combination function and return
