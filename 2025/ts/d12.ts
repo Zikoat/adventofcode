@@ -483,6 +483,35 @@ function toNumInt(input: Int | undefined | null): Int {
   return input;
 }
 
+function combinationToGiftPlacement(
+  combination: Int[],
+  giftCounts: Int[],
+): PlacedGift[] {
+  asseq(combination.length % 3, 0);
+  const giftPlacement: PlacedGift[] = [];
+
+  let currentGiftMultiIndex = 0;
+  for (const [type, giftCount] of giftCounts.entries()) {
+    for (let i = 0; i < giftCount; i++) {
+      const newLocal = combination[currentGiftMultiIndex * 3];
+      if (newLocal === undefined) {
+        return giftPlacement;
+      }
+      giftPlacement.push({
+        type,
+        rotation: toNumInt(newLocal),
+        x: toNumInt(combination[currentGiftMultiIndex * 3 + 1]),
+        y: toNumInt(combination[currentGiftMultiIndex * 3 + 2]),
+      });
+
+      currentGiftMultiIndex++;
+    }
+  }
+
+  asseq(currentGiftMultiIndex * 3, combination.length);
+  return giftPlacement;
+}
+
 export function someValidPlacements(
   giftsWithRotations: GiftsWithRotations,
   tree: Tree,
@@ -514,32 +543,6 @@ export function someValidPlacements(
       .flat();
   });
 
-  const combinationToGiftPlacement = (combination: Int[]): PlacedGift[] => {
-    asseq(combination.length % 3, 0);
-    const giftPlacement: PlacedGift[] = [];
-
-    let currentGiftMultiIndex = 0;
-    for (const [type, giftCount] of giftCounts.entries()) {
-      for (let i = 0; i < giftCount; i++) {
-        const newLocal = combination[currentGiftMultiIndex * 3];
-        if (newLocal === undefined) {
-          return giftPlacement;
-        }
-        giftPlacement.push({
-          type,
-          rotation: toNumInt(newLocal),
-          x: toNumInt(combination[currentGiftMultiIndex * 3 + 1]),
-          y: toNumInt(combination[currentGiftMultiIndex * 3 + 2]),
-        });
-
-        currentGiftMultiIndex++;
-      }
-    }
-
-    asseq(currentGiftMultiIndex * 3, combination.length);
-    return giftPlacement;
-  };
-
   const seenBoards = new Set<string>();
 
   const anyValidPlacements = combinationsWithCheck(
@@ -549,7 +552,7 @@ export function someValidPlacements(
 
       // console.log(combination.join(","));
 
-      const giftPlacement = combinationToGiftPlacement(combination);
+      const giftPlacement = combinationToGiftPlacement(combination, giftCounts);
 
       const isPlacementValid = isValidBoard(
         {
