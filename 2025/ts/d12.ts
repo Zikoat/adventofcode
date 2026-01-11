@@ -751,6 +751,8 @@ function lerp2(start: number, end: number, t: number): number {
   return start + (end - start) * t;
 }
 
+const hasBeenValidatedCount = 0;
+
 export function hasBeenValidated(
   board: Board,
   seen: Set<string>,
