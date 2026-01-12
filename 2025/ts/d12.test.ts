@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, it, mock, test } from "bun:test";
+import { deepEquals } from "bun";
 import { ass, asseq, nonNull } from "./common";
 import {
   assIsGiftMatrix,
@@ -12,10 +13,10 @@ import {
   createDedupedTransmutations,
   flipGiftVertically,
   type Gift,
+  type GiftsWithRotations,
   getProgress,
   giftsOverlap,
   giftsOverlapCount,
-  hasBeenValidated,
   isInBounds,
   isValidBoard,
   isValidBoardRuns,
@@ -32,8 +33,6 @@ import {
   stringToMatrix,
   transposeGift,
   wrapGift,
-  placedGiftsToCombination,
-  combinationToPlacedGifts,
 } from "./d12";
 
 describe(wrapGift, () => {
@@ -163,82 +162,68 @@ describe(isInBounds, () => {
 
 describe(isValidBoard, () => {
   test("single space board with 1 placed gift of 1 tile", () => {
-    asseq(
-      isValidBoard(
-        {
-          width: 1,
-          height: 1,
-        },
-        [1],
-        toGiftsWithRotations(`#`),
-        placedGiftsToCombination([{ type: 0, rotation: 0, x: 0, y: 0 }]),
-      ),
-      true,
-    );
+    const board = {
+      gifts: toGiftsWithRotations(`#`),
+      width: 1,
+      height: 1,
+      placedGifts: [{ type: 0, rotation: 0, x: 0, y: 0 }],
+    };
+
+    asseq(isValidBoard(board), true);
   });
 
   test("placed x position outside of board should be invalid", () => {
-    const previousValidateLastGiftCellInside = opts.validateLastGiftCellInside;
-    opts.validateLastGiftCellInside = true;
     expect(() =>
-      isValidBoard(
-        {
-          width: 1,
-          height: 1,
-        },
-        [1],
-        toGiftsWithRotations(`#`),
-        placedGiftsToCombination([
+      isValidBoard({
+        gifts: toGiftsWithRotations(`#`),
+        width: 1,
+        height: 1,
+        placedGifts: [
           {
             type: 0,
             rotation: 0,
             x: 1,
             y: 0,
           },
-        ]),
-      ),
+        ],
+      }),
     ).toThrowErrorMatchingInlineSnapshot(`
       "gift was placed outside of the board. placed gift {"type":0,"rotation":0,"x":1,"y":0,"width":1,"height":1} should be inside of {"width":1,"height":1}. gift shape:
       ---
       #
       ---"
     `);
-    opts.validateLastGiftCellInside = previousValidateLastGiftCellInside;
   });
 
   test("placed gift which has piece outside of board should be invalid", () => {
-    const previousValidateTooLargeGifts = opts.validateTooLargeGifts;
     opts.validateTooLargeGifts = true;
     expect(() =>
-      isValidBoard(
-        { width: 1, height: 1 },
-        [2],
-        toGiftsWithRotations(`##`),
-        placedGiftsToCombination([{ type: 0, rotation: 0, x: 0, y: 0 }]),
-      ),
+      isValidBoard({
+        gifts: toGiftsWithRotations(`##`),
+        width: 1,
+        height: 1,
+        placedGifts: [{ type: 0, rotation: 0, x: 0, y: 0 }],
+      }),
     ).toThrowErrorMatchingInlineSnapshot(`
       "gift is larger than the board. board: 1x1. gift: 
 
       ##
       "
     `);
-    opts.validateTooLargeGifts = previousValidateTooLargeGifts;
+    opts.validateTooLargeGifts = false;
   });
 
   test("pieces that have a tile at the same position should be invalid", () => {
     asseq(
-      isValidBoard(
-        {
-          width: 1,
-          height: 1,
-        },
-        [2],
-        toGiftsWithRotations(`#`),
-        placedGiftsToCombination([
+      isValidBoard({
+        gifts: toGiftsWithRotations(`#`),
+        width: 1,
+        height: 1,
+        placedGifts: [
           { type: 0, rotation: 0, x: 0, y: 0 },
           { type: 0, rotation: 0, x: 0, y: 0 },
-        ]),
-      ),
+        ],
+      }),
       false,
       "overlapping pieces ",
     );
@@ -246,19 +231,15 @@ describe(isValidBoard, () => {
 
   test("place 2 gifts side by side should be valid", () => {
     asseq(
-      isValidBoard(
-        {
-          width: 2,
-          height: 1,
-        },
-        [2],
-        toGiftsWithRotations(`#`),
-       placedGiftsToCombination( [
+      isValidBoard({
+        gifts: toGiftsWithRotations(`#`),
+        width: 2,
+        height: 1,
+        placedGifts: [
           { type: 0, rotation: 0, x: 0, y: 0 },
           { type: 0, rotation: 0, x: 1, y: 0 },
-        ]),
-      ),
-
+        ],
+      }),
       true,
     );
   });
@@ -307,10 +288,7 @@ describe(isValidBoard, () => {
        A.`,
     );
 
-    asseq(
-      isValidBoard(boardState, [2], boardState.gifts, placedGiftsToCombination(boardState.placedGifts)),
-      false,
-    );
+    asseq(isValidBoard(boardState), false);
   });
 
   test("visualizing board with a placed gift in the bottom right corner", () => {
@@ -508,12 +486,7 @@ describe(isValidBoard, () => {
        BXXA`,
     );
 
-    const combination = placedGiftsToCombination(test1Board.placedGifts);
-
-    asseq(
-      isValidBoard(test1Board, [0,0,0,0,2,0], test1Board.gifts, combination),
-      false,
-    );
+    asseq(isValidBoard(test1Board), false);
   });
 });
 
@@ -794,8 +767,6 @@ describe(canFitString, () => {
   });
 
   test("#.# shape doesnt fit on 2x2 board", () => {
-    const previousValidateTooLargeGifts = opts.validateTooLargeGifts;
-    opts.validateTooLargeGifts = true;
     expect(() =>
       canFitString(`1:
 #.#
@@ -807,7 +778,6 @@ describe(canFitString, () => {
       #.#
       "
     `);
-    opts.validateTooLargeGifts = previousValidateTooLargeGifts;
   });
 
   test(".# piece should fit on 1x1 board", () => {
@@ -1000,8 +970,6 @@ describe(someValidPlacements, () => {
   });
 
   test("# and ## should not fit 1x1", () => {
-    const previousValidateTooLargeGifts = opts.validateTooLargeGifts;
-    opts.validateTooLargeGifts = true;
     expect(() =>
       someValidPlacements(
         [assIsGiftMatrix([["#"]]), assIsGiftMatrix([["#", "#"]])].map(
@@ -1015,7 +983,6 @@ describe(someValidPlacements, () => {
       ##
       "
     `);
-    opts.validateTooLargeGifts = previousValidateTooLargeGifts;
   });
 
   test.skip("# and ## should not fit 2x1", () => {
@@ -1253,6 +1220,27 @@ describe(getProgress, () => {
   });
 });
 
+function hasBeenValidated(
+  board: Board,
+  seen: Set<string>,
+  gifts: GiftsWithRotations,
+): boolean {
+  deepEquals(board, gifts, true); // validation
+
+  const stringBoard = board.placedGifts
+    .flatMap((placedGift) =>
+      [placedGift.type, placedGift.rotation, placedGift.x, placedGift.y].join(
+        ",",
+      ),
+    )
+    .toSorted()
+    .join("|");
+  console.log(stringBoard);
+  const hasSeen = seen.has(stringBoard);
+  seen.add(stringBoard);
+  return hasSeen;
+}
+
 describe(hasBeenValidated, () => {
   test("should return true when the board has been validated", () => {
     const board = {
@@ -1312,11 +1300,5 @@ describe(hasBeenValidated, () => {
     asseq(hasBeenValidated(board, validatedBoards, gifts), true);
 
     asseq([...validatedBoards], ["0,0,0,0|0,1,0,0"]);
-  });
-});
-
-describe(combinationToPlacedGifts, () => {
-  test.only("should return the placed gifts", () => {
-    asseq(combinationToPlacedGifts([0, 0, 0, 0], [1]), [{ type: 0, rotation: 0, x: 0, y: 0 }]);
   });
 });
