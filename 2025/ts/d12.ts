@@ -20,6 +20,12 @@ export const opts = {
   validateTooLargeGifts: true,
 };
 
+opts.logHasAlreadyBeenValidated = false;
+opts.validateEveryGiftCellInside = false;
+opts.validateGifts = false;
+opts.validateLastGiftCellInside = false;
+opts.validateTooLargeGifts = false;
+
 export const optsDuplicate = { ...opts };
 
 export type Gift = ("." | "#")[][];
@@ -369,6 +375,7 @@ export function isValidBoard(
 
     const progress = getProgress(totalCombination, currentCombination);
 
+    // shit todo revalidated is always zero
     const firstString = `${isValidBoardRuns.toString().padEnd(10, " ")} avg ${(
       (isValidBoardRuns / (now - startTime)) * 1000
     ).toFixed(
