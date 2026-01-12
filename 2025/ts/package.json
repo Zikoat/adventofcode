@@ -6,9 +6,6 @@
     "temporal-polyfill": "^0.3.0",
     "zod": "^4.1.13"
   },
-  "devDependencies": {
-    "vitest": "^4.0.16"
-  },
   "scripts": {
     "bigboy": "bun run validate && bun run d12-bigboy",
     "debug": "bun --inspect-brk d12",
