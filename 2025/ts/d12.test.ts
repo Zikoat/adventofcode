@@ -975,7 +975,7 @@ describe(canFitString, () => {
     opts.validateTooLargeGifts = previousValidateTooLargeGifts;
   });
 
-  test.skip("pieces that fit inside each other should be rotated to fit into each other", () => {
+  test("pieces that fit inside each other should be rotated to fit into each other", () => {
     asseq(
       canFitString(`1:
 #.
