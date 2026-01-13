@@ -16,9 +16,11 @@ const defaultOpt = true;
 
 export let opts = {
   logHasAlreadyBeenValidated: defaultOpt,
+  validateCombinationsInput: defaultOpt,
   validateEveryGiftCellInside: defaultOpt,
   validateGifts: defaultOpt,
   validateLastGiftCellInside: defaultOpt,
+  validateRadices: defaultOpt,
   validateTooLargeGifts: defaultOpt,
 };
 
@@ -33,12 +35,15 @@ type Puzzle = { gifts: Gifts; trees: Tree[] };
 export type GiftsWithRotations = Gifts[];
 
 export function bigBoy() {
+  const enableValidations = false;
   opts = {
     logHasAlreadyBeenValidated: true,
-    validateEveryGiftCellInside: false,
-    validateGifts: false,
-    validateLastGiftCellInside: false,
-    validateTooLargeGifts: false,
+    validateCombinationsInput: enableValidations,
+    validateEveryGiftCellInside: enableValidations,
+    validateGifts: enableValidations,
+    validateLastGiftCellInside: enableValidations,
+    validateRadices: enableValidations,
+    validateTooLargeGifts: enableValidations,
   };
 
   const testInput2 = `0:
@@ -685,72 +690,82 @@ ${matrixToString(gift)}
 
 export type CombinationChecker = (combination: Int[]) => boolean;
 
+function createRange(to: Int): Int[] {
+  const retval: Int[] = [];
+  for (let i = 0; i < to; i++) {
+    retval.push(i);
+  }
+  return retval;
+}
+
 export function combinationsWithCheck(
   combinationsInput: Int[],
   check: CombinationChecker,
 ): boolean {
-  ass(
-    combinationsInput.every(
-      (radix) =>
-        typeof radix === "number" && Number.isSafeInteger(radix) && radix !== 0,
-    ),
-    `invalid inputs found: ${combinationsInput.join()}`,
-  );
+  if (opts.validateCombinationsInput)
+    ass(
+      combinationsInput.every(
+        (radix) =>
+          typeof radix === "number" &&
+          Number.isSafeInteger(radix) &&
+          radix !== 0,
+      ),
+      `invalid inputs found: ${combinationsInput.join()}`,
+    );
 
-  const recurse = (combination: Int[]): boolean => {
-    const isValid = check(combination);
+  let hasFound1ValidCombination = false;
 
-    if (combination.length === combinationsInput.length && isValid) {
-      return true;
-    }
+  return combinationsWithNext<Int>(
+    (combination) => {
+      const isRoot = combination.length === 0;
+      const combinationsInputValue = combinationsInput[combination.length];
+      const isLeaf = combinationsInputValue === undefined;
 
-    if (isValid) {
-      return recurse([...combination, 0]);
-    }
-    if (combination.length > 0) {
-      const acc = [...combination];
-      // biome-ignore lint/nursery/noUnnecessaryConditions: will remove in refactoring
-      while (true) {
-        if (acc.length === 0) break;
-        acc[acc.length - 1] = toNumInt(acc.at(-1)) + 1;
-
-        if (
-          toNumInt(acc.at(-1)) >= toNumInt(combinationsInput[acc.length - 1])
-        ) {
-          toNumInt(acc.pop());
-        } else {
-          break;
-        }
+      if (!isLeaf && isRoot) {
+        return createRange(combinationsInputValue);
       }
 
-      if (acc.length === 0) return false;
+      const isPartiallyValid = check(combination);
 
-      return recurse(acc);
-    }
-    ass(false);
-  };
+      if (isLeaf && isPartiallyValid) {
+        hasFound1ValidCombination = true;
+        return [];
+      }
 
-  return recurse([0]);
+      if (isLeaf && !isPartiallyValid) {
+        return [];
+      }
+
+      if (!isLeaf && isPartiallyValid) {
+        return createRange(combinationsInputValue);
+      }
+
+      if (!(isLeaf || isPartiallyValid)) {
+        return [];
+      }
+
+      ass(false);
+    },
+    (_combination) => hasFound1ValidCombination,
+  );
 }
 
-export type GetNext<T = unknown> = (combination: unknown[]) => T[];
-export type IsComplete = (combination: unknown[]) => boolean;
+export type GetNext<T = unknown> = (combination: T[]) => T[];
+export type IsComplete<T = unknown> = (combination: T[]) => boolean;
 
-// todo cleanup
+// todo cleanup, maybe use recursion instead
 export function combinationsWithNext<T>(
   getNext: GetNext<T>,
-  isComplete: IsComplete = () => false,
+  isComplete: IsComplete<T> = () => false,
 ): boolean {
   const currentCombinations: T[][] = [];
   const indices: Int[] = [];
-  let currentCombination: T[];
-  let nextValue: T[] = [];
-  for (let quea = 0; quea < 1000; quea++) {
-    if (quea > 900) ass(false);
 
-    for (let queaaoakb = 0; queaaoakb < 1000; queaaoakb++) {
-      if (queaaoakb > 900) ass(false);
-      currentCombination = radicesToCurrentCombination(
+  // biome-ignore lint/nursery/noUnnecessaryConditions: while loop is used right now, maybe better solution exists?
+  while (true) {
+    let nextValue: T[] = [];
+    while (nextValue.length === 0) {
+      const currentCombination: T[] = radicesToCurrentCombination(
         currentCombinations,
         indices,
       );
@@ -764,9 +779,8 @@ export function combinationsWithNext<T>(
         }
         ass(typeof lastIndex === "number");
         indices[indices.length - 1] = lastIndex + 1;
-        for (let aybak = 0; aybak < 1000; aybak++) {
-          if (aybak > 900) ass(false);
-
+        // biome-ignore lint/nursery/noUnnecessaryConditions: while loop is used right now, maybe better solution exists?
+        while (true) {
           if (
             nonNull(currentCombinations.at(-1))[nonNull(indices.at(-1))] ===
             undefined
@@ -789,18 +803,17 @@ export function combinationsWithNext<T>(
     currentCombinations.push(nextValue);
     indices.push(0);
   }
-  ass(false, "we have an infinite loop bluds");
-  // return isComplete(currentCombination)
 }
 
 export function radicesToCurrentCombination<T = unknown>(
   currentCombinations: T[][],
   radices: Int[],
 ): T[] {
-  ass(
-    radices.length === currentCombinations.length,
-    `${radices.length} radices but ${currentCombinations.length} combinations`,
-  );
+  if (opts.validateRadices)
+    ass(
+      radices.length === currentCombinations.length,
+      `${radices.length} radices but ${currentCombinations.length} combinations`,
+    );
 
   return radices.map((radix, index) => {
     const row = currentCombinations[index];
@@ -868,6 +881,7 @@ export function getVariableName(f: () => unknown): string {
 export function cc(f: () => unknown): [string, unknown] {
   return [`${getVariableName(f)}:`, f()];
 }
+// shit refactor to use object instead
 export function c(f: () => unknown): void {
   console.log(...cc(f));
 }

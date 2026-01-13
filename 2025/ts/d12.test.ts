@@ -522,8 +522,9 @@ describe(combinationsWithCheck, () => {
   });
 
   test("should not visit children when a parent check is false", () => {
-    const spy = mock<CombinationChecker>((combination) =>
-      combination.every((shit) => shit !== 0),
+    const spy = mock<CombinationChecker>(
+      (combination) =>
+        combination.length > 0 && combination.every((shit) => shit !== 0),
     );
     asseq(combinationsWithCheck([3, 3], spy), true);
     asseq(spy.mock.calls, [[[0]], [[1]], [[1, 0]], [[1, 1]]]);
@@ -612,28 +613,24 @@ describe(combinationsWithNext, () => {
   });
 
   test("if we always return 'a', then it should traverse that until it reaches the end and the lowest one returns []", () => {
-    const getNext = mock<GetNext<"b">>((combinations): "b"[] =>
-      combinations.length < 6 ? ["b"] : [],
+    const getNext = mock<GetNext<"a">>((combinations): "a"[] =>
+      combinations.length < 6 ? ["a"] : [],
     );
 
     asseq(combinationsWithNext(getNext), false);
 
     expect(getNext).nthCalledWith(1, []);
-    expect(getNext).nthCalledWith(2, ["b"]);
-    expect(getNext).nthCalledWith(3, ["b", "b"]);
-    expect(getNext).lastCalledWith(["b", "b", "b", "b", "b", "b"]);
+    expect(getNext).nthCalledWith(2, ["a"]);
+    expect(getNext).nthCalledWith(3, ["a", "a"]);
+    expect(getNext).lastCalledWith(["a", "a", "a", "a", "a", "a"]);
     expect(getNext).toBeCalledTimes(7);
   });
 
-  test(`
-    // 
-
-    // if the first returns ["a","b","c"], then it will traverse to index 0
-    // which is "a", then it will run the next combination function and return
-    // ["10", "20"]. we then traverse to "10" with index 0, and this returns []
-    // we continue until we hit "b 20" which is valid and complete, and so we
-    // stop and return true.
-    // `, () => {
+  test(`if the first returns ["a","b","c"], then it will traverse to index 0
+which is "a", then it will run the next combination function and return
+["10", "20"]. we then traverse to "10" with index 0, and this returns []
+we continue until we hit "b 20" which is valid and complete, and so we
+stop and return true.`, () => {
     const getNext = mock<GetNext>((combinations) => {
       switch (combinations.length) {
         case 0:

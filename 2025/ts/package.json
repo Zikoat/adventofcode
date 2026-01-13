@@ -20,6 +20,6 @@
     "type:watch": "tsgo --noEmit --watch",
     "validate": "bun i && tsgo --noEmit && bun test --coverage --coverage-reporter=lcov --only-failures && bun run format",
     "watch": "bun --watch watch.ts",
-    "watcher": "bun i && bun tsgo --noEmit --pretty && bun test --coverage --coverage-reporter=lcov --only-failures && bun run format --colors=force"
+    "watcher": "bun i && bun tsgo --noEmit --pretty && bun test --coverage --coverage-reporter=lcov --only-failures --bail && bun run format --colors=force"
   }
 }
