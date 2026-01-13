@@ -22,14 +22,6 @@ export let opts = {
   validateTooLargeGifts: defaultOpt,
 };
 
-const falseOpts: typeof opts = {
-  logHasAlreadyBeenValidated: true,
-  validateEveryGiftCellInside: false,
-  validateGifts: false,
-  validateLastGiftCellInside: false,
-  validateTooLargeGifts: false,
-};
-
 export const optsDuplicate = { ...opts };
 
 export type Gift = ("." | "#")[][];
@@ -41,7 +33,14 @@ type Puzzle = { gifts: Gifts; trees: Tree[] };
 export type GiftsWithRotations = Gifts[];
 
 export function bigBoy() {
-  opts = falseOpts;
+  opts = {
+    logHasAlreadyBeenValidated: true,
+    validateEveryGiftCellInside: false,
+    validateGifts: false,
+    validateLastGiftCellInside: false,
+    validateTooLargeGifts: false,
+  };
+
   const testInput2 = `0:
 ###
 ##.
@@ -90,6 +89,42 @@ export function bigBoy() {
   for (const gift of gifts) {
     asseq(shape(gift), [3, 3]);
   }
+
+  asseq(
+    canFitString(`
+  0:
+  ###
+  ##.
+  ##.
+  
+  1:
+  ###
+  ##.
+  .##
+  
+  2:
+  .##
+  ###
+  ##.
+  
+  3:
+  ##.
+  ###
+  ##.
+  
+  4:
+  ###
+  #..
+  ###
+  
+  5:
+  ###
+  .#.
+  ###
+  
+  12x5: 1 0 1 0 3 2`),
+    false,
+  );
 }
 
 function shape(matrix: unknown[][]): [number, number] {

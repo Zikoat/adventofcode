@@ -132,8 +132,11 @@ describe(stringToMatrix, () => {
 
     const matrix = stringToMatrix(giftString);
 
-    // @ts-expect-error
-    const _gift: Gift = matrix;
+    // @ts-expect-error matrix is string, but gift is #|.
+    const gift: Gift = matrix;
+
+    // biome-ignore lint/complexity/noVoid: need usage of gift
+    void gift;
   });
 
   it("should validate gift with assIsGiftMatrix", () => {
