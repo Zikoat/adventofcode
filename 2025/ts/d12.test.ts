@@ -7,7 +7,6 @@ import {
   type CombinationChecker,
   c,
   canFitString,
-  cc,
   combinationsWithCheck,
   combinationsWithNext,
   createAllTransmutations,
@@ -1235,11 +1234,9 @@ function wrapGiftString(giftString: string): Gift {
 }
 
 afterAll(() => {
-  console.log(
-    "\ndone. checks done during tests",
-    ...cc(() => isValidBoardRuns),
-    ...cc(() => giftsOverlapCount),
-  );
+  console.log("\ndone. checks done during tests");
+
+  c({ giftsOverlapCount, isValidBoardRuns });
 
   opts.logHasAlreadyBeenValidated = optsDuplicate.logHasAlreadyBeenValidated;
   opts.validateEveryGiftCellInside = optsDuplicate.validateEveryGiftCellInside;

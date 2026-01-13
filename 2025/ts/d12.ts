@@ -878,12 +878,10 @@ const funcRegex = /^\(\) => (.*)$/;
 export function getVariableName(f: () => unknown): string {
   return nonNull(nonNull(funcRegex.exec(`${f}`))[1]);
 }
-export function cc(f: () => unknown): [string, unknown] {
-  return [`${getVariableName(f)}:`, f()];
-}
-// shit refactor to use object instead
-export function c(f: () => unknown): void {
-  console.log(...cc(f));
+export function c(f: Record<string, unknown>): void {
+  for (const [key, value] of Object.entries(f)) {
+    console.log(key, ":", value);
+  }
 }
 
 export function getProgress(
