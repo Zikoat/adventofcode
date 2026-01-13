@@ -9,16 +9,18 @@ import {
   canFitString,
   cc,
   combinationsWithCheck,
+  combinationsWithNext,
   createAllTransmutations,
   createDedupedTransmutations,
   flipGiftVertically,
+  type GetNext,
   type Gift,
   getProgress,
   getVariableName,
   giftsOverlap,
   giftsOverlapCount,
   hasBeenValidated,
-  type Int,
+  type IsComplete,
   isInBounds,
   isValidBoard,
   isValidBoardRuns,
@@ -30,11 +32,11 @@ import {
   optsDuplicate,
   type PlacedGift,
   placedGiftToGift,
+  radicesToCurrentCombination,
   rotateGift90Right,
   someValidPlacements,
   stringToGift,
   stringToMatrix,
-  toNumInt,
   transposeGift,
   wrapGift,
 } from "./d12.ts";
@@ -544,87 +546,6 @@ describe(combinationsWithCheck, () => {
     ]);
   });
 });
-
-type GetNext<T = unknown> = (combination: unknown[]) => T[];
-type IsComplete = (combination: unknown[]) => boolean;
-
-// todo cleanup
-function combinationsWithNext<T>(
-  getNext: GetNext<T>,
-  isComplete: IsComplete = () => false,
-): boolean {
-  const currentCombinations: T[][] = [];
-  const indices: Int[] = [];
-  let currentCombination: T[];
-  let nextValue: T[] = [];
-  for (let quea = 0; quea < 1000; quea++) {
-    if (quea > 900) ass(false);
-
-    for (let queaaoakb = 0; queaaoakb < 1000; queaaoakb++) {
-      if (queaaoakb > 900) ass(false);
-      currentCombination = radicesToCurrentCombination(
-        currentCombinations,
-        indices,
-      );
-      nextValue = getNext(currentCombination);
-
-      if (nextValue.length === 0) {
-        if (isComplete(currentCombination)) return true;
-        const lastIndex = indices.at(-1);
-        if (lastIndex === undefined) {
-          return false;
-        }
-        ass(typeof lastIndex === "number");
-        indices[indices.length - 1] = lastIndex + 1;
-        for (let aybak = 0; aybak < 1000; aybak++) {
-          if (aybak > 900) ass(false);
-
-          if (
-            nonNull(currentCombinations.at(-1))[nonNull(indices.at(-1))] ===
-            undefined
-          ) {
-            indices.pop();
-            const newLocal = indices.at(-1);
-            if (typeof newLocal === "number") {
-              indices[indices.length - 1] = newLocal + 1;
-              currentCombinations.pop();
-            } else {
-              return false;
-            }
-          } else break;
-        }
-      } else {
-        break;
-      }
-    }
-    ass(nextValue);
-    currentCombinations.push(nextValue);
-    indices.push(0);
-  }
-  ass(false, "we have an infinite loop bluds");
-  // return isComplete(currentCombination)
-}
-
-function radicesToCurrentCombination<T = unknown>(
-  currentCombinations: T[][],
-  radices: Int[],
-): T[] {
-  ass(
-    radices.length === currentCombinations.length,
-    `${radices.length} radices but ${currentCombinations.length} combinations`,
-  );
-
-  return radices.map((radix, index) => {
-    const row = currentCombinations[index];
-    ass(row !== undefined, "there are more radices than combinations");
-    const value = row[toNumInt(radix)];
-    ass(
-      value !== undefined,
-      `a radix was out of bounds. radices[${radices}] combinationLengths[${currentCombinations.map((combination) => combination.length)}]`,
-    );
-    return value;
-  });
-}
 
 describe(radicesToCurrentCombination, () => {
   test("shit", () => {
