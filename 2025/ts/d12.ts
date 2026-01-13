@@ -12,19 +12,23 @@ import {
   type Vector,
 } from "./common.ts";
 
-export const opts = {
-  logHasAlreadyBeenValidated: true,
-  validateEveryGiftCellInside: true,
-  validateGifts: true,
-  validateLastGiftCellInside: true,
-  validateTooLargeGifts: true,
+const defaultOpt = true;
+
+export let opts = {
+  logHasAlreadyBeenValidated: defaultOpt,
+  validateEveryGiftCellInside: defaultOpt,
+  validateGifts: defaultOpt,
+  validateLastGiftCellInside: defaultOpt,
+  validateTooLargeGifts: defaultOpt,
 };
 
-opts.logHasAlreadyBeenValidated = false;
-opts.validateEveryGiftCellInside = false;
-opts.validateGifts = false;
-opts.validateLastGiftCellInside = false;
-opts.validateTooLargeGifts = false;
+const falseOpts: typeof opts = {
+  logHasAlreadyBeenValidated: true,
+  validateEveryGiftCellInside: false,
+  validateGifts: false,
+  validateLastGiftCellInside: false,
+  validateTooLargeGifts: false,
+};
 
 export const optsDuplicate = { ...opts };
 
@@ -37,6 +41,7 @@ type Puzzle = { gifts: Gifts; trees: Tree[] };
 export type GiftsWithRotations = Gifts[];
 
 export function bigBoy() {
+  opts = falseOpts;
   const testInput2 = `0:
 ###
 ##.

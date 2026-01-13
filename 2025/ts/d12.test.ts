@@ -691,7 +691,7 @@ describe(combinationsWithNext, () => {
     expect(getNext).toBeCalledTimes(7);
   });
 
-  test.only(`
+  test(`
     // 
 
     // if the first returns ["a","b","c"], then it will traverse to index 0
@@ -718,7 +718,6 @@ describe(combinationsWithNext, () => {
         combinations[1] === "20",
     );
 
-    debugger;
     asseq(combinationsWithNext(getNext, isComplete), true);
 
     expect(getNext).nthCalledWith(1, []);
@@ -741,7 +740,7 @@ describe(combinationsWithNext, () => {
     expect(isComplete).nthCalledWith(1, ["a", "10"]);
     expect(isComplete).nthCalledWith(2, ["a", "20"]);
     expect(isComplete).nthCalledWith(3, ["b", "10"]);
-    expect(isComplete).nthCalledWith(3, ["b", "20"]);
+    expect(isComplete).nthCalledWith(4, ["b", "20"]);
   });
 });
 
@@ -977,6 +976,7 @@ describe(canFitString, () => {
   });
 
   test("#.# shape doesnt fit on 2x2 board", () => {
+    opts.validateTooLargeGifts = true;
     expect(() =>
       canFitString(`1:
 #.#
@@ -1209,8 +1209,8 @@ describe(someValidPlacements, () => {
   });
 
   test("# and ## should not fit 2x1", () => {
-    const prevValidateTooLargeGifts = opts.validateTooLargeGifts;
-    opts.validateTooLargeGifts = true;
+    opts.validateEveryGiftCellInside = true;
+
     expect(() =>
       someValidPlacements(
         [assIsGiftMatrix([["#"]]), assIsGiftMatrix([["#", "#"]])].map(
@@ -1224,7 +1224,6 @@ describe(someValidPlacements, () => {
       ##
       ---"
     `);
-    opts.validateTooLargeGifts = prevValidateTooLargeGifts;
   });
 
   test("# and ## should fit 2x2", () => {
@@ -1311,7 +1310,11 @@ afterAll(() => {
     ...cc(() => giftsOverlapCount),
   );
 
-  expect(opts).toStrictEqual(optsDuplicate);
+  opts.logHasAlreadyBeenValidated = optsDuplicate.logHasAlreadyBeenValidated;
+  opts.validateEveryGiftCellInside = optsDuplicate.validateEveryGiftCellInside;
+  opts.validateGifts = optsDuplicate.validateGifts;
+  opts.validateLastGiftCellInside = optsDuplicate.validateLastGiftCellInside;
+  opts.validateTooLargeGifts = optsDuplicate.validateTooLargeGifts;
 });
 
 describe(c, () => {
