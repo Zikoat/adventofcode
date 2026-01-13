@@ -562,7 +562,7 @@ function combinationsWithNext<T>(
 
     for (let queaaoakb = 0; queaaoakb < 1000; queaaoakb++) {
       if (queaaoakb > 900) ass(false);
-      currentCombination = indicesToCurrentCombination(
+      currentCombination = radicesToCurrentCombination(
         currentCombinations,
         indices,
       );
@@ -605,49 +605,59 @@ function combinationsWithNext<T>(
   // return isComplete(currentCombination)
 }
 
-function indicesToCurrentCombination<T = unknown>(
+function radicesToCurrentCombination<T = unknown>(
   currentCombinations: T[][],
-  indices: Int[],
+  radices: Int[],
 ): T[] {
   ass(
-    indices.length === currentCombinations.length,
-    `${indices.length} indices but ${currentCombinations.length} combinations`,
+    radices.length === currentCombinations.length,
+    `${radices.length} radices but ${currentCombinations.length} combinations`,
   );
-  ass(
-    currentCombinations.every((combination) => combination.length > 0),
-    `a combination was empty ${JSON.stringify(currentCombinations)}`,
-  );
-  // shit todo assert indices is always array of ints between 0 and max safe integer
 
-  return indices.map((val, index) =>
-    nonNull(nonNull(currentCombinations[index])[toNumInt(val)]),
-  );
+  return radices.map((radix, index) => {
+    const row = currentCombinations[index];
+    ass(row !== undefined, "there are more radices than combinations");
+    const value = row[toNumInt(radix)];
+    ass(
+      value !== undefined,
+      `a radix was out of bounds. radices[${radices}] combinationLengths[${currentCombinations.map((combination) => combination.length)}]`,
+    );
+    return value;
+  });
 }
 
-describe(indicesToCurrentCombination, () => {
+describe(radicesToCurrentCombination, () => {
   test("shit", () => {
     const combinations = [
       ["a", "b"],
       ["c", "d"],
     ];
-    asseq(indicesToCurrentCombination(combinations, [0, 0]), ["a", "c"]);
-    asseq(indicesToCurrentCombination(combinations, [0, 1]), ["a", "d"]);
+    asseq(radicesToCurrentCombination(combinations, [0, 0]), ["a", "c"]);
+    asseq(radicesToCurrentCombination(combinations, [0, 1]), ["a", "d"]);
   });
 
   test("should return empty array when no indices", () => {
-    asseq(indicesToCurrentCombination([], []), []);
+    asseq(radicesToCurrentCombination([], []), []);
   });
 
-  test.failing("should throw an error when an index is out of bounds", () => {
-    indicesToCurrentCombination([["a"]], [2]);
+  test("should throw an error when an index is out of bounds", () => {
+    expect(() =>
+      radicesToCurrentCombination([["a"]], [2]),
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"a radix was out of bounds. radices[2] combinationLengths[1]"`,
+    );
   });
 
-  test.failing("should throw an error when there are more indices than arrays", () => {
-    indicesToCurrentCombination([["a"]], [0, 0]);
+  test("should throw an error when there are more indices than arrays", () => {
+    expect(() =>
+      radicesToCurrentCombination([["a"]], [0, 0]),
+    ).toThrowErrorMatchingInlineSnapshot(`"2 radices but 1 combinations"`);
   });
 
-  test.failing("should throw an error when there are less indices than arrays", () => {
-    indicesToCurrentCombination([["a"]], []);
+  test("should throw an error when there are less indices than arrays", () => {
+    expect(() =>
+      radicesToCurrentCombination([["a"]], []),
+    ).toThrowErrorMatchingInlineSnapshot(`"0 radices but 1 combinations"`);
   });
 });
 
