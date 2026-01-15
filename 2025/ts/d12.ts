@@ -94,7 +94,7 @@ export function bigBoy() {
   for (const gift of gifts) {
     asseq(shape(gift), [3, 3]);
   }
-
+  console.log("start bigboy");
   asseq(
     canFitString(`
   0:
@@ -130,6 +130,7 @@ export function bigBoy() {
   12x5: 1 0 1 0 3 2`),
     false,
   );
+  console.log("end bigboy");
 }
 
 function shape(matrix: unknown[][]): [number, number] {
@@ -399,7 +400,7 @@ function placedGiftToBoundingRectangle(
 
 export let isValidBoardRuns = 0;
 const startTime = performance.now();
-const perfLog = 1000000;
+const perfLog = 100000;
 
 export function isValidBoard(
   board: Board,
@@ -420,7 +421,6 @@ export function isValidBoard(
 
     const progress = getProgress(totalCombination, currentCombination);
 
-    // shit todo revalidated is always zero
     const firstString = `${isValidBoardRuns.toString().padEnd(10, " ")} avg ${(
       (isValidBoardRuns / (now - startTime)) * 1000
     ).toFixed(
@@ -498,7 +498,60 @@ ${matrixToString(placedGiftToGift(giftsWithRotations, placedGift))}
       return false;
   }
 
+  const isAdjacentToAnyGift =
+    placedGifts.length <= 1 ||
+    placedGifts.some(
+      (otherGift, otherGiftIndex) =>
+        placedMultiGift1Index !== otherGiftIndex &&
+        isAdjacent(giftsWithRotations, placedMultiGift1, otherGift),
+    );
+
+  if (!isAdjacentToAnyGift) return false;
+
   return true;
+}
+
+export function isAdjacent(
+  giftsWithRotations: GiftsWithRotations,
+  placedGiftA: PlacedGift,
+  placedGiftB: PlacedGift,
+): boolean {
+  // giftsOverlapCount++;
+
+  const gift1 = placedGiftToGift(giftsWithRotations, placedGiftA);
+  const gift2 = placedGiftToGift(giftsWithRotations, placedGiftB);
+
+  for (const [gift1LocalY, gift1Row] of gift1.entries()) {
+    for (const [gift1LocalX, gift1Cell] of gift1Row.entries())
+      if (gift1Cell === "#") {
+        const globalPos = add(
+          { x: placedGiftA.x, y: placedGiftA.y },
+          { x: gift1LocalX, y: gift1LocalY },
+        );
+
+        const gift2Local = diff(globalPos, {
+          x: placedGiftB.x,
+          y: placedGiftB.y,
+        });
+
+        const directions: [Vector, Vector, Vector, Vector] = [
+          { x: 1, y: 0 },
+          { x: 0, y: 1 },
+          { x: -1, y: 0 },
+          { x: 0, y: -1 },
+        ];
+
+        const neighborsOnGift2Local = directions.map((direction) =>
+          add(direction, gift2Local),
+        );
+
+        return neighborsOnGift2Local.some(
+          (neghborOnGift2Local) =>
+            gift2?.[neghborOnGift2Local.y]?.[neghborOnGift2Local.x] === "#",
+        );
+      }
+  }
+  return false;
 }
 
 export let giftsOverlapCount = 0;
