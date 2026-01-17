@@ -1,13 +1,11 @@
 import { afterAll, describe, expect, it, mock, test } from "bun:test";
-import { ass, asseq, nonNull } from "./common.ts";
+import { ass, asseq, nonNull, type Vector } from "./common.ts";
 import {
   assIsGiftMatrix,
-  assmeq,
+  assMatrixSquare,
   type Board,
   boardToVizualizedBoard,
   type CombinationChecker,
-  c,
-  canFitString,
   combinationsWithCheck,
   combinationsWithNext,
   combinationToPlacedGifts,
@@ -15,13 +13,11 @@ import {
   countValidTrees,
   createAllTransmutations,
   createDedupedTransmutations,
-  d12TestInput,
   disableValidations,
   flipGiftVertically,
   type GetNext,
   type Gift,
   getProgress,
-  getVariableName,
   giftsOverlap,
   giftsOverlapCount,
   hasBeenValidated,
@@ -33,21 +29,135 @@ import {
   lerp,
   lerpMultiple,
   lerpRange,
+  matrixToString,
   opts,
-  optsDuplicate,
   type PlacedGift,
+  type Puzzle,
   parseInput,
+  type Rectangle,
   radicesToCurrentCombination,
-  rectanglesOverlap,
   rotateGift90Right,
   setHasBeenValidated,
-  shape,
   someValidPlacements,
   stringToGift,
   stringToMatrix,
+  type Tree,
   transposeGift,
   wrapGift,
 } from "./d12.ts";
+
+const optsDuplicate = { ...opts };
+
+function shape(matrix: unknown[][]): [number, number] {
+  const firstRow = nonNull(matrix[0]);
+  assMatrixSquare(matrix);
+
+  return [matrix.length, firstRow.length];
+}
+
+function assmeq(stringMatrix: string[][], expected: string): void {
+  const visualizedBoard = matrixToString(stringMatrix);
+
+  const cleanViz = function cleanViz(input: string): string {
+    return input.trim().replaceAll(/\s+/g, "\n");
+  };
+
+  expect(
+    cleanViz(visualizedBoard),
+    "the visualized matrix is not correct. it is \n---\n" +
+      visualizedBoard +
+      "\n---",
+  ).toBe(cleanViz(expected));
+}
+
+// shit todo replace with count valid trees
+function canFitString(input: string): boolean {
+  const parsed2: Puzzle = parseInput(input);
+  asseq(parsed2.trees.length, 1);
+
+  const gifts = parsed2.gifts.map(function mapGifts(gift) {
+    return wrapGift(gift);
+  });
+
+  const tree: Tree = nonNull(parsed2.trees[0]);
+
+  const dedupedTransmutedGifts = gifts.map(createDedupedTransmutations);
+
+  const anyValidPlacements = someValidPlacements(dedupedTransmutedGifts, tree);
+
+  return anyValidPlacements;
+}
+
+const funcRegex = /^\(\) => (.*)$/;
+
+function getVariableName(f: () => unknown): string {
+  return nonNull(nonNull(funcRegex.exec(`${f}`))[1]);
+}
+
+function c(f: Record<string, unknown>): void {
+  for (const [key, value] of Object.entries(f)) {
+    console.log(key, ":", value);
+  }
+}
+
+function rectanglesOverlap(
+  gift1Rectangle: Rectangle,
+  gift2Rectangle: Rectangle,
+): boolean {
+  const l1 = { x: gift1Rectangle.x, y: gift1Rectangle.y };
+  const r1 = {
+    x: gift1Rectangle.x + gift1Rectangle.width - 1,
+    y: gift1Rectangle.y + gift1Rectangle.height - 1,
+  };
+  const l2 = { x: gift2Rectangle.x, y: gift2Rectangle.y };
+  const r2 = {
+    x: gift2Rectangle.x + gift2Rectangle.width - 1,
+    y: gift2Rectangle.y + gift2Rectangle.height - 1,
+  };
+  return doOverlap(l1, r1, l2, r2);
+}
+
+function doOverlap(l1: Vector, r1: Vector, l2: Vector, r2: Vector): boolean {
+  if (l1.x > r2.x || l2.x > r1.x) return false;
+
+  if (l1.y > r2.y || l2.y > r1.y) return false;
+
+  return true;
+}
+
+const d12TestInput = `0:
+###
+##.
+##.
+
+1:
+###
+##.
+.##
+
+2:
+.##
+###
+##.
+
+3:
+##.
+###
+##.
+
+4:
+###
+#..
+###
+
+5:
+###
+.#.
+###
+
+4x4: 0 0 0 0 2 0
+12x5: 1 0 1 0 2 2
+12x5: 1 0 1 0 3 2`;
 
 describe(wrapGift, () => {
   it("should wrap all 4 cardinal directions", () => {

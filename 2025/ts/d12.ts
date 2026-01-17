@@ -1,4 +1,3 @@
-import { expect } from "bun:test";
 import { deepEquals } from "bun";
 import { Temporal } from "temporal-polyfill";
 import {
@@ -33,13 +32,11 @@ export let opts = {
   validateTooLargeGifts: defaultOpt,
 };
 
-export const optsDuplicate = { ...opts };
-
 export type Gift = ("." | "#")[][];
 export type Gifts = Gift[];
 export type Int = number;
 type GiftCounts = Int[];
-type Tree = { giftCounts: GiftCounts } & RootRectangle;
+export type Tree = { giftCounts: GiftCounts } & RootRectangle;
 export type Puzzle = { gifts: Gifts; trees: Tree[] };
 export type GiftsWithRotations = Gifts[];
 
@@ -72,11 +69,12 @@ export function bigBoy() {
   console.log("end bigboy");
 }
 
-export function shape(matrix: unknown[][]): [number, number] {
-  const firstRow = nonNull(matrix[0]);
-  assMatrixSquare(matrix);
-
-  return [matrix.length, firstRow.length];
+export function matrixToString(stringMatrix: string[][]): string {
+  return stringMatrix
+    .map(function matrixToStringMapRow(row) {
+      return row.join("");
+    })
+    .join("\n");
 }
 
 export function parseInput(input: string): Puzzle {
@@ -141,29 +139,6 @@ export function stringToMatrix(input: string): string[][] {
   );
 
   return matrix;
-}
-
-function matrixToString(stringMatrix: string[][]): string {
-  return stringMatrix
-    .map(function matrixToStringMapRow(row) {
-      return row.join("");
-    })
-    .join("\n");
-}
-
-export function assmeq(stringMatrix: string[][], expected: string): void {
-  const visualizedBoard = matrixToString(stringMatrix);
-
-  const cleanViz = function cleanViz(input: string): string {
-    return input.trim().replaceAll(/\s+/g, "\n");
-  };
-
-  expect(
-    cleanViz(visualizedBoard),
-    "the visualized matrix is not correct. it is \n---\n" +
-      visualizedBoard +
-      "\n---",
-  ).toBe(cleanViz(expected));
 }
 
 export function stringToGift(giftString: string): Gift {
@@ -233,26 +208,8 @@ export function wrapGift(input: Gift): Gift {
   return rows;
 }
 
-// shit todo replace with count valid trees
-export function canFitString(input: string): boolean {
-  const parsed2: Puzzle = parseInput(input);
-  asseq(parsed2.trees.length, 1);
-
-  const gifts = parsed2.gifts.map(function mapGifts(gift) {
-    return wrapGift(gift);
-  });
-
-  const tree: Tree = nonNull(parsed2.trees[0]);
-
-  const dedupedTransmutedGifts = gifts.map(createDedupedTransmutations);
-
-  const anyValidPlacements = someValidPlacements(dedupedTransmutedGifts, tree);
-
-  return anyValidPlacements;
-}
-
 type RootRectangle = { width: Int; height: Int };
-type Rectangle = Vector & RootRectangle;
+export type Rectangle = Vector & RootRectangle;
 
 function assVector(
   vector: Vector | undefined | null,
@@ -284,18 +241,18 @@ export function isInBounds(vector: Vector, rectangle: RootRectangle): boolean {
   );
 }
 
-export type PlacedGift = {
-  type: Int;
-  rotation: Int;
-} & Vector;
-
-function assMatrixSquare(matrix: unknown[][]): void {
+export function assMatrixSquare(matrix: unknown[][]): void {
   ass(
     matrix.every(function checkMatrixEveryRowLength(row) {
       return row.length === nonNull(matrix[0]).length;
     }),
   );
 }
+
+export type PlacedGift = {
+  type: Int;
+  rotation: Int;
+} & Vector;
 
 function matrixToRootRectangle(matrix: unknown[][]): RootRectangle {
   assMatrixSquare(matrix);
@@ -1021,16 +978,6 @@ export function createDedupedTransmutations<T>(gift: T[][]): T[][][] {
   );
 }
 
-const funcRegex = /^\(\) => (.*)$/;
-export function getVariableName(f: () => unknown): string {
-  return nonNull(nonNull(funcRegex.exec(`${f}`))[1]);
-}
-export function c(f: Record<string, unknown>): void {
-  for (const [key, value] of Object.entries(f)) {
-    console.log(key, ":", value);
-  }
-}
-
 export function getProgress(
   totalCombination: Int[],
   currentCombination: Int[],
@@ -1187,65 +1134,6 @@ export function boardToVizualizedBoard(board: Board): VisualizedBoard {
 
   return boardMatrix;
 }
-
-export function rectanglesOverlap(
-  gift1Rectangle: Rectangle,
-  gift2Rectangle: Rectangle,
-): boolean {
-  const l1 = { x: gift1Rectangle.x, y: gift1Rectangle.y };
-  const r1 = {
-    x: gift1Rectangle.x + gift1Rectangle.width - 1,
-    y: gift1Rectangle.y + gift1Rectangle.height - 1,
-  };
-  const l2 = { x: gift2Rectangle.x, y: gift2Rectangle.y };
-  const r2 = {
-    x: gift2Rectangle.x + gift2Rectangle.width - 1,
-    y: gift2Rectangle.y + gift2Rectangle.height - 1,
-  };
-  return doOverlap(l1, r1, l2, r2);
-}
-
-function doOverlap(l1: Vector, r1: Vector, l2: Vector, r2: Vector): boolean {
-  if (l1.x > r2.x || l2.x > r1.x) return false;
-
-  if (l1.y > r2.y || l2.y > r1.y) return false;
-
-  return true;
-}
-
-export const d12TestInput = `0:
-###
-##.
-##.
-
-1:
-###
-##.
-.##
-
-2:
-.##
-###
-##.
-
-3:
-##.
-###
-##.
-
-4:
-###
-#..
-###
-
-5:
-###
-.#.
-###
-
-4x4: 0 0 0 0 2 0
-12x5: 1 0 1 0 2 2
-12x5: 1 0 1 0 3 2`;
 
 export function countAllValidPlacements(input: string): Int[] {
   const parsed2: Puzzle = parseInput(input);
