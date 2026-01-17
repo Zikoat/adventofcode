@@ -307,7 +307,7 @@ describe(isValidBoard, () => {
 
     visualizeBoard(
       boardState,
-      `XB
+      `XA
        A.`,
     );
 
@@ -504,9 +504,9 @@ describe(isValidBoard, () => {
     visualizeBoard(
       test1Board,
       `....
-       BABA
-       BABA
-       BXXA`,
+       EEEE
+       EEEE
+       EXXE`,
     );
 
     asseq(isValidBoard(test1Board), false);
@@ -905,14 +905,15 @@ describe(canFitString, () => {
     );
   });
 
-  test.failing("0x0 board should fail", () => {
-    asseq(
-      canFitString(`1:
-    #
+  test("0x0 board should not fit", () => {
+    const puzzleString = `1:
+        #
+        
+        0x0: 1`;
 
-    0x0: 1`),
-      false,
-    );
+    asseq(canFitString(puzzleString), false);
+
+    asseq(findAllValidPlacements(puzzleString), [0]);
   });
 
   test("2 pieces don't fit on a 1x1 board", () => {
@@ -1450,7 +1451,7 @@ describe(hasBeenValidated, () => {
       board,
       `
       XA
-      B.`,
+      A.`,
     );
 
     asseq(hasBeenValidated(board, validatedBoards, gifts), false);
@@ -1702,8 +1703,12 @@ function findAllValidPlacements(input: string): Int[] {
 
     asseq(giftsWithRotations.length, giftCounts.length);
 
-    ass(board.width !== 0);
-    ass(board.height !== 0);
+    if (board.width <= 0) {
+      return 0;
+    }
+    if (board.height <= 0) {
+      return 0;
+    }
 
     if (opts.validateTooLargeGifts) {
       assertNotTooLargeGifts(giftsWithRotations, board);

@@ -15,7 +15,7 @@ import { d12RealInput } from "./d12-realinput.ts";
 
 const defaultOpt = true;
 
-const perfLog = 1000;
+const perfLog = 100000;
 
 export let opts = {
   isProfiling: false,
@@ -370,18 +370,13 @@ export function isValidBoard(
 
     const firstString = `${opts.isValidBoardRuns.toString().padEnd(10, " ")} avg ${avgPerSecFormatted}/sec ${progress.toFixed(4)} % ${Temporal.Now.plainTimeISO().toString({ fractionalSecondDigits: 2 })} revalidated: ${hasBeenValidatedCount} reuseOptimizations: ${opts.reuseOptimizations} seenCount:${seenCount} `;
 
-    // log the first of each gift
-    // const firstGifts =
-    //   board.gifts.map((gift) => matrixToString(nonNull(gift[0]))).join("\n\n") +
-    //   "\n";
     console.log();
-    // console.log(firstGifts);
     console.log(colorize(matrixToString(boardToVizualizedBoard(board))));
     console.log();
     console.log(
       `${firstString}${currentCombination?.map((num) =>
         `${num}`.padStart(2, " "),
-      )}\n${"".padStart(firstString.length, " ")}${totalCombination?.map((num) => `${num}`.padStart(2, " "))}`,
+      )}`,
     );
 
     console.log("------------------------------------");
@@ -497,7 +492,7 @@ const colorMap = {
   C: colors.cyan,
   D: colors.green,
   E: colors.purple,
-  F: colors.white,
+  // F: colors.white,
   X: colors.brightRed,
 };
 
@@ -510,7 +505,7 @@ export function colorize(rawInput: string): string {
     input = input.replaceAll(char, colorCode + char + reset);
   }
 
-  return input.replaceAll(/A|B|C|D|E|F/g, "#");
+  return input;
 }
 
 export function isAdjacent(
@@ -686,8 +681,12 @@ export function someValidPlacements(
 
   asseq(giftsWithRotations.length, giftCounts.length);
 
-  ass(board.width !== 0);
-  ass(board.height !== 0);
+  if (board.width <= 0) {
+    return false;
+  }
+  if (board.height <= 0) {
+    return false;
+  }
 
   if (opts.validateTooLargeGifts) {
     assertNotTooLargeGifts(giftsWithRotations, board);
@@ -1141,9 +1140,9 @@ export function boardToVizualizedBoard(board: Board): VisualizedBoard {
       return new Array(board.width).fill(".");
     });
 
-  for (const [placedGiftIndex, placedGift] of board.placedGifts.entries()) {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWYZ0123456789";
-    const letter = nonNull(chars[placedGiftIndex % chars.length]);
+  for (const placedGift of board.placedGifts) {
+    const chars = "ABCDE";
+    const letter = nonNull(chars[placedGift.type % chars.length]);
     const giftShape = placedGiftToGift(board.gifts, placedGift);
 
     // shit use helper to loop through 2d array
