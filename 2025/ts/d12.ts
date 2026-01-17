@@ -300,47 +300,9 @@ function placedGiftToBoundingRectangle(
 
 const startTime = performance.now();
 
-export function isValidBoard(
-  board: Board,
-  currentCombination?: Int[],
-  totalCombination?: Int[],
-  seenCount?: number,
-): boolean {
+export function isValidBoard(board: Board): boolean {
   if (opts.validateTooLargeGifts && hasTooLargeGifts(board.gifts, board)) {
     return false;
-  }
-
-  opts.isValidBoardRuns++;
-
-  if (opts.isValidBoardRuns % perfLog === 0) {
-    if (opts.isValidBoardRuns % 1000000 === 0) {
-      // ass(false);
-    }
-    const now = performance.now();
-
-    ass(currentCombination);
-    ass(totalCombination);
-
-    const progress = getProgress(totalCombination, currentCombination);
-
-    const avgPerSec = (opts.isValidBoardRuns / (now - startTime)) * 1000;
-
-    const avgPerSecFormatted = new Intl.NumberFormat("nb-NO", {
-      maximumFractionDigits: 0,
-    }).format(avgPerSec);
-
-    const firstString = `${opts.isValidBoardRuns.toString().padEnd(10, " ")} avg ${avgPerSecFormatted}/sec ${progress.toFixed(4)} % ${Temporal.Now.plainTimeISO().toString({ fractionalSecondDigits: 2 })} revalidated: ${hasBeenValidatedCount} reuseOptimizations: ${opts.reuseOptimizations} seenCount:${seenCount} `;
-
-    console.log();
-    console.log(colorize(matrixToString(boardToVizualizedBoard(board))));
-    console.log();
-    console.log(
-      `${firstString}${currentCombination?.map((num) =>
-        `${num}`.padStart(2, " "),
-      )}`,
-    );
-
-    console.log("------------------------------------");
   }
 
   const { placedGifts } = board;
@@ -410,8 +372,9 @@ export function isValidBoard(
   }
 
   if (opts.validateAdjacencyToAnyGift) {
+    const is2OrMoreGifts = placedGifts.length <= 2;
     const isAdjacentToAnyGift =
-      placedGifts.length <= 1 ||
+      is2OrMoreGifts ||
       placedGifts.some(
         (otherGift, otherGiftIndex) =>
           placedMultiGift1Index !== otherGiftIndex &&
@@ -458,7 +421,7 @@ const colorMap = {
   X: colors.brightRed,
 };
 
-export function colorize(rawInput: string): string {
+function colorize(rawInput: string): string {
   let input = rawInput;
   const colorEntries = Object.entries(colorMap);
 
@@ -678,21 +641,57 @@ export function someValidPlacements(
     function f7(combination: Int[]): boolean {
       if (combination.length % 3 !== 0) return true;
 
+      opts.isValidBoardRuns++;
+
       const placedGifts: PlacedGift[] = combinationToPlacedGifts(
         combination,
         giftCounts,
       );
+      const fullBoard = {
+        ...board,
+        gifts: giftsWithRotations,
+        placedGifts,
+      };
 
-      const isPlacementValid = isValidBoard(
-        {
-          ...board,
-          gifts: giftsWithRotations,
-          placedGifts,
-        },
-        combination,
-        combinationsInput,
-        seenBoards.size,
-      );
+      if (opts.isValidBoardRuns % perfLog === 0) {
+        if (opts.isValidBoardRuns % 1000000 === 0) {
+          // ass(false);
+        }
+        const now = performance.now();
+
+        const currentCombination = combination;
+        ass(currentCombination);
+        const totalCombination = combinationsInput;
+        ass(totalCombination);
+
+        const progress = getProgress(totalCombination, currentCombination);
+
+        const avgPerSec = (opts.isValidBoardRuns / (now - startTime)) * 1000;
+
+        const avgPerSecFormatted = new Intl.NumberFormat("nb-NO", {
+          maximumFractionDigits: 0,
+        }).format(avgPerSec);
+
+        const seenCount = seenBoards.size;
+
+        const firstString = `${opts.isValidBoardRuns.toString().padEnd(10, " ")} avg ${avgPerSecFormatted}/sec ${progress.toFixed(4)} % ${Temporal.Now.plainTimeISO().toString({ fractionalSecondDigits: 2 })} revalidated: ${hasBeenValidatedCount} reuseOptimizations: ${opts.reuseOptimizations} seenCount:${seenCount} `;
+
+        console.log();
+        const visualizedBoardRaw = boardToVizualizedBoard(fullBoard);
+        console.log(
+          colorize(matrixToString(visualizedBoardRaw.visualizedBoard)),
+        );
+        console.log(visualizedBoardRaw.warning);
+        console.log(
+          `${firstString}${currentCombination?.map((num) =>
+            `${num}`.padStart(2, " "),
+          )}`,
+        );
+
+        console.log("------------------------------------");
+      }
+
+      const isPlacementValid = isValidBoard(fullBoard);
 
       if (isPlacementValid) {
         const copiedBoard = {
@@ -718,15 +717,11 @@ export function someValidPlacements(
 
       const giftPlacement = combinationToPlacedGifts(combination, giftCounts);
 
-      const isPlacementValid = isValidBoard(
-        {
-          ...board,
-          gifts: giftsWithRotations,
-          placedGifts: giftPlacement,
-        },
-        combination,
-        combinationsInput,
-      );
+      const isPlacementValid = isValidBoard({
+        ...board,
+        gifts: giftsWithRotations,
+        placedGifts: giftPlacement,
+      });
 
       ass(isPlacementValid);
 
@@ -789,7 +784,7 @@ function createRange(to: Int): Int[] {
   return retval;
 }
 
-export function combinationsWithCheck(
+function combinationsWithCheck(
   combinationsInput: Int[],
   check: CombinationChecker,
   whenAllChildrenAreInvalid?: (combination: Int[]) => void,
@@ -1084,7 +1079,10 @@ export function countValidTrees(input: string): number {
 
 type VisualizedBoard = string[][];
 
-export function boardToVizualizedBoard(board: Board): VisualizedBoard {
+export function boardToVizualizedBoard(board: Board): {
+  visualizedBoard: VisualizedBoard;
+  warning: string | undefined;
+} {
   let warning = "";
 
   const boardMatrix: string[][] = new Array(board.height)
@@ -1136,7 +1134,7 @@ export function boardToVizualizedBoard(board: Board): VisualizedBoard {
     console.log(warning);
   }
 
-  return boardMatrix;
+  return { visualizedBoard: boardMatrix, warning };
 }
 
 export function countAllValidPlacements(input: string): Int[] {
@@ -1206,16 +1204,11 @@ function countAllValidPlacementsInner(
           giftCounts,
         );
 
-        const isPlacementValid = isValidBoard(
-          {
-            ...board,
-            gifts: giftsWithRotations,
-            placedGifts,
-          },
-          combination,
-          combinationsInput,
-          seenBoards.size,
-        );
+        const isPlacementValid = isValidBoard({
+          ...board,
+          gifts: giftsWithRotations,
+          placedGifts,
+        });
 
         if (isPlacementValid) {
           const copiedBoard = {
@@ -1246,15 +1239,11 @@ function countAllValidPlacementsInner(
 
         const giftPlacement = combinationToPlacedGifts(combination, giftCounts);
 
-        const isPlacementValid = isValidBoard(
-          {
-            ...board,
-            gifts: giftsWithRotations,
-            placedGifts: giftPlacement,
-          },
-          combination,
-          combinationsInput,
-        );
+        const isPlacementValid = isValidBoard({
+          ...board,
+          gifts: giftsWithRotations,
+          placedGifts: giftPlacement,
+        });
 
         ass(isPlacementValid);
 
@@ -1279,7 +1268,7 @@ function countAllValidPlacementsInner(
   return validPlacementCounts;
 }
 
-function combinationsWithCheck2(
+export function combinationsWithCheck2(
   combinationsInput: Int[],
   check: CombinationChecker,
   totalGiftCounts: Int[],
@@ -1372,17 +1361,11 @@ function combinationsWithCheck2(
         width,
       };
 
-      const isPlacementValid = isValidBoard(
-        board,
-        combination,
-        combinationsInput,
-      );
+      const isPlacementValid = isValidBoard(board);
 
       if (!isPlacementValid) {
         return false;
       }
-
-      console.log(colorize(matrixToString(boardToVizualizedBoard(board))));
 
       countCompletelyValidPlacements++;
 
