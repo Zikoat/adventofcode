@@ -45,7 +45,7 @@ export function asseq<T>(got: T, want: T, message?: string): asserts want is T {
 }
 
 export function nonNull<T>(shit: T | undefined): NonNullable<T> {
-  ass(shit);
+  ass(shit !== undefined && shit !== null);
   return shit;
 }
 

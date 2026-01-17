@@ -1,0 +1,4 @@
+import { countValidTrees, d12TestInput, disableValidations } from "./d12.ts";
+
+disableValidations();
+countValidTrees(d12TestInput);

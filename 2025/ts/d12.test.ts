@@ -25,7 +25,6 @@ import {
   isAdjacent,
   isInBounds,
   isValidBoard,
-  isValidBoardRuns,
   lerp,
   lerpMultiple,
   lerpRange,
@@ -34,13 +33,22 @@ import {
   type PlacedGift,
   parseInput,
   radicesToCurrentCombination,
+  rectanglesOverlap,
   rotateGift90Right,
+  setHasBeenValidated,
   shape,
   someValidPlacements,
   stringToGift,
   stringToMatrix,
   transposeGift,
   wrapGift,
+  d12TestInput,
+  type Int,
+  type Puzzle,
+  type Tree,
+  assertNotTooLargeGifts,
+  combinationToPlacedGifts,
+  createRange,
 } from "./d12.ts";
 
 describe(wrapGift, () => {
@@ -546,6 +554,35 @@ describe(combinationsWithCheck, () => {
       [[1, 0]], // true
       [[1, 0, 0]], // false
       [[1, 0, 1]], // false
+    ]);
+  });
+
+  test("should have a method which is being run whenever all children of a node are invalid", () => {
+    const spy = mock<CombinationChecker>(
+      (combination) => combination[2] === undefined,
+    );
+
+    const whenAllChildrenAreInvalid = mock();
+    asseq(
+      combinationsWithCheck([2, 1, 2], spy, whenAllChildrenAreInvalid),
+      false,
+    );
+    asseq(spy.mock.calls, [
+      [[0]], // true
+      [[0, 0]], // true
+      [[0, 0, 0]], // false
+      [[0, 0, 1]], // false
+      [[1]], // true
+      [[1, 0]], // true
+      [[1, 0, 0]], // false
+      [[1, 0, 1]], // false
+    ]);
+    asseq(whenAllChildrenAreInvalid.mock.calls, [
+      [[0, 0]],
+      [[0]],
+      [[1, 0]],
+      [[1]],
+      [[]],
     ]);
   });
 });
@@ -1071,7 +1108,7 @@ describe(canFitString, () => {
     );
   });
 
-  test.skip(
+  test(
     "the provided third example should not fit",
     () => {
       asseq(
@@ -1157,15 +1194,19 @@ describe(someValidPlacements, () => {
     );
   });
 
-  test("2 # should not fit 1x1", () => {
-    asseq(
-      someValidPlacements(
-        [assIsGiftMatrix([["#"]])].map(createDedupedTransmutations),
-        { giftCounts: [2], height: 1, width: 1 },
-      ),
-      false,
-    );
-  });
+  test(
+    "2 # should not fit 1x1",
+    () => {
+      asseq(
+        someValidPlacements(
+          [assIsGiftMatrix([["#"]])].map(createDedupedTransmutations),
+          { giftCounts: [2], height: 1, width: 1 },
+        ),
+        false,
+      );
+    },
+    Number.POSITIVE_INFINITY,
+  );
 
   test("# and ## should not fit 1x1", () => {
     expect(() =>
@@ -1225,7 +1266,7 @@ function wrapGiftString(giftString: string): Gift {
 afterAll(() => {
   console.log("\ndone. checks done during tests");
 
-  c({ giftsOverlapCount, isValidBoardRuns });
+  c({ giftsOverlapCount, isValidBoardRuns: opts.isValidBoardRuns });
 
   opts.logHasAlreadyBeenValidated = optsDuplicate.logHasAlreadyBeenValidated;
   opts.validateEveryGiftCellInside = optsDuplicate.validateEveryGiftCellInside;
@@ -1242,6 +1283,28 @@ describe(c, () => {
     const foo = a === 2 ? "bar" : "shit";
     expect(`${() => foo}`).toBe("() => foo");
     expect(getVariableName(() => foo)).toBe("foo");
+  });
+});
+
+describe(rectanglesOverlap, () => {
+  test("2 #'s at the same place should overlap", () => {
+    asseq(
+      rectanglesOverlap(
+        {
+          height: 1,
+          width: 1,
+          x: 0,
+          y: 0,
+        },
+        {
+          height: 1,
+          width: 1,
+          x: 0,
+          y: 0,
+        },
+      ),
+      true,
+    );
   });
 });
 
@@ -1272,14 +1335,24 @@ describe(giftsOverlap, () => {
       giftsOverlap(
         toGiftsWithRotations(
           "#",
-
           `##
-		   .#`,
+		       .#`,
         ),
         { rotation: 0, type: 0, x: 0, y: 1 },
         { rotation: 0, type: 1, x: 0, y: 0 },
       ),
       false,
+    );
+  });
+
+  test("two rotated ## should overlap", () => {
+    asseq(
+      giftsOverlap(
+        toGiftsWithRotations("##"),
+        { rotation: 0, type: 0, x: 0, y: 0 },
+        { rotation: 1, type: 0, x: 0, y: 0 },
+      ),
+      true,
     );
   });
 });
@@ -1391,9 +1464,11 @@ describe(hasBeenValidated, () => {
     const { gifts } = board;
 
     asseq(hasBeenValidated(board, validatedBoards, gifts), false);
+    setHasBeenValidated(board, validatedBoards, gifts);
     asseq(hasBeenValidated(board, validatedBoards, gifts), true);
     nonNull(board.placedGifts[0]).x = 1;
     asseq(hasBeenValidated(board, validatedBoards, gifts), false);
+    setHasBeenValidated(board, validatedBoards, gifts);
     asseq(hasBeenValidated(board, validatedBoards, gifts), true);
   });
 
@@ -1419,6 +1494,7 @@ describe(hasBeenValidated, () => {
     );
 
     asseq(hasBeenValidated(board, validatedBoards, gifts), false);
+    setHasBeenValidated(board, validatedBoards, gifts);
     asseq(hasBeenValidated(board, validatedBoards, gifts), true);
 
     nonNull(board.placedGifts[0]).rotation = 1;
@@ -1452,43 +1528,11 @@ describe(isAdjacent, () => {
   });
 });
 
+
 describe(countValidTrees, () => {
-  const newLocal = `0:
-  ###
-  ##.
-  ##.
-  
-  1:
-  ###
-  ##.
-  .##
-  
-  2:
-  .##
-  ###
-  ##.
-  
-  3:
-  ##.
-  ###
-  ##.
-  
-  4:
-  ###
-  #..
-  ###
-  
-  5:
-  ###
-  .#.
-  ###
-  
-  4x4: 0 0 0 0 2 0
-  12x5: 1 0 1 0 2 2
-  12x5: 1 0 1 0 3 2`;
 
   test("should validate parsing of complete test input", () => {
-    const parsedInput = parseInput(newLocal);
+    const parsedInput = parseInput(d12TestInput);
     const { gifts } = parsedInput;
     const firstGift: Gift = nonNull(gifts[0]);
 
@@ -1506,8 +1550,252 @@ describe(countValidTrees, () => {
   test.skip(
     "should return the number of valid trees",
     () => {
-      asseq(countValidTrees(newLocal), 2);
+      asseq(countValidTrees(d12TestInput), 2);
     },
     { timeout: Number.POSITIVE_INFINITY },
   );
 });
+
+ function combinationsWithNext2<T>(
+  getNext: GetNext<T>,
+  isComplete: IsComplete<T> = () => false,
+  whenAllChildrenAreInvalid?: (combination: Int[]) => void,
+): boolean {
+  const currentCombinations: T[][] = [];
+  const indices: Int[] = [];
+
+  // biome-ignore lint/nursery/noUnnecessaryConditions: while loop is used right now, maybe better solution exists?
+  while (true) {
+    let nextValue: T[] = [];
+    while (nextValue.length === 0) {
+      const currentCombination: T[] = radicesToCurrentCombination(
+        currentCombinations,
+        indices,
+      );
+      nextValue = getNext(currentCombination);
+
+      if (nextValue.length === 0) {
+        if (isComplete(currentCombination)) return true;
+        const lastIndex = indices.at(-1);
+        if (lastIndex === undefined) {
+          return false;
+        }
+        ass(typeof lastIndex === "number");
+        indices[indices.length - 1] = lastIndex + 1;
+        // biome-ignore lint/nursery/noUnnecessaryConditions: while loop is used right now, maybe better solution exists?
+        while (true) {
+          if (
+            nonNull(currentCombinations.at(-1))[nonNull(indices.at(-1))] ===
+            undefined
+          ) {
+            indices.pop();
+
+            if (whenAllChildrenAreInvalid !== undefined)
+              whenAllChildrenAreInvalid([...indices]);
+
+            const newLocal = indices.at(-1);
+            if (typeof newLocal === "number") {
+              indices[indices.length - 1] = newLocal + 1;
+              currentCombinations.pop();
+            } else {
+              return false;
+            }
+          } else {
+            break;
+          }
+        }
+      } else {
+        break;
+      }
+    }
+    ass(nextValue);
+    currentCombinations.push(nextValue);
+    indices.push(0);
+  }
+}
+
+ function combinationsWithCheck2(
+  combinationsInput: Int[],
+  check: CombinationChecker,
+  whenAllChildrenAreInvalid?: (combination: Int[]) => void,
+): Int {
+  if (opts.validateCombinationsInput)
+    ass(
+      combinationsInput.every(
+        (radix) =>
+          typeof radix === "number" &&
+          Number.isSafeInteger(radix) &&
+          radix !== 0,
+      ),
+      `invalid inputs found: ${combinationsInput.join()}`,
+    );
+
+  let hasFound1ValidCombination = false;
+
+  return combinationsWithNext2<Int>(
+    function f5(combination) {
+      const isRoot = combination.length === 0;
+      const combinationsInputValue = combinationsInput[combination.length];
+      const isLeaf = combinationsInputValue === undefined;
+
+      if (!isLeaf && isRoot) {
+        return createRange(combinationsInputValue);
+      }
+
+      const isPartiallyValid = check(combination);
+
+      if (isLeaf && isPartiallyValid) {
+        hasFound1ValidCombination = true;
+        return [];
+      }
+
+      if (isLeaf && !isPartiallyValid) {
+        return [];
+      }
+
+      if (!isLeaf && isPartiallyValid) {
+        return createRange(combinationsInputValue);
+      }
+
+      if (!(isLeaf || isPartiallyValid)) {
+        return [];
+      }
+
+      ass(false);
+    },
+    (_combination) => hasFound1ValidCombination,
+    whenAllChildrenAreInvalid,
+  );
+}
+
+function findAllValidPlacements(input: string):Int[]{
+  const parsed2: Puzzle = parseInput(input);
+
+
+  const gifts = parsed2.gifts.map(function mapGifts(gift) {
+    return wrapGift(gift);
+  });
+
+  const giftsWithRotations = gifts.map(createDedupedTransmutations);
+
+  const validPlacementCounts:Int[] = parsed2.trees.map((tree):Int=>{
+    const { giftCounts } = tree;
+    const board = tree;
+  
+    asseq(giftsWithRotations.length, giftCounts.length);
+  
+    ass(board.width !== 0);
+    ass(board.height !== 0);
+  
+    if (opts.validateTooLargeGifts) {
+      assertNotTooLargeGifts(giftsWithRotations, board);
+    }
+  
+    const combinationsInput: Int[] = giftCounts.flatMap((giftCount, index) => {
+      const giftRotationCount = nonNull(giftsWithRotations[index]).length;
+  
+      const minGiftSize = Math.min(
+        ...nonNull(giftsWithRotations[index]).map(
+          (gift) => nonNull(gift[0]).length,
+        ),
+      );
+  
+      ass(giftRotationCount !== 0);
+      const validXPos = board.width - minGiftSize + 1;
+      const validYPos = board.height - minGiftSize + 1;
+      return new Array(giftCount)
+        .fill([giftRotationCount, validXPos, validYPos])
+        .flat();
+    });
+  
+    const seenBoards = new Set<string>();
+  
+    const countValidPlacements:Int = combinationsWithCheck2(
+      combinationsInput,
+      function f7(combination: Int[]): boolean {
+        if (combination.length % 3 !== 0) return true;
+  
+        const placedGifts: PlacedGift[] = combinationToPlacedGifts(
+          combination,
+          giftCounts,
+        );
+  
+        const isPlacementValid = isValidBoard(
+          {
+            ...board,
+            gifts: giftsWithRotations,
+            placedGifts,
+          },
+          combination,
+          combinationsInput,
+          seenBoards.size,
+        );
+  
+        if (isPlacementValid) {
+          const copiedBoard = {
+            ...board,
+            gifts: giftsWithRotations,
+            placedGifts,
+          };
+          const hasAlreadyBeenValidated = hasBeenValidated(
+            copiedBoard,
+            seenBoards,
+            giftsWithRotations,
+          );
+          if (hasAlreadyBeenValidated) {
+            opts.reuseOptimizations++;
+            return false;
+          }
+        }
+  
+        return isPlacementValid;
+      },
+      (combination: Int[]) => {
+        if (combination.length % 3 !== 0 || combination.length === 0) return;
+  
+        const giftPlacement = combinationToPlacedGifts(combination, giftCounts);
+  
+        const isPlacementValid = isValidBoard(
+          {
+            ...board,
+            gifts: giftsWithRotations,
+            placedGifts: giftPlacement,
+          },
+          combination,
+          combinationsInput,
+        );
+  
+        ass(isPlacementValid);
+  
+        if (opts.logHasAlreadyBeenValidated) {
+          const placedGifts: PlacedGift[] = giftPlacement;
+  
+          const copiedBoard = {
+            ...board,
+            gifts: giftsWithRotations,
+            placedGifts,
+          };
+  
+          // shit gifts with rotations seem to have been doubly defined here
+          setHasBeenValidated(copiedBoard, seenBoards, giftsWithRotations);
+        }
+      },
+    );
+  
+    return countValidPlacements;
+  })
+    
+  return validPlacementCounts
+  }
+
+describe(findAllValidPlacements,()=>{
+  test.only(`
+    every tree has an invariant: the amount of valid placedGift combinations we
+    can put under the tree. if our algorithm doesn't find all of them, then that
+    means that we might miss some valid combinations in the full run. this isn't
+    100% safe, but it should in very many cases be enough to check this 
+    invariant.`,()=>{
+      asseq(findAllValidPlacements(d12TestInput), [-1,0,-1]);
+
+    })
+})
