@@ -6,12 +6,18 @@
     "temporal-polyfill": "^0.3.0",
     "zod": "^4.1.13"
   },
+  "devDependencies": {
+    "@types/node": "^25.0.9",
+    "knip": "^5.81.0",
+    "typescript": "^5.9.3"
+  },
   "scripts": {
     "bigboy": "bun run validate && bun run d12-bigboy",
     "bigboy:only": "bun d12-bigboy",
     "debug": "bun --inspect-brk d12",
     "format": "biome check --write",
     "format:unsafe": "biome check --write --unsafe",
+    "knip": "knip",
     "test": "bun test",
     "test:watch": "bun test --watch --reporter=dots",
     "type": "tsgo --noEmit",

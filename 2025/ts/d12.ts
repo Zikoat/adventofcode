@@ -820,7 +820,7 @@ export function hasTooLargeGifts(
 
 export type CombinationChecker = (combination: Int[]) => boolean;
 
-export function createRange(to: Int): Int[] {
+function createRange(to: Int): Int[] {
   const retval: Int[] = [];
   for (let i = 0; i < to; i++) {
     retval.push(i);
@@ -1246,6 +1246,307 @@ export const d12TestInput = `0:
 4x4: 0 0 0 0 2 0
 12x5: 1 0 1 0 2 2
 12x5: 1 0 1 0 3 2`;
+
+export function countAllValidPlacements(input: string): Int[] {
+  const parsed2: Puzzle = parseInput(input);
+
+  const gifts = parsed2.gifts.map(function mapGifts(gift) {
+    return wrapGift(gift);
+  });
+
+  const giftsWithRotations = gifts.map(createDedupedTransmutations);
+
+  const validPlacementCounts: Int[] = parsed2.trees.map((tree): Int => {
+    const { giftCounts } = tree;
+    const board = tree;
+
+    asseq(giftsWithRotations.length, giftCounts.length);
+
+    if (board.width <= 0) {
+      return 0;
+    }
+    if (board.height <= 0) {
+      return 0;
+    }
+
+    if (hasTooLargeGifts(giftsWithRotations, board)) {
+      return 0;
+    }
+
+    const combinationsInput: Int[] = giftCounts.flatMap((giftCount, index) => {
+      const giftRotationCount = nonNull(giftsWithRotations[index]).length;
+
+      const minGiftSize = Math.min(
+        ...nonNull(giftsWithRotations[index]).map(
+          (gift) => nonNull(gift[0]).length,
+        ),
+      );
+
+      ass(giftRotationCount !== 0);
+      const validXPos = board.width - minGiftSize + 1;
+      const validYPos = board.height - minGiftSize + 1;
+      return new Array(giftCount)
+        .fill([giftRotationCount, validXPos, validYPos])
+        .flat();
+    });
+
+    const seenBoards = new Set<string>();
+
+    const countValidPlacements: Int = combinationsWithCheck2(
+      combinationsInput,
+      function f7(combination: Int[]): boolean {
+        if (combination.length % 3 !== 0) return true;
+
+        const placedGifts: PlacedGift[] = combinationToPlacedGifts(
+          combination,
+          giftCounts,
+        );
+
+        const isPlacementValid = isValidBoard(
+          {
+            ...board,
+            gifts: giftsWithRotations,
+            placedGifts,
+          },
+          combination,
+          combinationsInput,
+          seenBoards.size,
+        );
+
+        if (isPlacementValid) {
+          const copiedBoard = {
+            ...board,
+            gifts: giftsWithRotations,
+            placedGifts,
+          };
+          const hasAlreadyBeenValidated = hasBeenValidated(
+            copiedBoard,
+            seenBoards,
+            giftsWithRotations,
+          );
+          if (hasAlreadyBeenValidated) {
+            opts.reuseOptimizations++;
+            return false;
+          }
+        }
+
+        return isPlacementValid;
+      },
+      giftCounts,
+      giftsWithRotations,
+      board.width,
+      board.height,
+
+      (combination: Int[]) => {
+        if (combination.length % 3 !== 0 || combination.length === 0) return;
+
+        const giftPlacement = combinationToPlacedGifts(combination, giftCounts);
+
+        const isPlacementValid = isValidBoard(
+          {
+            ...board,
+            gifts: giftsWithRotations,
+            placedGifts: giftPlacement,
+          },
+          combination,
+          combinationsInput,
+        );
+
+        ass(isPlacementValid);
+
+        if (opts.logHasAlreadyBeenValidated) {
+          const placedGifts: PlacedGift[] = giftPlacement;
+
+          const copiedBoard = {
+            ...board,
+            gifts: giftsWithRotations,
+            placedGifts,
+          };
+
+          // shit gifts with rotations seem to have been doubly defined here
+          setHasBeenValidated(copiedBoard, seenBoards, giftsWithRotations);
+        }
+      },
+    );
+
+    return countValidPlacements;
+  });
+
+  return validPlacementCounts;
+}
+
+function combinationsWithCheck2(
+  combinationsInput: Int[],
+  check: CombinationChecker,
+  totalGiftCounts: Int[],
+  giftsWithRotations: GiftsWithRotations,
+  width: Int,
+  height: Int,
+  whenAllChildrenAreInvalid?: (combination: Int[]) => void,
+): Int {
+  if (opts.validateCombinationsInput)
+    ass(
+      combinationsInput.every(
+        (radix) =>
+          typeof radix === "number" &&
+          Number.isSafeInteger(radix) &&
+          radix !== 0,
+      ),
+      `invalid inputs found: ${combinationsInput.join()}`,
+    );
+
+  let _hasFound1ValidCombination = false;
+
+  let countCompletelyValidPlacements = 0;
+
+  combinationsWithNext2<Int>(
+    function f5(combination) {
+      const isRoot = combination.length === 0;
+      const combinationsInputValue = combinationsInput[combination.length];
+      const isLeaf = combinationsInputValue === undefined;
+
+      if (!isLeaf && isRoot) {
+        return createRange(combinationsInputValue);
+      }
+
+      const isPartiallyValid = check(combination);
+
+      if (isLeaf && isPartiallyValid) {
+        _hasFound1ValidCombination = true;
+        return [];
+      }
+
+      if (isLeaf && !isPartiallyValid) {
+        return [];
+      }
+
+      if (!isLeaf && isPartiallyValid) {
+        return createRange(combinationsInputValue);
+      }
+
+      if (!(isLeaf || isPartiallyValid)) {
+        return [];
+      }
+
+      ass(false);
+    },
+    (combination) => {
+      // count the amount of each type. if they are exactly the giftcounts, then
+      // this placement is completely valid. if any placed gift count is more
+      // than giftcounts, throw an error. this error may be removed in the
+      // future
+      const placedGifts: PlacedGift[] = combinationToPlacedGifts(
+        combination,
+        totalGiftCounts,
+      );
+
+      const currentGiftCounts: Int[] = totalGiftCounts.map((_) => 0);
+
+      for (const placedGift of placedGifts) {
+        const index = placedGift.type;
+        ass(currentGiftCounts[index] !== undefined);
+
+        currentGiftCounts[index]++;
+      }
+
+      asseq(currentGiftCounts.length, totalGiftCounts.length);
+
+      if (
+        !totalGiftCounts.every((totalGiftCount, index) => {
+          const currentGiftCount = nonNull(currentGiftCounts[index]);
+          ass(totalGiftCount >= currentGiftCount);
+          return totalGiftCount === currentGiftCount;
+        })
+      ) {
+        return false;
+      }
+
+      const isPlacementValid = isValidBoard(
+        {
+          // ...board,
+          gifts: giftsWithRotations,
+          height,
+          placedGifts,
+          width,
+        },
+        combination,
+        combinationsInput,
+      );
+
+      if (!isPlacementValid) {
+        return false;
+      }
+      countCompletelyValidPlacements++;
+
+      return false;
+    },
+    whenAllChildrenAreInvalid,
+  );
+  return countCompletelyValidPlacements;
+}
+
+function combinationsWithNext2<T>(
+  getNext: GetNext<T>,
+  isComplete: IsComplete<T> = () => false,
+  whenAllChildrenAreInvalid?: (combination: Int[]) => void,
+): boolean {
+  const currentCombinations: T[][] = [];
+  const indices: Int[] = [];
+
+  // biome-ignore lint/nursery/noUnnecessaryConditions: while loop is used right now, maybe better solution exists?
+  while (true) {
+    let nextValue: T[] = [];
+    while (nextValue.length === 0) {
+      const currentCombination: T[] = radicesToCurrentCombination(
+        currentCombinations,
+        indices,
+      );
+      nextValue = getNext(currentCombination);
+
+      if (nextValue.length === 0) {
+        if (isComplete(currentCombination)) {
+          ass(false);
+          // return true
+        }
+        const lastIndex = indices.at(-1);
+        if (lastIndex === undefined) {
+          ass(false);
+          // return false;
+        }
+        ass(typeof lastIndex === "number");
+        indices[indices.length - 1] = lastIndex + 1;
+        // biome-ignore lint/nursery/noUnnecessaryConditions: while loop is used right now, maybe better solution exists?
+        while (true) {
+          if (
+            nonNull(currentCombinations.at(-1))[nonNull(indices.at(-1))] ===
+            undefined
+          ) {
+            indices.pop();
+
+            if (whenAllChildrenAreInvalid !== undefined)
+              whenAllChildrenAreInvalid([...indices]);
+
+            const newLocal = indices.at(-1);
+            if (typeof newLocal === "number") {
+              indices[indices.length - 1] = newLocal + 1;
+              currentCombinations.pop();
+            } else {
+              // ass(false)
+              return false;
+            }
+          } else {
+            break;
+          }
+        }
+      } else {
+        break;
+      }
+    }
+    ass(nextValue);
+    currentCombinations.push(nextValue);
+    indices.push(0);
+  }
+}
 
 /**
 # performance optimizations
