@@ -1835,4 +1835,45 @@ describe.skip(countAllValidPlacements, () => {
 
     asseq(countAllValidPlacements(d12TestInput), [4, 49, 0]);
   });
+
+  test("the provided first example should fit", () => {
+    const testFirstExample = d12TestInput.split("\n").slice(0, -2).join("\n");
+
+    asseq(canFitString(testFirstExample), true);
+
+    asseq(countAllValidPlacements(testFirstExample), [4]);
+  });
+});
+
+type Combination = Int[];
+
+// shit use this in prod
+function placedGiftsToCombination(placedGifts: PlacedGift[]): Combination {
+  return placedGifts.flatMap((placedGift) => [
+    placedGift.type,
+    placedGift.rotation,
+    placedGift.x,
+    placedGift.y,
+  ]);
+}
+
+describe(placedGiftsToCombination, () => {
+  test.todo("placedGiftsToCombination should be the inverse of combinationToPlacedGifts", () => {
+    const placedGifts: PlacedGift[] = [
+      {
+        rotation: 1,
+        type: 0,
+        x: 2,
+        y: 3,
+      },
+    ];
+
+    const combination: Combination = [1, 2, 3];
+
+    asseq(combinationToPlacedGifts(combination, [1]), [
+      { rotation: 1, type: 0, x: 2, y: 3 },
+    ]);
+
+    asseq(placedGiftsToCombination(placedGifts), [1, 2, 3]);
+  });
 });

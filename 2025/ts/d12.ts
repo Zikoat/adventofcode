@@ -23,7 +23,7 @@ export let opts = {
   logCurrentBoardAndProgress: defaultOpt,
   logHasAlreadyBeenValidated: true,
   reuseOptimizations: 0,
-  validateAdjacencyToAnyGift: defaultOpt,
+  validateAdjacencyToAnyGift: true, // this needs to be true, we are dropping some valid boards
   validateCombinationsInput: defaultOpt,
   validateEveryGiftCellInside: defaultOpt,
   validateGifts: defaultOpt,
@@ -51,7 +51,7 @@ export function disableValidations() {
     logCurrentBoardAndProgress: enableValidations,
     logHasAlreadyBeenValidated: true,
     reuseOptimizations: 0,
-    validateAdjacencyToAnyGift: false,
+    validateAdjacencyToAnyGift: true,
     validateCombinationsInput: enableValidations,
     validateEveryGiftCellInside: enableValidations,
     validateGifts: enableValidations,
