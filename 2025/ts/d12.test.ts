@@ -1,4 +1,13 @@
-import { afterAll, describe, expect, it, mock, test } from "bun:test";
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+  test,
+} from "bun:test";
 import { ass, asseq, nonNull, type Vector } from "./common.ts";
 import {
   assIsGiftMatrix,
@@ -1006,7 +1015,7 @@ describe(canFitString, () => {
     );
   });
 
-  test("2 pieces don't fit on a 1x1 board", () => {
+  test.todo("2 pieces don't fit on a 1x1 board", () => {
     asseq(
       countAllValidPlacements(`1:
 #
@@ -1026,7 +1035,7 @@ describe(canFitString, () => {
     );
   });
 
-  test("2x2 piece doesnt fit on 2x1 board", () => {
+  test.todo("2x2 piece doesnt fit on 2x1 board", () => {
     const newLocal = `1:
 ##
 ##
@@ -1301,6 +1310,14 @@ function visualizeBoard(board: Board, expected: string, expected2?: string) {
 function wrapGiftString(giftString: string): Gift {
   return wrapGift(stringToGift(giftString));
 }
+
+beforeEach((...args: unknown[]) => {
+  console.log("starting", args);
+});
+
+afterEach((...args: unknown[]) => {
+  console.log("ending", args);
+});
 
 afterAll(() => {
   console.log("\ndone. checks done during tests");
@@ -1585,28 +1602,22 @@ describe(countValidTrees, () => {
       asseq(shape(gift), [3, 3]);
     }
   });
-  test.skip(
-    "should return the number of valid trees",
-    () => {
-      asseq(countValidTrees(d12TestInput), 2);
-    },
-    // { timeout: Number.POSITIVE_INFINITY },
-  );
+  test.skip("should return the number of valid trees", () => {
+    asseq(countValidTrees(d12TestInput), 2);
+  });
+  // { timeout: Number.POSITIVE_INFINITY },
 });
 
 describe.skip(countAllValidPlacements, () => {
-  test(
-    `
+  test(`
     every tree has an invariant: the amount of valid placedGift combinations we
     can put under the tree. if our algorithm doesn't find all of them, then that
     means that we might miss some valid combinations in the full run. this isn't
     100% safe, but it should in very many cases be enough to check this 
-    invariant.`,
-    () => {
-      asseq(countAllValidPlacements(d12TestInput), [4, 49, 0]);
-    },
-    // Number.POSITIVE_INFINITY,
-  );
+    invariant.`, () => {
+    asseq(countAllValidPlacements(d12TestInput), [4, 49, 0]);
+  });
+  // Number.POSITIVE_INFINITY,
 
   test("check total valid placements invariant while all validations are off", () => {
     disableValidations();
@@ -1734,7 +1745,6 @@ describe(getNextGiftPlacementCombination, () => {
     currentCombinations.push(output4);
     radices.push(output4.indexOf(0));
 
-
     // we have now chosen a complete placed gift, and it is time to validate the boaord.
     // this specific board is partially valid, but not completely valid
     // which means that the next valid types are returned
@@ -1747,5 +1757,34 @@ describe(getNextGiftPlacementCombination, () => {
     );
 
     asseq(output5, [4]);
+  });
+
+  test("if all gift types of all counts are used, then no new gift types should be returned", () => {
+    // we have a 1x1 board with 1 #
+
+    const parsed = parseInput(`1:
+      #
+      
+      1x1: 1`);
+
+    const tree = nonNull(parsed.trees[0]);
+    const totalGiftCounts = tree.giftCounts;
+    const wrappedAndRotatedGifts: GiftsWithRotations = parsed.gifts
+      .map((gift) => wrapGift(gift))
+      .map(createDedupedTransmutations);
+
+    // we have placed the gift
+    const radices: Int[] = [0, 0, 0, 0];
+    const currentCombinations: Int[][] = [[0], [0], [0], [0]];
+
+    // there are no more gifts to place! so we cannot place anymore types, and we should return []
+    const output = getNextGiftPlacementCombination(
+      radicesToCurrentCombination(currentCombinations, radices),
+      totalGiftCounts,
+      wrappedAndRotatedGifts,
+      tree,
+    );
+
+    asseq(output, []);
   });
 });

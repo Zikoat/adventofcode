@@ -1236,6 +1236,39 @@ function countAllValidPlacementsInner(
   return validPlacementCounts;
 }
 
+function chunk<T>(arr: readonly T[], size: number): T[][] {
+  if (size <= 0) throw new Error("size must be > 0");
+
+  const result: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    result.push(arr.slice(i, i + size));
+  }
+  return result;
+}
+
+function countOccurrences(values: number[]): Record<number, number> {
+  return values.reduce(
+    (acc, v) => {
+      acc[v] = (acc[v] ?? 0) + 1;
+      return acc;
+    },
+    {} as Record<number, number>,
+  );
+}
+
+function combinationToPlacedGifts2(combination: Int[]): PlacedGift[] {
+  ass(combination.length % 4 === 0);
+  const chunked = chunk(combination, 4);
+  return chunked.map(
+    ([a, b, c, d]): PlacedGift => ({
+      rotation: nonNull(b),
+      type: nonNull(a),
+      x: nonNull(c),
+      y: nonNull(d),
+    }),
+  );
+}
+
 export function getNextGiftPlacementCombination(
   _combination: Int[],
   totalGiftCounts: GiftCounts,
@@ -1249,8 +1282,19 @@ export function getNextGiftPlacementCombination(
   //   choose a type from the available types, and return the valid types in an array..
 
   if (_combination.length % 4 === 0) {
+    const placedGiftTypes = combinationToPlacedGifts2(_combination).map(
+      (placedGift) => placedGift.type,
+    );
+
+    const occurences = countOccurrences(placedGiftTypes);
+    console.log(Object.entries(occurences));
+
     const availableTypes = totalGiftCounts
-      .map((giftCount, index) => (giftCount > 0 ? index : undefined))
+      .map((totalGiftCount, index) => {
+        const currentGiftTypeCount = nonNull(occurences[index]);
+
+        return totalGiftCount > currentGiftTypeCount ? index : undefined;
+      })
       .filter((i) => i !== undefined);
     return availableTypes;
   }
@@ -1289,9 +1333,9 @@ export function getNextGiftPlacementCombination(
     const rotation = nonNull(_combination.at(-2));
     const giftShape = placedGiftToGift(giftsWithRotations, { rotation, type }); // the function to get a gift shape based on type and rotation
     const giftHeight = nonNull(giftShape[0]?.length);
-    const maxX = boardHeight - giftHeight;
+    const maxY = boardHeight - giftHeight;
 
-    return createRange(maxX + 1);
+    return createRange(maxY + 1);
   }
 
   // const isPartiallyValid = isValidBoard({gifts: giftsWithRotations, placedGifts:});
