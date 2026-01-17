@@ -1144,7 +1144,19 @@ export function countAllValidPlacements(input: string): Int[] {
 
   const giftsWithRotations = gifts.map(createDedupedTransmutations);
 
-  const validPlacementCounts: Int[] = parsed2.trees.map((tree): Int => {
+  const validPlacementCounts = countAllValidPlacementsInner(
+    giftsWithRotations,
+    parsed2.trees,
+  );
+
+  return validPlacementCounts;
+}
+
+function countAllValidPlacementsInner(
+  giftsWithRotations: GiftsWithRotations,
+  trees: Tree[],
+): Int[] {
+  const validPlacementCounts: Int[] = trees.map((tree): Int => {
     const { giftCounts } = tree;
     const board = tree;
 
