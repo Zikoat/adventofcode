@@ -1,7 +1,6 @@
 import { afterAll, describe, expect, it, mock, test } from "bun:test";
 import { ass, asseq, nonNull } from "./common.ts";
 import {
-  assertNotTooLargeGifts,
   assIsGiftMatrix,
   assmeq,
   type Board,
@@ -27,6 +26,7 @@ import {
   giftsOverlap,
   giftsOverlapCount,
   hasBeenValidated,
+  hasTooLargeGifts,
   type Int,
   type IsComplete,
   isAdjacent,
@@ -218,22 +218,19 @@ describe(isValidBoard, () => {
   });
 
   test("placed gift which has piece outside of board should be invalid", () => {
-    const prevValidateTooLargegifts = opts.validateTooLargeGifts;
-    opts.validateTooLargeGifts = true;
     expect(() =>
       isValidBoard({
         gifts: toGiftsWithRotations("##"),
         height: 1,
-        placedGifts: [{ rotation: 0, type: 0, x: 0, y: 0 }],
-        width: 1,
+        placedGifts: [{ rotation: 0, type: 0, x: 1, y: 0 }],
+        width: 2,
       }),
     ).toThrowErrorMatchingInlineSnapshot(`
-      "gift is larger than the board. board: 1x1. gift: 
-
+      "gift was placed outside of the board. placed gift {"rotation":0,"type":0,"x":1,"y":0,"height":1,"width":2} should be inside of {"height":1,"width":2}. gift shape:
+      ---
       ##
-      "
+      ---"
     `);
-    opts.validateTooLargeGifts = prevValidateTooLargegifts;
   });
 
   test("pieces that have a tile at the same position should be invalid", () => {
@@ -889,7 +886,7 @@ describe("Rotations", () => {
     });
 
     test("should dedupe shapes which are the same", () => {
-      expect(createDedupedTransmutations([["#"]])).toStrictEqual([[["#"]]]);
+      asseq(toGiftsWithRotations("#"), [[[["#"]]]]);
     });
   });
 });
@@ -897,7 +894,7 @@ describe("Rotations", () => {
 describe(canFitString, () => {
   test("basic case of 1 shape on 1x1 tree", () => {
     asseq(
-      findAllValidPlacements(`1:
+      countAllValidPlacements(`1:
 #
 
 1x1: 1`),
@@ -906,19 +903,18 @@ describe(canFitString, () => {
   });
 
   test("0x0 board should not fit", () => {
-    const puzzleString = `1:
+    asseq(
+      countAllValidPlacements(`1:
         #
         
-        0x0: 1`;
-
-    asseq(canFitString(puzzleString), false);
-
-    asseq(findAllValidPlacements(puzzleString), [0]);
+        0x0: 1`),
+      [0],
+    );
   });
 
   test("2 pieces don't fit on a 1x1 board", () => {
     asseq(
-      findAllValidPlacements(`1:
+      countAllValidPlacements(`1:
 #
 
 1x1: 2`),
@@ -928,7 +924,7 @@ describe(canFitString, () => {
 
   test("2 pieces on a 2x1 board should fit", () => {
     asseq(
-      findAllValidPlacements(`1:
+      countAllValidPlacements(`1:
 #
 
 2x1: 2`),
@@ -936,36 +932,31 @@ describe(canFitString, () => {
     );
   });
 
-  // shit todo expect exact error
-  test.failing("2x2 piece doesnt fit on 2x1 board", () => {
-    asseq(
-      canFitString(`1:
+  test("2x2 piece doesnt fit on 2x1 board", () => {
+    const newLocal = `1:
 ##
 ##
 
-2x1: 1`),
-      false,
-    );
+2x1: 1`;
+
+    expect(canFitString(newLocal)).toBe(false);
+
+    asseq(countAllValidPlacements(newLocal), [0]);
   });
 
   test("#.# shape doesnt fit on 2x2 board", () => {
-    opts.validateTooLargeGifts = true;
-    expect(() =>
-      canFitString(`1:
+    const newLocal = `1:
 #.#
 
-2x2: 1`),
-    ).toThrowErrorMatchingInlineSnapshot(`
-      "gift is larger than the board. board: 2x2. gift: 
+2x2: 1`;
+    asseq(canFitString(newLocal), false);
 
-      #.#
-      "
-    `);
+    asseq(countAllValidPlacements(newLocal), [0]);
   });
 
   test(".# piece should fit on 1x1 board", () => {
     asseq(
-      findAllValidPlacements(`1:
+      countAllValidPlacements(`1:
 .#
 
 1x1: 1`),
@@ -1019,7 +1010,7 @@ describe(canFitString, () => {
 
   test.skip("pieces that fit inside each other should be rotated to fit into each other", () => {
     asseq(
-      findAllValidPlacements(`1:
+      countAllValidPlacements(`1:
 #.
 ##
 #.
@@ -1137,20 +1128,22 @@ describe(someValidPlacements, () => {
 
   test("deduped # should fit 1x1", () => {
     asseq(
-      someValidPlacements(
-        [assIsGiftMatrix([["#"]])].map(createDedupedTransmutations),
-        { giftCounts: [1], height: 1, width: 1 },
-      ),
+      someValidPlacements(toGiftsWithRotations("#"), {
+        giftCounts: [1],
+        height: 1,
+        width: 1,
+      }),
       true,
     );
   });
 
   test("# should fit 1x2", () => {
     asseq(
-      someValidPlacements(
-        [assIsGiftMatrix([["#"]])].map(createDedupedTransmutations),
-        { giftCounts: [1], height: 1, width: 2 },
-      ),
+      someValidPlacements(toGiftsWithRotations("#"), {
+        giftCounts: [1],
+        height: 1,
+        width: 2,
+      }),
       true,
     );
   });
@@ -1159,10 +1152,11 @@ describe(someValidPlacements, () => {
     "2 # should not fit 1x1",
     () => {
       asseq(
-        someValidPlacements(
-          [assIsGiftMatrix([["#"]])].map(createDedupedTransmutations),
-          { giftCounts: [2], height: 1, width: 1 },
-        ),
+        someValidPlacements(toGiftsWithRotations("#"), {
+          giftCounts: [2],
+          height: 1,
+          width: 1,
+        }),
         false,
       );
     },
@@ -1170,31 +1164,37 @@ describe(someValidPlacements, () => {
   );
 
   test("# and ## should not fit 1x1", () => {
-    expect(() =>
-      someValidPlacements(
-        [assIsGiftMatrix([["#"]]), assIsGiftMatrix([["#", "#"]])].map(
-          createDedupedTransmutations,
-        ),
-        { giftCounts: [1, 1], height: 1, width: 1 },
-      ),
-    ).toThrowErrorMatchingInlineSnapshot(`
-      "gift is larger than the board. board: 1x1. gift: 
+    asseq(
+      someValidPlacements(toGiftsWithRotations("#", "##"), {
+        giftCounts: [1, 1],
+        height: 1,
+        width: 1,
+      }),
+      false,
+    );
 
+    asseq(
+      countAllValidPlacements(`
+      1:
+      #
+      
+      2:
       ##
-      "
-    `);
+      
+      1x1: 1 1 `),
+      [0],
+    );
   });
 
   test("# and ## should not fit 2x1", () => {
     opts.validateEveryGiftCellInside = true;
 
     expect(() =>
-      someValidPlacements(
-        [assIsGiftMatrix([["#"]]), assIsGiftMatrix([["#", "#"]])].map(
-          createDedupedTransmutations,
-        ),
-        { giftCounts: [1, 1], height: 1, width: 2 },
-      ),
+      someValidPlacements(toGiftsWithRotations("#", "##"), {
+        giftCounts: [1, 1],
+        height: 1,
+        width: 2,
+      }),
     ).toThrowErrorMatchingInlineSnapshot(`
       "gift was placed outside of the board. placed gift {"rotation":0,"type":1,"x":1,"y":0,"height":1,"width":2} should be inside of {"height":1,"width":2}. gift shape:
       ---
@@ -1205,12 +1205,11 @@ describe(someValidPlacements, () => {
 
   test("# and ## should fit 2x2", () => {
     asseq(
-      someValidPlacements(
-        [assIsGiftMatrix([["#"]]), assIsGiftMatrix([["#", "#"]])].map(
-          createDedupedTransmutations,
-        ),
-        { giftCounts: [1, 1], height: 2, width: 2 },
-      ),
+      someValidPlacements(toGiftsWithRotations("#", "##"), {
+        giftCounts: [1, 1],
+        height: 2,
+        width: 2,
+      }),
       true,
     );
   });
@@ -1322,6 +1321,7 @@ describe(giftsOverlap, () => {
 const toGiftsWithRotations = (...gifts: string[]) =>
   gifts
     .map((stringGift) => assIsGiftMatrix(stringToGift(stringGift)))
+    .map((gift) => wrapGift(gift))
     .map(createDedupedTransmutations);
 
 describe(getProgress, () => {
@@ -1688,7 +1688,7 @@ function combinationsWithCheck2(
   return countCompletelyValidPlacements;
 }
 
-function findAllValidPlacements(input: string): Int[] {
+function countAllValidPlacements(input: string): Int[] {
   const parsed2: Puzzle = parseInput(input);
 
   const gifts = parsed2.gifts.map(function mapGifts(gift) {
@@ -1710,8 +1710,8 @@ function findAllValidPlacements(input: string): Int[] {
       return 0;
     }
 
-    if (opts.validateTooLargeGifts) {
-      assertNotTooLargeGifts(giftsWithRotations, board);
+    if (hasTooLargeGifts(giftsWithRotations, board)) {
+      return 0;
     }
 
     const combinationsInput: Int[] = giftCounts.flatMap((giftCount, index) => {
@@ -1816,7 +1816,7 @@ function findAllValidPlacements(input: string): Int[] {
   return validPlacementCounts;
 }
 
-describe.skip(findAllValidPlacements, () => {
+describe.skip(countAllValidPlacements, () => {
   test(
     `
     every tree has an invariant: the amount of valid placedGift combinations we
@@ -1825,7 +1825,7 @@ describe.skip(findAllValidPlacements, () => {
     100% safe, but it should in very many cases be enough to check this 
     invariant.`,
     () => {
-      asseq(findAllValidPlacements(d12TestInput), [4, 49, 0]);
+      asseq(countAllValidPlacements(d12TestInput), [4, 49, 0]);
     },
     Number.POSITIVE_INFINITY,
   );
@@ -1833,6 +1833,6 @@ describe.skip(findAllValidPlacements, () => {
   test("check total valid placements invariant while all validations are off", () => {
     disableValidations();
 
-    asseq(findAllValidPlacements(d12TestInput), [4, 49, 0]);
+    asseq(countAllValidPlacements(d12TestInput), [4, 49, 0]);
   });
 });

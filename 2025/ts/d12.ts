@@ -232,6 +232,7 @@ export function wrapGift(input: Gift): Gift {
   }
   return rows;
 }
+
 // shit todo replace with count valid trees
 export function canFitString(input: string): boolean {
   const parsed2: Puzzle = parseInput(input);
@@ -346,7 +347,7 @@ export function isValidBoard(
   seenCount?: number,
 ): boolean {
   if (opts.validateTooLargeGifts) {
-    assertNotTooLargeGifts(board.gifts, board);
+    hasTooLargeGifts(board.gifts, board);
   }
 
   opts.isValidBoardRuns++;
@@ -688,8 +689,8 @@ export function someValidPlacements(
     return false;
   }
 
-  if (opts.validateTooLargeGifts) {
-    assertNotTooLargeGifts(giftsWithRotations, board);
+  if (hasTooLargeGifts(giftsWithRotations, board)) {
+    return false;
   }
 
   const combinationsInput: Int[] = giftCounts.flatMap((giftCount, index) => {
@@ -786,10 +787,10 @@ export function someValidPlacements(
   return anyValidPlacements;
 }
 
-export function assertNotTooLargeGifts(
+export function hasTooLargeGifts(
   giftsWithRotations: GiftsWithRotations,
   board: RootRectangle,
-) {
+): boolean {
   for (const giftWithRotations of giftsWithRotations) {
     for (const gift of giftWithRotations) {
       const giftRootRectangle = matrixToRootRectangle(gift);
@@ -806,14 +807,15 @@ export function assertNotTooLargeGifts(
       const maxBoardSize = Math.max(board.width, board.height);
       const minBoardSize = Math.min(board.width, board.height);
 
-      const errorMessage = `gift is larger than the board. board: ${board.width}x${board.height}. gift: 
+      const hasBigEnoughBigAxis = maxGiftSize <= maxBoardSize;
+      const hasBigEnoughSmallAxis = minGiftSize <= minBoardSize;
 
-${matrixToString(gift)}
-`;
-      ass(maxGiftSize <= maxBoardSize, errorMessage);
-      ass(minGiftSize <= minBoardSize, errorMessage);
+      if (!(hasBigEnoughBigAxis && hasBigEnoughSmallAxis)) {
+        return true;
+      }
     }
   }
+  return false;
 }
 
 export type CombinationChecker = (combination: Int[]) => boolean;
