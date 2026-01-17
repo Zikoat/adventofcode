@@ -1590,7 +1590,7 @@ describe(countValidTrees, () => {
     () => {
       asseq(countValidTrees(d12TestInput), 2);
     },
-    { timeout: Number.POSITIVE_INFINITY },
+    // { timeout: Number.POSITIVE_INFINITY },
   );
 });
 
@@ -1605,7 +1605,7 @@ describe.skip(countAllValidPlacements, () => {
     () => {
       asseq(countAllValidPlacements(d12TestInput), [4, 49, 0]);
     },
-    Number.POSITIVE_INFINITY,
+    // Number.POSITIVE_INFINITY,
   );
 
   test("check total valid placements invariant while all validations are off", () => {
