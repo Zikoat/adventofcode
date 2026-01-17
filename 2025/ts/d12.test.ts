@@ -17,6 +17,8 @@ import {
   flipGiftVertically,
   type GetNext,
   type Gift,
+  type GiftsWithRotations,
+  getNextGiftPlacementCombination,
   getProgress,
   giftsOverlap,
   giftsOverlapCount,
@@ -661,7 +663,6 @@ describe(combinationsWithCheck, () => {
     const spy = mock<CombinationChecker>((combination) => combination[0] === 1);
     asseq(
       combinationsWithCheck(
-        [3],
         spy,
         // biome-ignore lint/suspicious/noExplicitAny: skipped
         undefined as unknown as any,
@@ -1261,7 +1262,7 @@ describe(someValidPlacements, () => {
   });
 
   test("# and ## should fit 2x2", () => {
-    opts.validateThrowOnGiftOutside = false; // shit this should be enabled, and then fixed
+    opts.validateThrowOnGiftOutside = true; // shit this should be enabled, and then fixed
     asseq(
       countAllValidPlacements(`
       1:
@@ -1652,5 +1653,99 @@ describe(placedGiftsToCombination, () => {
     ]);
 
     asseq(placedGiftsToCombination(placedGifts), [1, 2, 3]);
+  });
+});
+
+describe(getNextGiftPlacementCombination, () => {
+  test("should return an int for each type when we are at the root", () => {
+    // given the example with 4x4: 0 0 0 0 4 0
+    const _testFirstExample = d12TestInput.split("\n").slice(0, -2).join("\n");
+
+    const parsedInput = parseInput(_testFirstExample);
+    const tree = nonNull(parsedInput.trees[0]);
+    const totalGiftCounts = tree.giftCounts;
+    const wrappedAndRotatedGifts: GiftsWithRotations = parsedInput.gifts
+      .map((gift) => wrapGift(gift))
+      .map(createDedupedTransmutations);
+    const radices: Int[] = [];
+    const currentCombinations: Int[][] = [];
+
+    // the first entry should be 4, because we can only place pieces of type 4
+    const output1 = getNextGiftPlacementCombination(
+      radices,
+      totalGiftCounts,
+      wrappedAndRotatedGifts,
+      tree,
+    );
+    asseq(output1, [4]);
+
+    // we go into the first type
+    currentCombinations.push(output1);
+    radices.push(output1.indexOf(4));
+
+    // next, we choose rotations.
+    // the 4th index has 4 rotations, so we should return 0-3
+    asseq(
+      wrappedAndRotatedGifts.map((rotation) => rotation.length),
+      [8, 8, 2, 4, 4, 2],
+    );
+
+    const output2 = getNextGiftPlacementCombination(
+      radicesToCurrentCombination(currentCombinations, radices),
+      totalGiftCounts,
+      wrappedAndRotatedGifts,
+      tree,
+    );
+    asseq(output2, [0, 1, 2, 3]);
+
+    // we go into the first rotation
+    currentCombinations.push(output2);
+    radices.push(output2.indexOf(0));
+
+    asseq(
+      { currentCombinations, radices },
+      { currentCombinations: [[4], [0, 1, 2, 3]], radices: [0, 0] },
+    );
+
+    // next, we choose x position. the shape only fits in 2 different x positions
+    const output3 = getNextGiftPlacementCombination(
+      radicesToCurrentCombination(currentCombinations, radices),
+      totalGiftCounts,
+      wrappedAndRotatedGifts,
+      tree,
+    );
+
+    asseq(output3, [0, 1]);
+    // we go into the first x position, 0
+    currentCombinations.push(output3);
+    radices.push(output3.indexOf(0));
+
+    // next, we choose y position. the shape only fits in 2 different Y positions
+    const output4 = getNextGiftPlacementCombination(
+      radicesToCurrentCombination(currentCombinations, radices),
+      totalGiftCounts,
+      wrappedAndRotatedGifts,
+      tree,
+    );
+
+    asseq(output4, [0, 1]);
+
+    // we choose the first Y position
+    currentCombinations.push(output4);
+    radices.push(output4.indexOf(0));
+
+
+    // we have now chosen a complete placed gift, and it is time to validate the boaord.
+    // this specific board is partially valid, but not completely valid
+    // which means that the next valid types are returned
+    // we have only used 1 gift of type 4, so we can add another one.
+    const output5 = getNextGiftPlacementCombination(
+      radicesToCurrentCombination(currentCombinations, radices),
+      totalGiftCounts,
+      wrappedAndRotatedGifts,
+      tree,
+    );
+
+    asseq(output5, [4]);
   });
 });

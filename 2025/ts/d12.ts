@@ -23,7 +23,6 @@ export let opts = {
   logHasAlreadyBeenValidated: true,
   reuseOptimizations: 0,
   validateAdjacencyToAnyGift: true, // this needs to be true, we are dropping some valid boards
-  validateCombinationsInput: defaultOpt,
   validateEveryGiftCellInside: defaultOpt,
   validateGifts: defaultOpt,
   validateLastGiftCellInside: defaultOpt,
@@ -50,8 +49,6 @@ export function disableValidations() {
     logHasAlreadyBeenValidated: true,
     reuseOptimizations: 0,
     validateAdjacencyToAnyGift: true,
-    validateCombinationsInput: enableValidations,
-
     validateEveryGiftCellInside: enableValidations,
     validateGifts: enableValidations,
     validateLastGiftCellInside: enableValidations,
@@ -280,7 +277,7 @@ function rectangleIsInside(inner: Rectangle, outer: RootRectangle): boolean {
 
 function placedGiftToGift(
   giftsWithRotations: GiftsWithRotations,
-  placedGift: PlacedGift,
+  placedGift: Pick<PlacedGift, "type" | "rotation">,
 ) {
   return nonNull(giftsWithRotations[placedGift.type]?.[placedGift.rotation]);
 }
@@ -789,17 +786,6 @@ function combinationsWithCheck(
   check: CombinationChecker,
   whenAllChildrenAreInvalid?: (combination: Int[]) => void,
 ): boolean {
-  if (opts.validateCombinationsInput)
-    ass(
-      combinationsInput.every(
-        (radix) =>
-          typeof radix === "number" &&
-          Number.isSafeInteger(radix) &&
-          radix !== 0,
-      ),
-      `invalid inputs found: ${combinationsInput.join()}`,
-    );
-
   let hasFound1ValidCombination = false;
 
   return combinationsWithNext<Int>(
@@ -1175,29 +1161,11 @@ function countAllValidPlacementsInner(
       return 0;
     }
 
-    const combinationsInput: Int[] = giftCounts.flatMap((giftCount, index) => {
-      const giftRotationCount = nonNull(giftsWithRotations[index]).length;
-
-      const minGiftSize = Math.min(
-        ...nonNull(giftsWithRotations[index]).map(
-          (gift) => nonNull(gift[0]).length,
-        ),
-      );
-
-      ass(giftRotationCount !== 0);
-      const validXPos = board.width - minGiftSize + 1;
-      const validYPos = board.height - minGiftSize + 1;
-      return new Array(giftCount)
-        .fill([giftRotationCount, validXPos, validYPos])
-        .flat();
-    });
-
     const seenBoards = new Set<string>();
 
     const countValidPlacements: Int = combinationsWithCheck2(
-      combinationsInput,
       function f7(combination: Int[]): boolean {
-        if (combination.length % 3 !== 0) return true;
+        if (combination.length % 4 !== 0) return true;
 
         const placedGifts: PlacedGift[] = combinationToPlacedGifts(
           combination,
@@ -1268,60 +1236,94 @@ function countAllValidPlacementsInner(
   return validPlacementCounts;
 }
 
+export function getNextGiftPlacementCombination(
+  _combination: Int[],
+  totalGiftCounts: GiftCounts,
+  giftsWithRotations: GiftsWithRotations,
+  board: RootRectangle,
+) {
+  // const isRoot = combination.length === 0;
+
+  // if modulo 4 is 0, then we have to check partially and completely valid.
+  // if it is partially valid and it has not been seen before, then we should
+  //   choose a type from the available types, and return the valid types in an array..
+
+  if (_combination.length % 4 === 0) {
+    const availableTypes = totalGiftCounts
+      .map((giftCount, index) => (giftCount > 0 ? index : undefined))
+      .filter((i) => i !== undefined);
+    return availableTypes;
+  }
+
+  // if it is not partially valid, then return empty array.
+  // if both partially valid and completely valid, then increase the "found complete placements" by 1,
+  //   and return empty array.
+
+  // if modulo 4 is 1, then we have chosen type, and need to choose rotation,
+  //   we can pick any one rotation
+  if (_combination.length % 4 === 1) {
+    const type = nonNull(_combination.at(-1));
+    const availableRotations = nonNull(giftsWithRotations[type]).length;
+    return createRange(availableRotations);
+  }
+
+  // if modulo 4 is 2, then we have chosen type and rotation, and need to choose x.
+  //   this should range such that the gift's width is always inside the board width.
+
+  if (_combination.length % 4 === 2) {
+    const boardWidth = board.width;
+    const type = nonNull(_combination.at(-2));
+    const rotation = nonNull(_combination.at(-1));
+    const giftShape = placedGiftToGift(giftsWithRotations, { rotation, type }); // the function to get a gift shape based on type and rotation
+    const giftWidth = giftShape.length;
+    const maxX = boardWidth - giftWidth;
+
+    return createRange(maxX + 1);
+  }
+
+  // if modulo 4 is 3, then we need to choose y, such that the gift's height is inside the board height
+
+  if (_combination.length % 4 === 3) {
+    const boardHeight = board.height;
+    const type = nonNull(_combination.at(-3));
+    const rotation = nonNull(_combination.at(-2));
+    const giftShape = placedGiftToGift(giftsWithRotations, { rotation, type }); // the function to get a gift shape based on type and rotation
+    const giftHeight = nonNull(giftShape[0]?.length);
+    const maxX = boardHeight - giftHeight;
+
+    return createRange(maxX + 1);
+  }
+
+  // const isPartiallyValid = isValidBoard({gifts: giftsWithRotations, placedGifts:});
+
+  // if (isLeaf && isPartiallyValid) {
+  //   _hasFound1ValidCombination = true;
+  //   return [];
+  // }
+  ass(false);
+}
+
 export function combinationsWithCheck2(
-  combinationsInput: Int[],
-  check: CombinationChecker,
+  _check: CombinationChecker,
   totalGiftCounts: Int[],
   giftsWithRotations: GiftsWithRotations,
+  // shit change to rootrectangle
   width: Int,
   height: Int,
   whenAllChildrenAreInvalid?: (combination: Int[]) => void,
 ): Int {
-  if (opts.validateCombinationsInput)
-    ass(
-      combinationsInput.every(
-        (radix) =>
-          typeof radix === "number" &&
-          Number.isSafeInteger(radix) &&
-          radix !== 0,
-      ),
-      `invalid inputs found: ${combinationsInput.join()}`,
-    );
-
-  let _hasFound1ValidCombination = false;
+  const _hasFound1ValidCombination = false;
 
   let countCompletelyValidPlacements = 0;
-
-  combinationsWithNext2<Int>(
-    function f5(combination) {
-      const isRoot = combination.length === 0;
-      const combinationsInputValue = combinationsInput[combination.length];
-      const isLeaf = combinationsInputValue === undefined;
-
-      if (!isLeaf && isRoot) {
-        return createRange(combinationsInputValue);
-      }
-
-      const isPartiallyValid = check(combination);
-
-      if (isLeaf && isPartiallyValid) {
-        _hasFound1ValidCombination = true;
-        return [];
-      }
-
-      if (isLeaf && !isPartiallyValid) {
-        return [];
-      }
-
-      if (!isLeaf && isPartiallyValid) {
-        return createRange(combinationsInputValue);
-      }
-
-      if (!(isLeaf || isPartiallyValid)) {
-        return [];
-      }
-
-      ass(false);
+  type MyT = Int;
+  combinationsWithNext2<MyT>(
+    function f5(combination): MyT[] {
+      return getNextGiftPlacementCombination(
+        combination,
+        totalGiftCounts,
+        giftsWithRotations,
+        { height, width },
+      );
     },
     (combination) => {
       // count the amount of each type. if they are exactly the giftcounts, then
