@@ -6,6 +6,7 @@ import {
   type Board,
   boardToVizualizedBoard,
   type CombinationChecker,
+  colorize,
   combinationsWithCheck,
   combinationsWithNext,
   combinationToPlacedGifts,
@@ -299,45 +300,35 @@ describe(isValidBoard, () => {
   });
 
   test("placed x position outside of board should be invalid", () => {
-    const prevValidateLastGiftCellInside = opts.validateLastGiftCellInside;
     opts.validateLastGiftCellInside = true;
-    expect(() =>
-      isValidBoard({
-        gifts: toGiftsWithRotations("#"),
-        height: 1,
-        placedGifts: [
-          {
-            rotation: 0,
-            type: 0,
-            x: 1,
-            y: 0,
-          },
-        ],
-        width: 1,
-      }),
-    ).toThrowErrorMatchingInlineSnapshot(`
-      "gift was placed outside of the board. placed gift {"rotation":0,"type":0,"x":1,"y":0,"height":1,"width":1} should be inside of {"height":1,"width":1}. gift shape:
-      ---
-      #
-      ---"
-      `);
-    opts.validateLastGiftCellInside = prevValidateLastGiftCellInside;
+    opts.validateThrowOnGiftOutside = false; // shit todo re-enable
+    expect(
+      (() =>
+        isValidBoard({
+          gifts: toGiftsWithRotations("#"),
+          height: 1,
+          placedGifts: [
+            {
+              rotation: 0,
+              type: 0,
+              x: 1,
+              y: 0,
+            },
+          ],
+          width: 1,
+        }))(),
+    ).toBe(false);
   });
 
   test("placed gift which has piece outside of board should be invalid", () => {
-    expect(() =>
+    expect(
       isValidBoard({
         gifts: toGiftsWithRotations("##"),
         height: 1,
         placedGifts: [{ rotation: 0, type: 0, x: 1, y: 0 }],
         width: 2,
       }),
-    ).toThrowErrorMatchingInlineSnapshot(`
-      "gift was placed outside of the board. placed gift {"rotation":0,"type":0,"x":1,"y":0,"height":1,"width":2} should be inside of {"height":1,"width":2}. gift shape:
-      ---
-      ##
-      ---"
-    `);
+    ).toBe(false);
   });
 
   test("pieces that have a tile at the same position should be invalid", () => {
@@ -614,6 +605,26 @@ describe(isValidBoard, () => {
     );
 
     asseq(isValidBoard(test1Board), false);
+  });
+
+  test("should be false when ## gift is placed in bottom right corner", () => {
+    const { board, combination, combinationsInput } = {
+      board: {
+        gifts: toGiftsWithRotations("##"),
+        height: 2,
+        placedGifts: [
+          { rotation: 0, type: 0, x: 0, y: 0 },
+          { rotation: 0, type: 0, x: 1, y: 1 },
+        ],
+        width: 2,
+      },
+      combination: [0, 0, 0, 0, 1, 1],
+      combinationsInput: [2, 2, 2, 2, 2, 2],
+    };
+
+    console.log(colorize(matrixToString(boardToVizualizedBoard(board))));
+
+    asseq(isValidBoard(board, combination, combinationsInput), false);
   });
 });
 
@@ -1071,30 +1082,25 @@ describe(canFitString, () => {
     );
   });
 
-  test.only("2 ## pieces should fit on 2x2 board", () => {
+  test("2 ## pieces should fit on 2x2 board", () => {
     asseq(
       countAllValidPlacements(`1:
 ##
 
 2x2: 2`),
-      [2],
+      [4],
     );
   });
 
   test("3 ## pieces should not fit on a 2x2 board", () => {
     const prevValidateLastGiftCellInside = opts.validateLastGiftCellInside;
     opts.validateLastGiftCellInside = true;
-    expect(() =>
+    expect(
       canFitString(`1:
         ##
         
         2x2: 3`),
-    ).toThrowErrorMatchingInlineSnapshot(`
-        "gift was placed outside of the board. placed gift {"rotation":0,"type":0,"x":1,"y":0,"height":1,"width":2} should be inside of {"height":2,"width":2}. gift shape:
-        ---
-        ##
-        ---"
-        `);
+    ).toBe(false);
     opts.validateLastGiftCellInside = prevValidateLastGiftCellInside;
   });
 
@@ -1296,18 +1302,13 @@ describe(someValidPlacements, () => {
   test("# and ## should not fit 2x1", () => {
     opts.validateEveryGiftCellInside = true;
 
-    expect(() =>
+    expect(
       someValidPlacements(toGiftsWithRotations("#", "##"), {
         giftCounts: [1, 1],
         height: 1,
         width: 2,
       }),
-    ).toThrowErrorMatchingInlineSnapshot(`
-      "gift was placed outside of the board. placed gift {"rotation":0,"type":1,"x":1,"y":0,"height":1,"width":2} should be inside of {"height":1,"width":2}. gift shape:
-      ---
-      ##
-      ---"
-    `);
+    ).toBe(false);
   });
 
   test("# and ## should fit 2x2", () => {

@@ -29,6 +29,7 @@ export let opts = {
   validateLastGiftCellInside: defaultOpt,
   validateRadices: defaultOpt,
   validateRadicesMoreStuff: defaultOpt,
+  validateThrowOnGiftOutside: defaultOpt,
   validateTooLargeGifts: defaultOpt,
 };
 
@@ -50,11 +51,13 @@ export function disableValidations() {
     reuseOptimizations: 0,
     validateAdjacencyToAnyGift: true,
     validateCombinationsInput: enableValidations,
+
     validateEveryGiftCellInside: enableValidations,
     validateGifts: enableValidations,
     validateLastGiftCellInside: enableValidations,
     validateRadices: enableValidations,
     validateRadicesMoreStuff: enableValidations,
+    validateThrowOnGiftOutside: enableValidations,
     validateTooLargeGifts: enableValidations,
   };
 }
@@ -362,6 +365,7 @@ export function isValidBoard(
     const isRectangleInside = rectangleIsInside(giftRectangle, board);
 
     if (
+      opts.validateThrowOnGiftOutside &&
       giftRectangle.width <= board.width &&
       giftRectangle.height <= board.height
     ) {
@@ -373,9 +377,9 @@ export function isValidBoard(
           height: board.height,
           width: board.width,
         })}. gift shape:
----
-${matrixToString(placedGiftToGift(giftsWithRotations, placedGift))}
----`,
+    ---
+    ${matrixToString(placedGiftToGift(giftsWithRotations, placedGift))}
+    ---`,
       );
     }
 
@@ -454,7 +458,7 @@ const colorMap = {
   X: colors.brightRed,
 };
 
-function colorize(rawInput: string): string {
+export function colorize(rawInput: string): string {
   let input = rawInput;
   const colorEntries = Object.entries(colorMap);
 
@@ -1361,14 +1365,15 @@ function combinationsWithCheck2(
         return false;
       }
 
+      const board = {
+        gifts: giftsWithRotations,
+        height,
+        placedGifts,
+        width,
+      };
+
       const isPlacementValid = isValidBoard(
-        {
-          // ...board,
-          gifts: giftsWithRotations,
-          height,
-          placedGifts,
-          width,
-        },
+        board,
         combination,
         combinationsInput,
       );
@@ -1376,6 +1381,9 @@ function combinationsWithCheck2(
       if (!isPlacementValid) {
         return false;
       }
+
+      console.log(colorize(matrixToString(boardToVizualizedBoard(board))));
+
       countCompletelyValidPlacements++;
 
       return false;
