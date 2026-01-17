@@ -8,6 +8,7 @@
   },
   "scripts": {
     "bigboy": "bun run validate && bun run d12-bigboy",
+    "bigboy:only": "bun d12-bigboy",
     "debug": "bun --inspect-brk d12",
     "format": "biome check --write",
     "format:unsafe": "biome check --write --unsafe",
@@ -17,6 +18,6 @@
     "type:watch": "tsgo --noEmit --watch",
     "validate": "bun i && tsgo --noEmit && bun test --coverage --coverage-reporter=lcov --only-failures && bun run format",
     "watch": "bun --watch watch.ts",
-    "watcher": "bun i && bun tsgo --noEmit --pretty && bun test --coverage --coverage-reporter=lcov --only-failures --bail && bun run format --colors=force"
+    "watcher": "bun i && bun tsgo --noEmit --pretty && bun test --bail && bun run format --colors=force"
   }
 }

@@ -4,11 +4,13 @@ import {
   assIsGiftMatrix,
   assmeq,
   type Board,
+  boardToVizualizedBoard,
   type CombinationChecker,
   c,
   canFitString,
   combinationsWithCheck,
   combinationsWithNext,
+  countValidTrees,
   createAllTransmutations,
   createDedupedTransmutations,
   flipGiftVertically,
@@ -27,13 +29,13 @@ import {
   lerp,
   lerpMultiple,
   lerpRange,
-  matrixToString,
   opts,
   optsDuplicate,
   type PlacedGift,
-  placedGiftToGift,
+  parseInput,
   radicesToCurrentCombination,
   rotateGift90Right,
+  shape,
   someValidPlacements,
   stringToGift,
   stringToMatrix,
@@ -1068,6 +1070,48 @@ describe(canFitString, () => {
       true,
     );
   });
+
+  test.skip(
+    "the provided third example should not fit",
+    () => {
+      asseq(
+        canFitString(`
+    0:
+    ###
+    ##.
+    ##.
+    
+    1:
+    ###
+    ##.
+    .##
+    
+    2:
+    .##
+    ###
+    ##.
+    
+    3:
+    ##.
+    ###
+    ##.
+    
+    4:
+    ###
+    #..
+    ###
+    
+    5:
+    ###
+    .#.
+    ###
+    
+    12x5: 1 0 1 0 3 2`),
+        false,
+      );
+    },
+    { timeout: Number.POSITIVE_INFINITY },
+  );
 });
 
 describe(someValidPlacements, () => {
@@ -1173,62 +1217,6 @@ describe(someValidPlacements, () => {
 function visualizeBoard(board: Board, expected: string) {
   assmeq(boardToVizualizedBoard(board), expected);
 }
-
-function boardToVizualizedBoard(board: Board): VisualizedBoard {
-  let warning = "";
-
-  const boardMatrix: string[][] = new Array(board.height)
-    .fill([] as string[])
-    .map(function fillBoardMatrix() {
-      return new Array(board.width).fill(".");
-    });
-
-  for (const [placedGiftIndex, placedGift] of board.placedGifts.entries()) {
-    const letter = nonNull("ABCDEFGHIJKLMNOPQRSTUVWYZ"[placedGiftIndex]);
-    const giftShape = placedGiftToGift(board.gifts, placedGift);
-
-    // shit use helper to loop through 2d array
-
-    for (const [localY2, row] of giftShape.entries()) {
-      for (const [localX2, char] of row.entries()) {
-        if (char === "#") {
-          const globalX = placedGift.x + localX2;
-          const globalY = placedGift.y + localY2;
-
-          const row2 = boardMatrix[globalY];
-          // shit create helper to set a single value in a 2d char matrix
-          const char2 = row2?.[globalX];
-          if (char2 === undefined) {
-            warning =
-              "---piece is outside of board:" +
-              globalX +
-              "," +
-              globalY +
-              "\n" +
-              matrixToString(giftShape) +
-              "\n---";
-          } else if (char2 === "X") {
-            // nothing
-          } else if (char2 === ".") {
-            ass(row2);
-            row2[globalX] = letter;
-          } else {
-            ass(row2);
-            row2[globalX] = "X";
-          }
-        }
-      }
-    }
-  }
-
-  if (warning) {
-    console.log(warning);
-  }
-
-  return boardMatrix;
-}
-
-type VisualizedBoard = string[][];
 
 function wrapGiftString(giftString: string): Gift {
   return wrapGift(stringToGift(giftString));
@@ -1462,4 +1450,64 @@ describe(isAdjacent, () => {
       ),
     );
   });
+});
+
+describe(countValidTrees, () => {
+  const newLocal = `0:
+  ###
+  ##.
+  ##.
+  
+  1:
+  ###
+  ##.
+  .##
+  
+  2:
+  .##
+  ###
+  ##.
+  
+  3:
+  ##.
+  ###
+  ##.
+  
+  4:
+  ###
+  #..
+  ###
+  
+  5:
+  ###
+  .#.
+  ###
+  
+  4x4: 0 0 0 0 2 0
+  12x5: 1 0 1 0 2 2
+  12x5: 1 0 1 0 3 2`;
+
+  test("should validate parsing of complete test input", () => {
+    const parsedInput = parseInput(newLocal);
+    const { gifts } = parsedInput;
+    const firstGift: Gift = nonNull(gifts[0]);
+
+    assmeq(
+      firstGift,
+      `###
+       ##.
+       ##.`,
+    );
+
+    for (const gift of gifts) {
+      asseq(shape(gift), [3, 3]);
+    }
+  });
+  test.skip(
+    "should return the number of valid trees",
+    () => {
+      asseq(countValidTrees(newLocal), 2);
+    },
+    { timeout: Number.POSITIVE_INFINITY },
+  );
 });

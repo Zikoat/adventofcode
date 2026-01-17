@@ -11,25 +11,29 @@ await validate();
 
 const watcher = watch(import.meta.dir, { maxQueue: 1, recursive: true });
 
-let debounceTimer: ReturnType<typeof setImmediate> | null = null;
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+const DEBOUNCE_MS = 100;
 
 const gray = (msg: string) => `\x1b[90m${msg}\x1b[0m`;
 
 for await (const event of watcher) {
   const f = event?.filename;
   ass(f);
-  if (f.includes("node_modules") || f.includes("coverage")) {
+
+  const isIgnored = f.includes("node_modules") || f.includes("coverage");
+
+  if (isIgnored) {
     console.log(gray(`Skipping ${event.eventType} in ${event.filename}`));
   } else {
     console.log(gray(`Detected ${event.eventType} in ${event.filename}`));
 
     if (debounceTimer) {
-      clearImmediate(debounceTimer);
+      clearTimeout(debounceTimer);
     }
 
-    debounceTimer = setImmediate(async () => {
-      await validate();
+    debounceTimer = setTimeout(async () => {
       debounceTimer = null;
-    });
+      await validate();
+    }, DEBOUNCE_MS);
   }
 }

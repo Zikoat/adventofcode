@@ -11,6 +11,7 @@ import {
   type Rang,
   type Vector,
 } from "./common.ts";
+import { d12RealInput } from "./d12-realinput.ts";
 
 const defaultOpt = true;
 
@@ -37,7 +38,7 @@ export type GiftsWithRotations = Gifts[];
 export function bigBoy() {
   const enableValidations = false;
   opts = {
-    logHasAlreadyBeenValidated: true,
+    logHasAlreadyBeenValidated: false,
     validateCombinationsInput: enableValidations,
     validateEveryGiftCellInside: enableValidations,
     validateGifts: enableValidations,
@@ -46,101 +47,20 @@ export function bigBoy() {
     validateTooLargeGifts: enableValidations,
   };
 
-  const testInput2 = `0:
-###
-##.
-##.
-
-1:
-###
-##.
-.##
-
-2:
-.##
-###
-##.
-
-3:
-##.
-###
-##.
-
-4:
-###
-#..
-###
-
-5:
-###
-.#.
-###
-
-4x4: 0 0 0 0 2 0
-12x5: 1 0 1 0 2 2
-12x5: 1 0 1 0 3 2` as const;
-
-  const parsedInput = parseInput(testInput2);
-  const { gifts } = parsedInput;
-  const firstGift: Gift = nonNull(gifts[0]);
-
-  assmeq(
-    firstGift,
-    `###
-     ##.
-     ##.`,
-  );
-
-  for (const gift of gifts) {
-    asseq(shape(gift), [3, 3]);
-  }
   console.log("start bigboy");
-  asseq(
-    canFitString(`
-  0:
-  ###
-  ##.
-  ##.
-  
-  1:
-  ###
-  ##.
-  .##
-  
-  2:
-  .##
-  ###
-  ##.
-  
-  3:
-  ##.
-  ###
-  ##.
-  
-  4:
-  ###
-  #..
-  ###
-  
-  5:
-  ###
-  .#.
-  ###
-  
-  12x5: 1 0 1 0 3 2`),
-    false,
-  );
+
+  asseq(countValidTrees(d12RealInput), -1);
   console.log("end bigboy");
 }
 
-function shape(matrix: unknown[][]): [number, number] {
+export function shape(matrix: unknown[][]): [number, number] {
   const firstRow = nonNull(matrix[0]);
   assMatrixSquare(matrix);
 
   return [matrix.length, firstRow.length];
 }
 
-function parseInput(input: string): Puzzle {
+export function parseInput(input: string): Puzzle {
   const matchedInput = input
     .split("\n")
     .map((line) => line.trim())
@@ -204,7 +124,7 @@ export function stringToMatrix(input: string): string[][] {
   return matrix;
 }
 
-export function matrixToString(stringMatrix: string[][]): string {
+function matrixToString(stringMatrix: string[][]): string {
   return stringMatrix
     .map(function matrixToStringMapRow(row) {
       return row.join("");
@@ -293,7 +213,7 @@ export function wrapGift(input: Gift): Gift {
   }
   return rows;
 }
-
+// shit todo replace with count valid trees
 export function canFitString(input: string): boolean {
   const parsed2: Puzzle = parseInput(input);
   asseq(parsed2.trees.length, 1);
@@ -378,7 +298,7 @@ function rectangleIsInside(inner: Rectangle, outer: RootRectangle): boolean {
   );
 }
 
-export function placedGiftToGift(
+function placedGiftToGift(
   giftsWithRotations: GiftsWithRotations,
   placedGift: PlacedGift,
 ) {
@@ -400,7 +320,7 @@ function placedGiftToBoundingRectangle(
 
 export let isValidBoardRuns = 0;
 const startTime = performance.now();
-const perfLog = 100000;
+const perfLog = 1000;
 
 export function isValidBoard(
   board: Board,
@@ -426,11 +346,22 @@ export function isValidBoard(
     ).toFixed(
       0,
     )}/sec ${progress.toFixed(4)} % ${Temporal.Now.plainTimeISO().toString({ fractionalSecondDigits: 2 })} revalidated: ${hasBeenValidatedCount} `;
+
+    // log the first of each gift
+    // const firstGifts =
+    //   board.gifts.map((gift) => matrixToString(nonNull(gift[0]))).join("\n\n") +
+    //   "\n";
+    console.log();
+    // console.log(firstGifts);
+    console.log(colorize(matrixToString(boardToVizualizedBoard(board))));
+    console.log();
     console.log(
       `${firstString}${currentCombination?.map((num) =>
         `${num}`.padStart(2, " "),
       )}\n${"".padStart(firstString.length, " ")}${totalCombination?.map((num) => `${num}`.padStart(2, " "))}`,
     );
+
+    console.log("------------------------------------");
   }
 
   const { placedGifts } = board;
@@ -509,6 +440,42 @@ ${matrixToString(placedGiftToGift(giftsWithRotations, placedGift))}
   if (!isAdjacentToAnyGift) return false;
 
   return true;
+}
+
+const reset = "\x1b[0m";
+
+const colors = {
+  black: "\x1b[30m",
+  blue: "\x1b[34m",
+  brightRed: "\x1b[91m",
+  cyan: "\x1b[36m",
+  green: "\x1b[32m",
+  purple: "\x1b[35m",
+  red: "\x1b[31m",
+  white: "\x1b[37m",
+  yellow: "\x1b[33m",
+};
+
+const colorMap = {
+  A: colors.blue,
+  B: colors.yellow,
+  C: colors.cyan,
+  D: colors.green,
+  E: colors.purple,
+  F: colors.white,
+  X: colors.brightRed,
+};
+
+function colorize(rawInput: string): string {
+  let input = rawInput;
+  const colorEntries = Object.entries(colorMap);
+
+  for (const [char, colorCode] of colorEntries) {
+    // console.log(colorCode + char + reset);
+    input = input.replaceAll(char, colorCode + char + reset);
+  }
+
+  return input.replaceAll(/A|B|C|D|E|F/g, "#");
 }
 
 export function isAdjacent(
@@ -1016,13 +983,81 @@ export function hasBeenValidated(
   return hasSeen;
 }
 
+export function countValidTrees(input: string): number {
+  const parsedInput = parseInput(input);
+
+  const wrappedAndRotatedGifts: GiftsWithRotations = parsedInput.gifts
+    .map((gift) => wrapGift(gift))
+    .map(createDedupedTransmutations);
+
+  return parsedInput.trees.filter((tree): boolean => {
+    const isTreeValid = someValidPlacements(wrappedAndRotatedGifts, tree);
+    return isTreeValid;
+  }).length;
+}
+
+type VisualizedBoard = string[][];
+
+export function boardToVizualizedBoard(board: Board): VisualizedBoard {
+  let warning = "";
+
+  const boardMatrix: string[][] = new Array(board.height)
+    .fill([] as string[])
+    .map(function fillBoardMatrix() {
+      return new Array(board.width).fill(".");
+    });
+
+  for (const [placedGiftIndex, placedGift] of board.placedGifts.entries()) {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWYZ0123456789";
+    const letter = nonNull(chars[placedGiftIndex % chars.length]);
+    const giftShape = placedGiftToGift(board.gifts, placedGift);
+
+    // shit use helper to loop through 2d array
+
+    for (const [localY2, row] of giftShape.entries()) {
+      for (const [localX2, char] of row.entries()) {
+        if (char === "#") {
+          const globalX = placedGift.x + localX2;
+          const globalY = placedGift.y + localY2;
+
+          const row2 = boardMatrix[globalY];
+          // shit create helper to set a single value in a 2d char matrix
+          const char2 = row2?.[globalX];
+          if (char2 === undefined) {
+            warning =
+              "---piece is outside of board:" +
+              globalX +
+              "," +
+              globalY +
+              "\n" +
+              matrixToString(giftShape) +
+              "\n---";
+          } else if (char2 === "X") {
+            // nothing
+          } else if (char2 === ".") {
+            ass(row2);
+            row2[globalX] = letter;
+          } else {
+            ass(row2);
+            row2[globalX] = "X";
+          }
+        }
+      }
+    }
+  }
+
+  if (warning) {
+    console.log(warning);
+  }
+
+  return boardMatrix;
+}
+
 /**
 # performance optimizations
 
-
 [ ] we can dedupe work between trees by reusing the same placement for multiple trees
   pseudo: if we place a next piece, then only place it if it would cause the bounding box to be inside another AND it would not cause
-
 
 [ ] we can also cache gift placements, although we should probably try to avoid using multiple gift placements
 [ ] if not done already, then we should not make a distinction between 2 different gifts of the same shape
