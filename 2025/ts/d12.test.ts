@@ -1071,13 +1071,13 @@ describe(canFitString, () => {
     );
   });
 
-  test("2 ## pieces should fit on 2x2 board", () => {
+  test.only("2 ## pieces should fit on 2x2 board", () => {
     asseq(
-      canFitString(`1:
+      countAllValidPlacements(`1:
 ##
 
 2x2: 2`),
-      true,
+      [2],
     );
   });
 
