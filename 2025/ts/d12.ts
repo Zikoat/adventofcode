@@ -143,7 +143,7 @@ export function stringToMatrix(input: string): string[][] {
   return matrix;
 }
 
-export function matrixToString(stringMatrix: string[][]): string {
+function matrixToString(stringMatrix: string[][]): string {
   return stringMatrix
     .map(function matrixToStringMapRow(row) {
       return row.join("");
@@ -497,7 +497,7 @@ const colorMap = {
   X: colors.brightRed,
 };
 
-export function colorize(rawInput: string): string {
+function colorize(rawInput: string): string {
   let input = rawInput;
   const colorEntries = Object.entries(colorMap);
 
@@ -633,7 +633,7 @@ export type Board = {
 // shit not infinite
 // shit not nan
 // shit rename to asint
-export function toNumInt(input: Int | undefined | null): Int {
+function toNumInt(input: Int | undefined | null): Int {
   ass(typeof input === "number");
   ass(Math.abs(input) % 1 === 0);
   return input;
@@ -787,7 +787,7 @@ export function someValidPlacements(
   return anyValidPlacements;
 }
 
-export function hasTooLargeGifts(
+function hasTooLargeGifts(
   giftsWithRotations: GiftsWithRotations,
   board: RootRectangle,
 ): boolean {

@@ -1,5 +1,14 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["watch.ts", "d1.ts"],
+  "entry": [
+    "watch.ts",
+    "d1.ts",
+    "d10.ts",
+    "d2.ts",
+    "d3.ts",
+    "d4.ts",
+    "d5.ts",
+    "d6.ts"
+  ],
   "tags": ["-lintignore"]
 }
