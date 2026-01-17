@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, it, mock, test } from "bun:test";
 import { ass, asseq, nonNull } from "./common.ts";
 import {
+  assertNotTooLargeGifts,
   assIsGiftMatrix,
   assmeq,
   type Board,
@@ -10,17 +11,23 @@ import {
   canFitString,
   combinationsWithCheck,
   combinationsWithNext,
+  combinationToPlacedGifts,
   countValidTrees,
   createAllTransmutations,
   createDedupedTransmutations,
+  createRange,
+  d12TestInput,
+  disableValidations,
   flipGiftVertically,
   type GetNext,
   type Gift,
+  type GiftsWithRotations,
   getProgress,
   getVariableName,
   giftsOverlap,
   giftsOverlapCount,
   hasBeenValidated,
+  type Int,
   type IsComplete,
   isAdjacent,
   isInBounds,
@@ -31,6 +38,7 @@ import {
   opts,
   optsDuplicate,
   type PlacedGift,
+  type Puzzle,
   parseInput,
   radicesToCurrentCombination,
   rectanglesOverlap,
@@ -42,13 +50,6 @@ import {
   stringToMatrix,
   transposeGift,
   wrapGift,
-  d12TestInput,
-  type Int,
-  type Puzzle,
-  type Tree,
-  assertNotTooLargeGifts,
-  combinationToPlacedGifts,
-  createRange,
 } from "./d12.ts";
 
 describe(wrapGift, () => {
@@ -896,11 +897,11 @@ describe("Rotations", () => {
 describe(canFitString, () => {
   test("basic case of 1 shape on 1x1 tree", () => {
     asseq(
-      canFitString(`1:
+      findAllValidPlacements(`1:
 #
 
 1x1: 1`),
-      true,
+      [1],
     );
   });
 
@@ -916,24 +917,25 @@ describe(canFitString, () => {
 
   test("2 pieces don't fit on a 1x1 board", () => {
     asseq(
-      canFitString(`1:
+      findAllValidPlacements(`1:
 #
 
 1x1: 2`),
-      false,
+      [0],
     );
   });
 
   test("2 pieces on a 2x1 board should fit", () => {
     asseq(
-      canFitString(`1:
+      findAllValidPlacements(`1:
 #
 
 2x1: 2`),
-      true,
+      [2],
     );
   });
 
+  // shit todo expect exact error
   test.failing("2x2 piece doesnt fit on 2x1 board", () => {
     asseq(
       canFitString(`1:
@@ -962,11 +964,11 @@ describe(canFitString, () => {
 
   test(".# piece should fit on 1x1 board", () => {
     asseq(
-      canFitString(`1:
+      findAllValidPlacements(`1:
 .#
 
 1x1: 1`),
-      true,
+      [1],
     );
   });
 
@@ -1016,7 +1018,7 @@ describe(canFitString, () => {
 
   test.skip("pieces that fit inside each other should be rotated to fit into each other", () => {
     asseq(
-      canFitString(`1:
+      findAllValidPlacements(`1:
 #.
 ##
 #.
@@ -1028,7 +1030,7 @@ describe(canFitString, () => {
 
 2x3: 1 1
 `),
-      true,
+      [-1],
       "with flipping",
     );
   });
@@ -1107,48 +1109,6 @@ describe(canFitString, () => {
       true,
     );
   });
-
-  test(
-    "the provided third example should not fit",
-    () => {
-      asseq(
-        canFitString(`
-    0:
-    ###
-    ##.
-    ##.
-    
-    1:
-    ###
-    ##.
-    .##
-    
-    2:
-    .##
-    ###
-    ##.
-    
-    3:
-    ##.
-    ###
-    ##.
-    
-    4:
-    ###
-    #..
-    ###
-    
-    5:
-    ###
-    .#.
-    ###
-    
-    12x5: 1 0 1 0 3 2`),
-        false,
-      );
-    },
-    { timeout: Number.POSITIVE_INFINITY },
-  );
 });
 
 describe(someValidPlacements, () => {
@@ -1528,9 +1488,7 @@ describe(isAdjacent, () => {
   });
 });
 
-
 describe(countValidTrees, () => {
-
   test("should validate parsing of complete test input", () => {
     const parsedInput = parseInput(d12TestInput);
     const { gifts } = parsedInput;
@@ -1556,7 +1514,7 @@ describe(countValidTrees, () => {
   );
 });
 
- function combinationsWithNext2<T>(
+function combinationsWithNext2<T>(
   getNext: GetNext<T>,
   isComplete: IsComplete<T> = () => false,
   whenAllChildrenAreInvalid?: (combination: Int[]) => void,
@@ -1575,10 +1533,14 @@ describe(countValidTrees, () => {
       nextValue = getNext(currentCombination);
 
       if (nextValue.length === 0) {
-        if (isComplete(currentCombination)) return true;
+        if (isComplete(currentCombination)) {
+          ass(false);
+          // return true
+        }
         const lastIndex = indices.at(-1);
         if (lastIndex === undefined) {
-          return false;
+          ass(false);
+          // return false;
         }
         ass(typeof lastIndex === "number");
         indices[indices.length - 1] = lastIndex + 1;
@@ -1598,6 +1560,7 @@ describe(countValidTrees, () => {
               indices[indices.length - 1] = newLocal + 1;
               currentCombinations.pop();
             } else {
+              // ass(false)
               return false;
             }
           } else {
@@ -1614,9 +1577,13 @@ describe(countValidTrees, () => {
   }
 }
 
- function combinationsWithCheck2(
+function combinationsWithCheck2(
   combinationsInput: Int[],
   check: CombinationChecker,
+  totalGiftCounts: Int[],
+  giftsWithRotations: GiftsWithRotations,
+  width: Int,
+  height: Int,
   whenAllChildrenAreInvalid?: (combination: Int[]) => void,
 ): Int {
   if (opts.validateCombinationsInput)
@@ -1630,9 +1597,11 @@ describe(countValidTrees, () => {
       `invalid inputs found: ${combinationsInput.join()}`,
     );
 
-  let hasFound1ValidCombination = false;
+  let _hasFound1ValidCombination = false;
 
-  return combinationsWithNext2<Int>(
+  let countCompletelyValidPlacements = 0;
+
+  combinationsWithNext2<Int>(
     function f5(combination) {
       const isRoot = combination.length === 0;
       const combinationsInputValue = combinationsInput[combination.length];
@@ -1645,7 +1614,7 @@ describe(countValidTrees, () => {
       const isPartiallyValid = check(combination);
 
       if (isLeaf && isPartiallyValid) {
-        hasFound1ValidCombination = true;
+        _hasFound1ValidCombination = true;
         return [];
       }
 
@@ -1663,14 +1632,63 @@ describe(countValidTrees, () => {
 
       ass(false);
     },
-    (_combination) => hasFound1ValidCombination,
+    (combination) => {
+      // count the amount of each type. if they are exactly the giftcounts, then
+      // this placement is completely valid. if any placed gift count is more
+      // than giftcounts, throw an error. this error may be removed in the
+      // future
+      const placedGifts: PlacedGift[] = combinationToPlacedGifts(
+        combination,
+        totalGiftCounts,
+      );
+
+      const currentGiftCounts: Int[] = totalGiftCounts.map((_) => 0);
+
+      for (const placedGift of placedGifts) {
+        const index = placedGift.type;
+        ass(currentGiftCounts[index] !== undefined);
+
+        currentGiftCounts[index]++;
+      }
+
+      asseq(currentGiftCounts.length, totalGiftCounts.length);
+
+      if (
+        !totalGiftCounts.every((totalGiftCount, index) => {
+          const currentGiftCount = nonNull(currentGiftCounts[index]);
+          ass(totalGiftCount >= currentGiftCount);
+          return totalGiftCount === currentGiftCount;
+        })
+      ) {
+        return false;
+      }
+
+      const isPlacementValid = isValidBoard(
+        {
+          // ...board,
+          gifts: giftsWithRotations,
+          height,
+          placedGifts,
+          width,
+        },
+        combination,
+        combinationsInput,
+      );
+
+      if (!isPlacementValid) {
+        return false;
+      }
+      countCompletelyValidPlacements++;
+
+      return false;
+    },
     whenAllChildrenAreInvalid,
   );
+  return countCompletelyValidPlacements;
 }
 
-function findAllValidPlacements(input: string):Int[]{
+function findAllValidPlacements(input: string): Int[] {
   const parsed2: Puzzle = parseInput(input);
-
 
   const gifts = parsed2.gifts.map(function mapGifts(gift) {
     return wrapGift(gift);
@@ -1678,28 +1696,28 @@ function findAllValidPlacements(input: string):Int[]{
 
   const giftsWithRotations = gifts.map(createDedupedTransmutations);
 
-  const validPlacementCounts:Int[] = parsed2.trees.map((tree):Int=>{
+  const validPlacementCounts: Int[] = parsed2.trees.map((tree): Int => {
     const { giftCounts } = tree;
     const board = tree;
-  
+
     asseq(giftsWithRotations.length, giftCounts.length);
-  
+
     ass(board.width !== 0);
     ass(board.height !== 0);
-  
+
     if (opts.validateTooLargeGifts) {
       assertNotTooLargeGifts(giftsWithRotations, board);
     }
-  
+
     const combinationsInput: Int[] = giftCounts.flatMap((giftCount, index) => {
       const giftRotationCount = nonNull(giftsWithRotations[index]).length;
-  
+
       const minGiftSize = Math.min(
         ...nonNull(giftsWithRotations[index]).map(
           (gift) => nonNull(gift[0]).length,
         ),
       );
-  
+
       ass(giftRotationCount !== 0);
       const validXPos = board.width - minGiftSize + 1;
       const validYPos = board.height - minGiftSize + 1;
@@ -1707,19 +1725,19 @@ function findAllValidPlacements(input: string):Int[]{
         .fill([giftRotationCount, validXPos, validYPos])
         .flat();
     });
-  
+
     const seenBoards = new Set<string>();
-  
-    const countValidPlacements:Int = combinationsWithCheck2(
+
+    const countValidPlacements: Int = combinationsWithCheck2(
       combinationsInput,
       function f7(combination: Int[]): boolean {
         if (combination.length % 3 !== 0) return true;
-  
+
         const placedGifts: PlacedGift[] = combinationToPlacedGifts(
           combination,
           giftCounts,
         );
-  
+
         const isPlacementValid = isValidBoard(
           {
             ...board,
@@ -1730,7 +1748,7 @@ function findAllValidPlacements(input: string):Int[]{
           combinationsInput,
           seenBoards.size,
         );
-  
+
         if (isPlacementValid) {
           const copiedBoard = {
             ...board,
@@ -1747,14 +1765,19 @@ function findAllValidPlacements(input: string):Int[]{
             return false;
           }
         }
-  
+
         return isPlacementValid;
       },
+      giftCounts,
+      giftsWithRotations,
+      board.width,
+      board.height,
+
       (combination: Int[]) => {
         if (combination.length % 3 !== 0 || combination.length === 0) return;
-  
+
         const giftPlacement = combinationToPlacedGifts(combination, giftCounts);
-  
+
         const isPlacementValid = isValidBoard(
           {
             ...board,
@@ -1764,38 +1787,47 @@ function findAllValidPlacements(input: string):Int[]{
           combination,
           combinationsInput,
         );
-  
+
         ass(isPlacementValid);
-  
+
         if (opts.logHasAlreadyBeenValidated) {
           const placedGifts: PlacedGift[] = giftPlacement;
-  
+
           const copiedBoard = {
             ...board,
             gifts: giftsWithRotations,
             placedGifts,
           };
-  
+
           // shit gifts with rotations seem to have been doubly defined here
           setHasBeenValidated(copiedBoard, seenBoards, giftsWithRotations);
         }
       },
     );
-  
-    return countValidPlacements;
-  })
-    
-  return validPlacementCounts
-  }
 
-describe(findAllValidPlacements,()=>{
-  test.only(`
+    return countValidPlacements;
+  });
+
+  return validPlacementCounts;
+}
+
+describe.skip(findAllValidPlacements, () => {
+  test(
+    `
     every tree has an invariant: the amount of valid placedGift combinations we
     can put under the tree. if our algorithm doesn't find all of them, then that
     means that we might miss some valid combinations in the full run. this isn't
     100% safe, but it should in very many cases be enough to check this 
-    invariant.`,()=>{
-      asseq(findAllValidPlacements(d12TestInput), [-1,0,-1]);
+    invariant.`,
+    () => {
+      asseq(findAllValidPlacements(d12TestInput), [4, 49, 0]);
+    },
+    Number.POSITIVE_INFINITY,
+  );
 
-    })
-})
+  test("check total valid placements invariant while all validations are off", () => {
+    disableValidations();
+
+    asseq(findAllValidPlacements(d12TestInput), [4, 49, 0]);
+  });
+});

@@ -15,7 +15,7 @@ import { d12RealInput } from "./d12-realinput.ts";
 
 const defaultOpt = true;
 
-const perfLog = 100000;
+const perfLog = 1000;
 
 export let opts = {
   isProfiling: false,
@@ -23,7 +23,7 @@ export let opts = {
   logCurrentBoardAndProgress: defaultOpt,
   logHasAlreadyBeenValidated: true,
   reuseOptimizations: 0,
-  validateAdjacencyToAnyGift: true,
+  validateAdjacencyToAnyGift: defaultOpt,
   validateCombinationsInput: defaultOpt,
   validateEveryGiftCellInside: defaultOpt,
   validateGifts: defaultOpt,
@@ -39,7 +39,7 @@ export type Gift = ("." | "#")[][];
 export type Gifts = Gift[];
 export type Int = number;
 type GiftCounts = Int[];
-export type Tree = { giftCounts: GiftCounts } & RootRectangle;
+type Tree = { giftCounts: GiftCounts } & RootRectangle;
 export type Puzzle = { gifts: Gifts; trees: Tree[] };
 export type GiftsWithRotations = Gifts[];
 
@@ -51,7 +51,7 @@ export function disableValidations() {
     logCurrentBoardAndProgress: enableValidations,
     logHasAlreadyBeenValidated: true,
     reuseOptimizations: 0,
-    validateAdjacencyToAnyGift: true, // shit this might cause bugs, we need to first validate that the trees return correct total valid board count.
+    validateAdjacencyToAnyGift: false,
     validateCombinationsInput: enableValidations,
     validateEveryGiftCellInside: enableValidations,
     validateGifts: enableValidations,
@@ -143,7 +143,7 @@ export function stringToMatrix(input: string): string[][] {
   return matrix;
 }
 
-function matrixToString(stringMatrix: string[][]): string {
+export function matrixToString(stringMatrix: string[][]): string {
   return stringMatrix
     .map(function matrixToStringMapRow(row) {
       return row.join("");
@@ -501,7 +501,7 @@ const colorMap = {
   X: colors.brightRed,
 };
 
-function colorize(rawInput: string): string {
+export function colorize(rawInput: string): string {
   let input = rawInput;
   const colorEntries = Object.entries(colorMap);
 
@@ -1245,7 +1245,6 @@ export const d12TestInput = `0:
 4x4: 0 0 0 0 2 0
 12x5: 1 0 1 0 2 2
 12x5: 1 0 1 0 3 2`;
-
 
 /**
 # performance optimizations
