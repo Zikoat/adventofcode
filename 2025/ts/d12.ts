@@ -346,8 +346,8 @@ export function isValidBoard(
   totalCombination?: Int[],
   seenCount?: number,
 ): boolean {
-  if (opts.validateTooLargeGifts) {
-    hasTooLargeGifts(board.gifts, board);
+  if (opts.validateTooLargeGifts && hasTooLargeGifts(board.gifts, board)) {
+    return false;
   }
 
   opts.isValidBoardRuns++;
