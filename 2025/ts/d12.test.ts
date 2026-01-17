@@ -1,13 +1,5 @@
-import {
-  afterAll,
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  mock,
-  test,
-} from "bun:test";
+import { afterAll, describe, expect, it, mock, test } from "bun:test";
+import { afterEach } from "node:test";
 import { ass, asseq, nonNull, type Vector } from "./common.ts";
 import {
   assIsGiftMatrix,
@@ -15,9 +7,11 @@ import {
   type Board,
   boardToVizualizedBoard,
   type CombinationChecker,
+  c,
   combinationsWithCheck2,
   combinationsWithNext,
   combinationToPlacedGifts,
+  combinationToPlacedGifts2,
   countAllValidPlacements,
   countValidTrees,
   createAllTransmutations,
@@ -47,6 +41,7 @@ import {
   parseInput,
   type Rectangle,
   radicesToCurrentCombination,
+  resetOpts,
   rotateGift90Right,
   setHasBeenValidated,
   someValidPlacements,
@@ -58,7 +53,6 @@ import {
 } from "./d12.ts";
 
 const combinationsWithCheck = combinationsWithCheck2;
-const optsDuplicate = { ...opts };
 
 function shape(matrix: unknown[][]): [number, number] {
   const firstRow = nonNull(matrix[0]);
@@ -98,18 +92,6 @@ function canFitString(input: string): boolean {
   const anyValidPlacements = someValidPlacements(dedupedTransmutedGifts, tree);
 
   return anyValidPlacements;
-}
-
-const funcRegex = /^\(\) => (.*)$/;
-
-function getVariableName(f: () => unknown): string {
-  return nonNull(nonNull(funcRegex.exec(`${f}`))[1]);
-}
-
-function c(f: Record<string, unknown>): void {
-  for (const [key, value] of Object.entries(f)) {
-    console.log(key, ":", value);
-  }
 }
 
 function rectanglesOverlap(
@@ -311,35 +293,42 @@ describe(isValidBoard, () => {
   });
 
   test("placed x position outside of board should be invalid", () => {
-    opts.validateLastGiftCellInside = true;
-    opts.validateThrowOnGiftOutside = false; // shit todo re-enable
-    expect(
-      (() =>
-        isValidBoard({
-          gifts: toGiftsWithRotations("#"),
-          height: 1,
-          placedGifts: [
-            {
-              rotation: 0,
-              type: 0,
-              x: 1,
-              y: 0,
-            },
-          ],
-          width: 1,
-        }))(),
-    ).toBe(false);
+    expect(() =>
+      isValidBoard({
+        gifts: toGiftsWithRotations("#"),
+        height: 1,
+        placedGifts: [
+          {
+            rotation: 0,
+            type: 0,
+            x: 1,
+            y: 0,
+          },
+        ],
+        width: 1,
+      }),
+    ).toThrowErrorMatchingInlineSnapshot(`
+      "gift was placed outside of the board. placed gift {"rotation":0,"type":0,"x":1,"y":0,"height":1,"width":1} should be inside of {"height":1,"width":1}. gift shape:
+          ---
+          #
+          ---"
+    `);
   });
 
   test("placed gift which has piece outside of board should be invalid", () => {
-    expect(
+    expect(() =>
       isValidBoard({
         gifts: toGiftsWithRotations("##"),
         height: 1,
         placedGifts: [{ rotation: 0, type: 0, x: 1, y: 0 }],
         width: 2,
       }),
-    ).toBe(false);
+    ).toThrowErrorMatchingInlineSnapshot(`
+      "gift was placed outside of the board. placed gift {"rotation":0,"type":0,"x":1,"y":0,"height":1,"width":2} should be inside of {"height":1,"width":2}. gift shape:
+          ---
+          ##
+          ---"
+    `);
   });
 
   test("pieces that have a tile at the same position should be invalid", () => {
@@ -641,7 +630,12 @@ describe(isValidBoard, () => {
 ---`,
     );
 
-    asseq(isValidBoard(board), false);
+    expect(() => isValidBoard(board)).toThrowErrorMatchingInlineSnapshot(`
+      "gift was placed outside of the board. placed gift {"rotation":0,"type":0,"x":1,"y":1,"height":1,"width":2} should be inside of {"height":2,"width":2}. gift shape:
+          ---
+          ##
+          ---"
+    `);
   });
 
   test("should be true when # and ## are placed in specific configuration", () => {
@@ -672,7 +666,6 @@ describe(combinationsWithCheck, () => {
     const spy = mock<CombinationChecker>((combination) => combination[0] === 1);
     asseq(
       combinationsWithCheck(
-        spy,
         // biome-ignore lint/suspicious/noExplicitAny: skipped
         undefined as unknown as any,
         // biome-ignore lint/suspicious/noExplicitAny: skipped
@@ -1031,7 +1024,7 @@ describe(canFitString, () => {
 #
 
 2x1: 2`),
-      [2],
+      [1],
     );
   });
 
@@ -1073,20 +1066,17 @@ describe(canFitString, () => {
 ##
 
 2x2: 2`),
-      [4],
+      [2],
     );
   });
 
   test("3 ## pieces should not fit on a 2x2 board", () => {
-    const prevValidateLastGiftCellInside = opts.validateLastGiftCellInside;
-    opts.validateLastGiftCellInside = true;
-    expect(
-      canFitString(`1:
+    asseq(
+      countAllValidPlacements(`1:
         ##
         
-        2x2: 3`),
-    ).toBe(false);
-    opts.validateLastGiftCellInside = prevValidateLastGiftCellInside;
+        2x2: 3`)
+    ,[0]);
   });
 
   // todo this is broken because we do not support pieces that have different
@@ -1164,7 +1154,7 @@ describe(canFitString, () => {
 
   test("the provided second example should fit", () => {
     asseq(
-      canFitString(`
+      countAllValidPlacements(`
 0:
 ###
 ##.
@@ -1196,7 +1186,7 @@ describe(canFitString, () => {
 ###
 
 12x5: 1 0 1 0 2 2`),
-      true,
+      [-1],
     );
   });
 });
@@ -1218,7 +1208,7 @@ describe(someValidPlacements, () => {
         ##
         
         2x2: 2`),
-      [4],
+      [2],
     );
   });
 
@@ -1271,7 +1261,8 @@ describe(someValidPlacements, () => {
   });
 
   test("# and ## should fit 2x2", () => {
-    opts.validateThrowOnGiftOutside = true; // shit this should be enabled, and then fixed
+    asseq(opts.validateThrowOnGiftOutside, true);
+
     asseq(
       countAllValidPlacements(`
       1:
@@ -1311,35 +1302,14 @@ function wrapGiftString(giftString: string): Gift {
   return wrapGift(stringToGift(giftString));
 }
 
-beforeEach((...args: unknown[]) => {
-  console.log("starting", args);
-});
-
-afterEach((...args: unknown[]) => {
-  console.log("ending", args);
+afterEach(() => {
+  resetOpts();
 });
 
 afterAll(() => {
   console.log("\ndone. checks done during tests");
 
   c({ giftsOverlapCount, isValidBoardRuns: opts.isValidBoardRuns });
-
-  opts.logHasAlreadyBeenValidated = optsDuplicate.logHasAlreadyBeenValidated;
-  opts.validateEveryGiftCellInside = optsDuplicate.validateEveryGiftCellInside;
-  opts.validateGifts = optsDuplicate.validateGifts;
-  opts.validateLastGiftCellInside = optsDuplicate.validateLastGiftCellInside;
-  opts.validateTooLargeGifts = optsDuplicate.validateTooLargeGifts;
-});
-
-describe(c, () => {
-  test("should log the variable name and the content", () => {
-    let a = 1;
-    a++;
-
-    const foo = a === 2 ? "bar" : "shit";
-    expect(`${() => foo}`).toBe("() => foo");
-    expect(getVariableName(() => foo)).toBe("foo");
-  });
 });
 
 describe(rectanglesOverlap, () => {
@@ -1510,38 +1480,32 @@ describe(getProgress, () => {
 
 describe(hasBeenValidated, () => {
   test("should return true when the board has been validated", () => {
-    const board = {
-      gifts: toGiftsWithRotations("#"),
-      height: 1,
-      placedGifts: [{ rotation: 0, type: 0, x: 0, y: 0 }],
-      width: 1,
-    };
+    const placedGifts = [{ rotation: 0, type: 0, x: 0, y: 0 }];
 
     const validatedBoards = new Set<string>();
-    const { gifts } = board;
 
-    asseq(hasBeenValidated(board, validatedBoards, gifts), false);
-    setHasBeenValidated(board, validatedBoards, gifts);
-    asseq(hasBeenValidated(board, validatedBoards, gifts), true);
-    nonNull(board.placedGifts[0]).x = 1;
-    asseq(hasBeenValidated(board, validatedBoards, gifts), false);
-    setHasBeenValidated(board, validatedBoards, gifts);
-    asseq(hasBeenValidated(board, validatedBoards, gifts), true);
+    asseq(hasBeenValidated(placedGifts, validatedBoards), false);
+    setHasBeenValidated(placedGifts, validatedBoards);
+    asseq(hasBeenValidated(placedGifts, validatedBoards), true);
+    nonNull(placedGifts[0]).x = 1;
+    asseq(hasBeenValidated(placedGifts, validatedBoards), false);
+    setHasBeenValidated(placedGifts, validatedBoards);
+    asseq(hasBeenValidated(placedGifts, validatedBoards), true);
   });
 
   test("should detect permutations of the order of placed gifts", () => {
+    const placedGifts = [
+      { rotation: 0, type: 0, x: 0, y: 0 },
+      { rotation: 1, type: 0, x: 0, y: 0 },
+    ];
     const board = {
       gifts: toGiftsWithRotations("##"),
       height: 2,
-      placedGifts: [
-        { rotation: 0, type: 0, x: 0, y: 0 },
-        { rotation: 1, type: 0, x: 0, y: 0 },
-      ],
+      placedGifts,
       width: 2,
     };
 
     const validatedBoards = new Set<string>();
-    const { gifts } = board;
 
     visualizeBoard(
       board,
@@ -1550,14 +1514,14 @@ describe(hasBeenValidated, () => {
       A.`,
     );
 
-    asseq(hasBeenValidated(board, validatedBoards, gifts), false);
-    setHasBeenValidated(board, validatedBoards, gifts);
-    asseq(hasBeenValidated(board, validatedBoards, gifts), true);
+    asseq(hasBeenValidated(placedGifts, validatedBoards), false);
+    setHasBeenValidated(placedGifts, validatedBoards);
+    asseq(hasBeenValidated(placedGifts, validatedBoards), true);
 
-    nonNull(board.placedGifts[0]).rotation = 1;
-    nonNull(board.placedGifts[1]).rotation = 0;
+    nonNull(placedGifts[0]).rotation = 1;
+    nonNull(placedGifts[1]).rotation = 0;
 
-    asseq(hasBeenValidated(board, validatedBoards, gifts), true);
+    asseq(hasBeenValidated(placedGifts, validatedBoards), true);
 
     asseq([...validatedBoards], ["0,0,0,0|0,1,0,0"]);
   });
@@ -1680,6 +1644,7 @@ describe(getNextGiftPlacementCombination, () => {
       .map(createDedupedTransmutations);
     const radices: Int[] = [];
     const currentCombinations: Int[][] = [];
+    const seen = new Set<string>();
 
     // the first entry should be 4, because we can only place pieces of type 4
     const output1 = getNextGiftPlacementCombination(
@@ -1687,8 +1652,10 @@ describe(getNextGiftPlacementCombination, () => {
       totalGiftCounts,
       wrappedAndRotatedGifts,
       tree,
+      seen,
     );
     asseq(output1, [4]);
+    ass(output1 !== "completelyValid");
 
     // we go into the first type
     currentCombinations.push(output1);
@@ -1706,8 +1673,10 @@ describe(getNextGiftPlacementCombination, () => {
       totalGiftCounts,
       wrappedAndRotatedGifts,
       tree,
+      seen,
     );
     asseq(output2, [0, 1, 2, 3]);
+    ass(output2 !== "completelyValid");
 
     // we go into the first rotation
     currentCombinations.push(output2);
@@ -1724,9 +1693,12 @@ describe(getNextGiftPlacementCombination, () => {
       totalGiftCounts,
       wrappedAndRotatedGifts,
       tree,
+      seen,
     );
 
     asseq(output3, [0, 1]);
+    ass(output3 !== "completelyValid");
+
     // we go into the first x position, 0
     currentCombinations.push(output3);
     radices.push(output3.indexOf(0));
@@ -1737,9 +1709,11 @@ describe(getNextGiftPlacementCombination, () => {
       totalGiftCounts,
       wrappedAndRotatedGifts,
       tree,
+      seen,
     );
 
     asseq(output4, [0, 1]);
+    ass(output4 !== "completelyValid");
 
     // we choose the first Y position
     currentCombinations.push(output4);
@@ -1754,7 +1728,9 @@ describe(getNextGiftPlacementCombination, () => {
       totalGiftCounts,
       wrappedAndRotatedGifts,
       tree,
+      seen,
     );
+    ass(output5 !== "completelyValid");
 
     asseq(output5, [4]);
   });
@@ -1765,13 +1741,14 @@ describe(getNextGiftPlacementCombination, () => {
     const parsed = parseInput(`1:
       #
       
-      1x1: 1`);
+      1x1: 2`);
 
     const tree = nonNull(parsed.trees[0]);
     const totalGiftCounts = tree.giftCounts;
     const wrappedAndRotatedGifts: GiftsWithRotations = parsed.gifts
       .map((gift) => wrapGift(gift))
       .map(createDedupedTransmutations);
+    const seen = new Set<string>();
 
     // we have placed the gift
     const radices: Int[] = [0, 0, 0, 0];
@@ -1783,8 +1760,109 @@ describe(getNextGiftPlacementCombination, () => {
       totalGiftCounts,
       wrappedAndRotatedGifts,
       tree,
+      seen,
     );
 
-    asseq(output, []);
+    asseq(output, [0]);
+  });
+
+  test("it should not place a ## outside of a 2x2 board", () => {
+    const parsed = parseInput(`1:
+      ##
+      
+      2x2: 1`);
+
+    const tree = nonNull(parsed.trees[0]);
+    const totalGiftCounts = tree.giftCounts;
+    const wrappedAndRotatedGifts: GiftsWithRotations = parsed.gifts
+      .map((gift) => wrapGift(gift))
+      .map(createDedupedTransmutations);
+    const seen = new Set<string>();
+
+    // the first rotation is horizontal
+    assmeq(nonNull(wrappedAndRotatedGifts[0]?.[0]), "##");
+
+    // we have selected the first rotation of the gift
+    const radices: Int[] = [0, 0];
+    const currentCombinations: Int[][] = [[0], [0, 1]];
+
+    // the gift has a width of 2 and height of 1, so there is only 1 place to
+    // put the x location, at 0
+    const output = getNextGiftPlacementCombination(
+      radicesToCurrentCombination(currentCombinations, radices),
+      totalGiftCounts,
+      wrappedAndRotatedGifts,
+      tree,
+      seen,
+    );
+
+    asseq(output, [0]);
+  });
+
+  test("it should not return the next type if this placement is valid but it has been seen before", () => {
+    const parsed = parseInput(`1:
+      #
+      
+      3x1: 3`);
+
+    const tree = nonNull(parsed.trees[0]);
+    const totalGiftCounts = tree.giftCounts;
+    const wrappedAndRotatedGifts: GiftsWithRotations = parsed.gifts
+      .map((gift) => wrapGift(gift))
+      .map(createDedupedTransmutations);
+
+    // we first place A.. then AB.
+
+    // biome-ignore format: group by 4
+    const radices: Int[] = [
+      //
+      0, 0, 0, 0,
+      //
+      0, 0, 1, 0,
+    ];
+
+    // biome-ignore format: group by 4
+    const currentCombinations: Int[][] = [
+      [0], [0], [0, 1, 2], [0],
+      [0], [0], [0, 1, 2], [0],
+    ];
+
+    // this should be a valid placement and return the next type for C which
+    // would be placed at ABC.
+    const seen = new Set<string>();
+
+    const output = getNextGiftPlacementCombination(
+      radicesToCurrentCombination(currentCombinations, radices),
+      totalGiftCounts,
+      wrappedAndRotatedGifts,
+      tree,
+      seen,
+    );
+
+    asseq(output, [0]);
+
+    // we then add the board AB. to seen boards
+
+    const placedGifts = combinationToPlacedGifts2(
+      radicesToCurrentCombination(currentCombinations, radices),
+    );
+
+    asseq(hasBeenValidated(placedGifts, seen), false);
+    setHasBeenValidated(placedGifts, seen);
+    asseq(hasBeenValidated(placedGifts, seen), true);
+
+    // we once more get AB. , however this time we have tried every child of AB. , so we do not return the next type C
+
+    const output2 = getNextGiftPlacementCombination(
+      radicesToCurrentCombination(currentCombinations, radices),
+      totalGiftCounts,
+      wrappedAndRotatedGifts,
+      tree,
+      seen,
+    );
+
+    asseq(output2, []);
+
+    // when we now the next time try to get BA. , this is the same board when we sort it, so it should not return a next type
   });
 });
