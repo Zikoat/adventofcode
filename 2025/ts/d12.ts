@@ -14,7 +14,7 @@ import { validateHeaderName } from "node:http";
 
 const defaultOpt = true;
 
-const perfLog = 100000;
+const perfLog = 10000;
 
 export let opts = {
   isProfiling: false,
@@ -1068,15 +1068,6 @@ const newLocal_1 = (
   }
 };
 
-function chunk<T>(arr: readonly T[], size: number): T[][] {
-  if (size <= 0) throw new Error("size must be > 0");
-
-  const result: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) {
-    result.push(arr.slice(i, i + size));
-  }
-  return result;
-}
 
 function countOccurrences(values: number[]): Record<number, number> {
   return values.reduce(
@@ -1110,17 +1101,24 @@ function countOccurrences(values: number[]): Record<number, number> {
 //                   return false;
 //                 }
 
+
+
 export function combinationToPlacedGifts2(combination: Int[]): PlacedGift[] {
   ass(combination.length % 4 === 0);
-  const chunked = chunk(combination, 4);
-  return chunked.map(
-    (arr): PlacedGift => ({
-      rotation: nonNull(arr[1]),
-      type: nonNull(arr[0]),
-      x: nonNull(arr[2]),
-      y: nonNull(arr[3]),
-    }),
-  );
+  const size = 4;
+
+  const result:PlacedGift[] = [];
+
+  for (let i = 0; i < combination.length; i += size) {
+    const type = nonNull(combination[i+0]);
+    const rotation = nonNull(combination[i+1]);
+    const x = nonNull(combination[i+2]);
+    const y = nonNull(combination[i+3]);
+    result.push({type,rotation,x,y});
+  }
+
+
+  return result;
 }
 
 function getAvailableTypes(
@@ -1142,7 +1140,7 @@ function getAvailableTypes(
 }
 
 export function getNextGiftPlacementCombination(
-  _combination: Int[],
+  combination: Int[],
   totalGiftCounts: GiftCounts,
   giftsWithRotations: GiftsWithRotations,
   board: RootRectangle,
@@ -1150,18 +1148,61 @@ export function getNextGiftPlacementCombination(
 ): Int[] | "completelyValid" {
   // if modulo 4 is 0, then we have to check partially and completely valid.
 
-  if (_combination.length % 4 === 0) {
-    const placedGifts = combinationToPlacedGifts2(_combination);
+  if (combination.length % 4 === 0) {
+    const placedGifts = combinationToPlacedGifts2(combination);
 
-    if (_combination.length === 0) {
+    if (combination.length === 0) {
       return getAvailableTypes(placedGifts, totalGiftCounts);
     }
 
-    const isValidatedBefore = hasBeenValidated(placedGifts, seen);
-    if (isValidatedBefore) {
-      return [];
-    }
 
+    
+    
+    opts.isValidBoardRuns++
+
+    if (opts.isValidBoardRuns % perfLog === 0) {
+      if (opts.isValidBoardRuns % 500000 === 0) {
+        ass(false);
+      }
+      const now = performance.now();
+
+      const currentCombination = combination;
+      ass(currentCombination);
+      // const totalCombination = combinationsInput;
+      // ass(totalCombination);
+
+      // const progress = getProgress(totalCombination, currentCombination);
+  const progressString = "";//`${progress.toFixed(4)} %`jaø
+      const avgPerSec = (opts.isValidBoardRuns / (now - startTime)) * 1000;
+
+      const avgPerSecFormatted = new Intl.NumberFormat("nb-NO", {
+        maximumFractionDigits: 0,
+      }).format(avgPerSec);
+
+      const seenCount = seen.size;
+
+      const firstString = `${opts.isValidBoardRuns.toString().padEnd(10, " ")} avg ${avgPerSecFormatted}/sec ${progressString} ${Temporal.Now.plainTimeISO().toString({ fractionalSecondDigits: 2 })} revalidated: ${hasBeenValidatedCount} reuseOptimizations: ${opts.reuseOptimizations} seenCount:${seenCount} `;
+
+      console.log();
+      const fullBoard:Board={
+        gifts:giftsWithRotations,
+        placedGifts,...board
+      }
+
+      const visualizedBoardRaw = boardToVizualizedBoard(fullBoard);
+
+      console.log(
+        colorize(matrixToString(visualizedBoardRaw.visualizedBoard)),
+      );
+      console.log(visualizedBoardRaw.warning);
+      console.log(
+        `${firstString}${currentCombination?.map((num) =>
+          `${num}`.padStart(2, " "),
+        )}`,
+      );
+
+      console.log("------------------------------------");
+    }
 
     const isPartiallyValid = isValidBoard({
       gifts: giftsWithRotations,
@@ -1169,11 +1210,17 @@ export function getNextGiftPlacementCombination(
       placedGifts,
       width: board.width,
     });
-
+    
     // if it is not partially valid, then return empty array.
     if (!isPartiallyValid) {
       return [];
     }
+
+    const isValidatedBefore = hasBeenValidated(placedGifts, seen);
+    if (isValidatedBefore) {
+      return [];
+    }
+
 
     const availableTypes = getAvailableTypes(placedGifts, totalGiftCounts);
     // if it is partially valid and it has not been seen before, then we should
@@ -1190,8 +1237,8 @@ export function getNextGiftPlacementCombination(
 
   // if modulo 4 is 1, then we have chosen type, and need to choose rotation,
   //   we can pick any one rotation
-  if (_combination.length % 4 === 1) {
-    const type = nonNull(_combination.at(-1));
+  if (combination.length % 4 === 1) {
+    const type = nonNull(combination.at(-1));
     const availableRotations = nonNull(giftsWithRotations[type]).length;
     return createRange(availableRotations);
   }
@@ -1199,10 +1246,10 @@ export function getNextGiftPlacementCombination(
   // if modulo 4 is 2, then we have chosen type and rotation, and need to choose x.
   //   this should range such that the gift's width is always inside the board width.
 
-  if (_combination.length % 4 === 2) {
+  if (combination.length % 4 === 2) {
     const boardWidth = board.width;
-    const type = nonNull(_combination.at(-2));
-    const rotation = nonNull(_combination.at(-1));
+    const type = nonNull(combination.at(-2));
+    const rotation = nonNull(combination.at(-1));
     const giftShape = placedGiftToGift(giftsWithRotations, { rotation, type }); // the function to get a gift shape based on type and rotation
     const giftWidth = nonNull(giftShape[0]?.length);
     const maxX = boardWidth - giftWidth;
@@ -1212,10 +1259,10 @@ export function getNextGiftPlacementCombination(
 
   // if modulo 4 is 3, then we need to choose y, such that the gift's height is inside the board height
 
-  if (_combination.length % 4 === 3) {
+  if (combination.length % 4 === 3) {
     const boardHeight = board.height;
-    const type = nonNull(_combination.at(-3));
-    const rotation = nonNull(_combination.at(-2));
+    const type = nonNull(combination.at(-3));
+    const rotation = nonNull(combination.at(-2));
     const giftShape = placedGiftToGift(giftsWithRotations, { rotation, type }); // the function to get a gift shape based on type and rotation
     const giftHeight = giftShape.length;
     const maxY = boardHeight - giftHeight;
@@ -1223,10 +1270,6 @@ export function getNextGiftPlacementCombination(
     return createRange(maxY + 1);
   }
 
-  // if (isLeaf && isPartiallyValid) {
-  //   _hasFound1ValidCombination = true;
-  //   return [];
-  // }
   ass(false);
 }
 
@@ -1255,9 +1298,10 @@ export function combinationsWithCheck2(
   const seen: Seen = new Set<string>();
 
   const validBoards: Set<string> = new Set<string>();
-
+const shortCircuit = true;
   combinationsWithNext2<MyT>(
     function f5(combination): MyT[] {
+      if(validBoards.size> 0){return []}
       const completelyValidOrNextEntries = getNextGiftPlacementCombination(
         combination,
         totalGiftCounts,
@@ -1269,11 +1313,12 @@ export function combinationsWithCheck2(
 
       if (completelyValidOrNextEntries === "completelyValid") {
         const placedGifts = combinationToPlacedGifts2(combination);
-
+        
         const sortedPlacedGifts = sortPlacedGifts(placedGifts);
         validBoards.add(JSON.stringify(sortedPlacedGifts));
-
+        // ass(false,"completely valid")
         return [];
+        
       }
       // if is partially valid and completely valid, and not seen before,
 
@@ -1287,7 +1332,6 @@ export function combinationsWithCheck2(
 
 function combinationsWithNext2<T>(
   getNext: GetNext<T>,
-  // isComplete: IsComplete<T> = () => false,
   whenAllChildrenAreInvalid: (combination: Int[]) => void,
 ): boolean {
   const currentCombinations: T[][] = [];
@@ -1297,10 +1341,13 @@ function combinationsWithNext2<T>(
   while (true) {
     let nextValue: T[] = [];
     while (nextValue.length === 0) {
-      const currentCombination: T[] = radicesToCurrentCombination(
-        currentCombinations,
-        indices,
-      );
+      // const currentCombination: T[] = radicesToCurrentCombination(
+      //   currentCombinations,
+      //   indices,
+      // );
+      const currentCombination: T[] =  indices.map(function f8(radix, index): T {
+        return currentCombinations[index]![radix]!;
+      })
       nextValue = getNext(currentCombination);
 
       if (nextValue.length === 0) {
